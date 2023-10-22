@@ -3,12 +3,12 @@ package com.example.terminalm3
 import android.content.Context
 import android.net.nsd.NsdServiceInfo
 import androidx.compose.ui.graphics.Color
+import lan.ipToBroadCast
+import lan.readLocalIP
 import com.example.terminalm3.network.BT
 import com.example.terminalm3.network.UDP
 import com.example.terminalm3.network.channelNetworkIn
 import com.example.terminalm3.network.decoder
-import com.example.terminalm3.network.ipToBroadCast
-import com.example.terminalm3.network.readLocalIP
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
