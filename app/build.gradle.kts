@@ -66,4 +66,14 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    implementation ("androidx.navigation:navigation-compose:2.7.4")
+
+    implementation ("com.google.accompanist:accompanist-webview:0.32.0")
+    implementation ("com.google.accompanist:accompanist-pager:0.32.0")
+    implementation ("com.google.accompanist:accompanist-swiperefresh:0.32.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+    implementation ("com.google.accompanist:accompanist-navigation-animation:0.32.0")
+
+    implementation ("com.jakewharton.timber:timber:5.0.1")
 }
