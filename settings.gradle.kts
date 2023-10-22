@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "TerminalM3"
 include(":app")
- 
+include(":moduleBluetooth")
