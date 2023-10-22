@@ -1,22 +1,20 @@
-package com.example.rttclientm3
+package com.example.terminalm3
 
 import android.content.Context
 import android.net.nsd.NsdServiceInfo
 import androidx.compose.ui.graphics.Color
-import com.example.rttclientm3.network.BT
-import com.example.rttclientm3.network.UDP
-import com.example.rttclientm3.network.channelNetworkIn
-import com.example.rttclientm3.network.decoder
+import com.example.terminalm3.network.BT
+import com.example.terminalm3.network.UDP
+import com.example.terminalm3.network.channelNetworkIn
+import com.example.terminalm3.network.decoder
+import com.example.terminalm3.network.ipToBroadCast
+import com.example.terminalm3.network.readLocalIP
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import com.example.rttclientm3.screen.lazy.LineTextAndColor
-import com.example.rttclientm3.screen.lazy.PairTextAndColor
-import com.example.terminalm3.ipAddress
-import com.example.terminalm3.shared
-import libs.lan.ipToBroadCast
-import libs.lan.readLocalIP
+import com.example.terminalm3.screen.lazy.LineTextAndColor
+import com.example.terminalm3.screen.lazy.PairTextAndColor
 import timber.log.Timber
 
 

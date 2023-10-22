@@ -1,5 +1,6 @@
 package com.example.terminalm3
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
@@ -22,15 +23,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.rttclientm3.Initialization
-import com.example.rttclientm3.VM
-import com.example.rttclientm3.isInitialized
-import com.example.rttclientm3.network.bluetoothAdapter
-import com.example.rttclientm3.network.btIsReady
-import com.example.rttclientm3.screen.info.ScreenInfo
-import com.example.rttclientm3.screen.lazy.ScreenLazy
-import com.example.rttclientm3.screen.web.Web
-import com.example.rttclientm3.ui.theme.RTTClientM3Theme
+import com.example.terminalm3.network.bluetoothAdapter
+import com.example.terminalm3.network.btIsReady
+import com.example.terminalm3.screen.info.ScreenInfo
+import com.example.terminalm3.screen.lazy.ScreenLazy
+import com.example.terminalm3.screen.web.Web
+import com.example.terminalm3.theme.RTTClientM3Theme
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -70,17 +68,17 @@ class MainActivity : ComponentActivity() {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         rememberMultiplePermissionsState(
                             permissions = listOf(
-                                android.Manifest.permission.BLUETOOTH,
-                                android.Manifest.permission.BLUETOOTH_ADMIN,
-                                android.Manifest.permission.BLUETOOTH_CONNECT,
-                                android.Manifest.permission.BLUETOOTH_SCAN,
+                                Manifest.permission.BLUETOOTH,
+                                Manifest.permission.BLUETOOTH_ADMIN,
+                                Manifest.permission.BLUETOOTH_CONNECT,
+                                Manifest.permission.BLUETOOTH_SCAN,
                             )
                         )
                     } else {
                         rememberMultiplePermissionsState(
                             permissions = listOf(
-                                android.Manifest.permission.BLUETOOTH,
-                                android.Manifest.permission.BLUETOOTH_ADMIN,
+                                Manifest.permission.BLUETOOTH,
+                                Manifest.permission.BLUETOOTH_ADMIN,
                             )
                         )
                     }

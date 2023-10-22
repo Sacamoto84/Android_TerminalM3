@@ -1,8 +1,7 @@
-package com.example.rttclientm3
+package com.example.terminalm3
 
-import androidx.compose.runtime.currentComposer
 import androidx.compose.ui.graphics.Color
-import com.example.rttclientm3.screen.lazy.PairTextAndColor
+import com.example.terminalm3.screen.lazy.PairTextAndColor
 import timber.log.Timber
 
 val allColor = mutableListOf<Color>() //Палитра цветов по коду соответствие цвета

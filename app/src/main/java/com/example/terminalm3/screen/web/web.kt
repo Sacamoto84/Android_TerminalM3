@@ -1,4 +1,4 @@
-package com.example.rttclientm3.screen.web
+package com.example.terminalm3.screen.web
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
@@ -31,15 +31,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.rttclientm3.R
-import com.example.rttclientm3.ipESP
+import com.example.terminalm3.R
+import com.example.terminalm3.ipESP
+import com.example.terminalm3.network.ping
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.WebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
 import kotlinx.coroutines.CoroutineScope
-import libs.lan.ping
+
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetJavaScriptEnabled")

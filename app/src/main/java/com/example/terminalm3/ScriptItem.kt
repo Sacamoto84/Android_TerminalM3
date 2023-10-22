@@ -1,4 +1,4 @@
-package com.example.rttclientm3
+package com.example.terminalm3
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,8 +15,9 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import com.example.rttclientm3.screen.lazy.LineTextAndColor
-import com.example.rttclientm3.screen.lazy.update
+import com.example.terminalm3.screen.lazy.LineTextAndColor
+import com.example.terminalm3.console
+import com.example.terminalm3.screen.lazy.update
 
 @Composable
 fun ScriptItemDraw(item: () -> LineTextAndColor, index: () -> Int, select: () -> Boolean) {

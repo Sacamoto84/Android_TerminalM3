@@ -1,10 +1,10 @@
-package com.example.rttclientm3
+package com.example.terminalm3
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
-import com.example.rttclientm3.screen.lazy.Console
+import com.example.terminalm3.screen.lazy.Console
 
 /**
  * # Глобальные переменные

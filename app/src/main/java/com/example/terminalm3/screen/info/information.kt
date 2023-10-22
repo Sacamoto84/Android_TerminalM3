@@ -1,4 +1,4 @@
-package com.example.rttclientm3.screen.info
+package com.example.terminalm3.screen.info
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -12,12 +12,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
-import com.example.rttclientm3.colorIn256
-import com.example.rttclientm3.console
-import com.example.rttclientm3.console_text
+import com.example.terminalm3.colorIn256
+import com.example.terminalm3.console
+import com.example.terminalm3.console_text
 import com.example.terminalm3.ipAddress
-import com.example.rttclientm3.ipESP
-import com.example.rttclientm3.isCheckedUseLiteralEnter
+import com.example.terminalm3.ipESP
+import com.example.terminalm3.isCheckedUseLiteralEnter
 import com.example.terminalm3.shared
 
 //MARK: Локальные дефайны

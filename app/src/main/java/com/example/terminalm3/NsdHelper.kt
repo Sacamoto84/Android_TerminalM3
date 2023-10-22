@@ -1,4 +1,4 @@
-package com.example.rttclientm3
+package com.example.terminalm3
 
 import android.content.Context
 import android.net.nsd.NsdManager

@@ -1,4 +1,4 @@
-package com.example.rttclientm3.screen.lazy.bottomNavigation
+package com.example.terminalm3.screen.lazy.bottomNavigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

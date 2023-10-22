@@ -1,4 +1,4 @@
-package com.example.rttclientm3.screen.lazy
+package com.example.terminalm3.screen.lazy
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
@@ -8,8 +8,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.example.rttclientm3.console
-import com.example.rttclientm3.screen.lazy.bottomNavigation.BottomNavigationLazy
+import com.example.terminalm3.console
+import com.example.terminalm3.screen.lazy.bottomNavigation.BottomNavigationLazy
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable

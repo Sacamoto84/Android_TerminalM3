@@ -1,4 +1,4 @@
-package com.example.rttclientm3.ui.theme
+package com.example.terminalm3.theme
 
 import androidx.compose.ui.graphics.Color
 

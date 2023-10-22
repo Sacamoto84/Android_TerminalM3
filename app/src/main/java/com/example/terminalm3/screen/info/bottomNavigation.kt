@@ -1,4 +1,4 @@
-package com.example.rttclientm3.screen.info
+package com.example.terminalm3.screen.info
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.rttclientm3.R
-import com.example.rttclientm3.screen.lazy.bottomNavigation.colorBg
+import com.example.terminalm3.R
+import com.example.terminalm3.screen.lazy.bottomNavigation.colorBg
 
 @Composable
 fun BottomNavigationInfo(navController: NavController) {

@@ -1,4 +1,4 @@
-package com.example.rttclientm3.network
+package com.example.terminalm3.network
 
 import kotlinx.coroutines.channels.Channel
 

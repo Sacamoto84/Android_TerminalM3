@@ -1,10 +1,10 @@
-package com.example.rttclientm3
+package com.example.terminalm3
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.rttclientm3.screen.lazy.PairTextAndColor
-import com.example.rttclientm3.network.channelLastString
+import com.example.terminalm3.screen.lazy.PairTextAndColor
+import com.example.terminalm3.network.channelLastString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
