@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Color
 import lan.ipToBroadCast
 import lan.readLocalIP
 import com.example.terminalm3.network.BT
-import com.example.terminalm3.network.UDP
+import lan.UDP
 import com.example.terminalm3.network.channelNetworkIn
 import com.example.terminalm3.network.decoder
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -73,11 +73,11 @@ class Initialization(private val context: Context) {
             ipAddress = readLocalIP(context)
             Timber.i(ipAddress)
 
-            val udp = UDP(8888, channelNetworkIn)
+            val udp = UDP()
             GlobalScope.launch(
                 Dispatchers.IO
             ) {
-                udp.receiveScope()
+                udp.receiveScope(8888, channelNetworkIn)
             }
 
             decoder.run()
