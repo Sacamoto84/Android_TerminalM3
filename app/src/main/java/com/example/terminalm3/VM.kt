@@ -73,8 +73,8 @@ class VM : ViewModel() {
                 //mod = PairTextAndColor("▁", Color.Green, Color.Black, true, flash = true)
 
                 val pair = text_to_paitList(s.cmd, mod)
-                console._messages.last().text = s.cmd
-                console._messages.last().pairList = pair
+                console.messages.last().text = s.cmd
+                console.messages.last().pairList = pair
 
                 //Если новая строка
                 if (s.newString)

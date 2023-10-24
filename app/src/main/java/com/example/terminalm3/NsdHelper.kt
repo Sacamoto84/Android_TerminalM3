@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 const val TAG = "mDNS"
 
-abstract class NsdHelper(private val context: Context) {
+abstract class NsdHelper(context: Context) {
 
     // Declare DNS-SD related variables for service discovery
     val nsdManager: NsdManager? = context.getSystemService(Context.NSD_SERVICE) as NsdManager?

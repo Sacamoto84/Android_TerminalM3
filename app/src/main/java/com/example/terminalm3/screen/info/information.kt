@@ -11,10 +11,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-
 import com.example.terminalm3.colorIn256
 import com.example.terminalm3.console
-import com.example.terminalm3.console_text
 import com.example.terminalm3.ipAddress
 import com.example.terminalm3.ipESP
 import com.example.terminalm3.isCheckedUseLiteralEnter
@@ -205,7 +203,7 @@ fun ScreenInfo(navController: NavController) {
                                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                                     colors = ButtonDefaults.elevatedButtonColors(
                                         containerColor =
-                                        if (console_text == (12 + x * 2 + y * 8))
+                                        if (console.fontSize == (12 + x * 2 + y * 8).sp)
                                             Color.LightGray else Color.DarkGray
                                     ),
                                     modifier = Modifier
@@ -214,8 +212,7 @@ fun ScreenInfo(navController: NavController) {
                                     onClick = {
                                         val iii = 12 + x * 2 + y * 8
                                         println("Изменение шрифта на $iii")
-                                        console_text = iii
-                                        console.setFontSize(console_text)
+                                        console.fontSize = iii.sp
                                         console.consoleAdd("Изменение шрифта")
                                         shared.edit().putString("size", "$iii").apply()
                                     }
@@ -224,7 +221,7 @@ fun ScreenInfo(navController: NavController) {
                                     val iii = 12 + x * 2 + y * 8
                                     Text(
                                         text = "$iii", color =
-                                        if (console_text == (12 + x * 2 + y * 8)) Color.Black
+                                        if (console.fontSize == (12 + x * 2 + y * 8).sp) Color.Black
                                         else Color.LightGray,
                                         fontSize = 20.sp
                                     )
@@ -237,9 +234,6 @@ fun ScreenInfo(navController: NavController) {
                 }
 
             }
-
-            val buttonFontSize = 4.sp
-
 
             OutlinedCard(
                 modifier = Modifier

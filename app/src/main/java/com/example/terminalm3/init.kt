@@ -3,6 +3,7 @@ package com.example.terminalm3
 import android.content.Context
 import android.net.nsd.NsdServiceInfo
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import lan.ipToBroadCast
 import lan.readLocalIP
 import com.example.terminalm3.network.BT
@@ -53,7 +54,7 @@ class Initialization(private val context: Context) {
             BT.autoconnect(context)
 
             shared = context.getSharedPreferences("size", Context.MODE_PRIVATE)
-            console_text = shared.getString("size", "12")?.toInt() ?: 12
+            console.fontSize = (shared.getString("size", "12")?.toInt() ?: 12).sp
 
             //MARK: Вывод символа энтер
             isCheckedUseLiteralEnter = shared.getBoolean("enter", false)
@@ -88,7 +89,7 @@ class Initialization(private val context: Context) {
             val version = 281 //BuildConfig.VERSION_NAME
 
             //Нужно добавить ее в список лази как текущую
-            console._messages.add(
+            console.messages.add(
                 LineTextAndColor(
                     text = "Первый нах",
                     pairList =

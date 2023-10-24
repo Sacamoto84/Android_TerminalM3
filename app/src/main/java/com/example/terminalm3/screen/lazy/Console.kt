@@ -3,9 +3,11 @@ package com.example.terminalm3.screen.lazy
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -14,20 +16,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.GenericFontFamily
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.R
-import com.example.terminalm3.ScriptItemDraw
+import com.example.terminalm3.console
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-
-var update = MutableStateFlow(true)   //для мигания
 
 
 data class PairTextAndColor(
@@ -57,18 +63,21 @@ data class LineTextAndColor(
 class Console {
 
     init {
-
         GlobalScope.launch {
             while (true) {
                 delay(700L)
                 update.value = !update.value
             }
         }
-
     }
 
+    val messages = mutableListOf<LineTextAndColor>()
 
-    private var recompose = MutableStateFlow(0)
+    val update = MutableStateFlow(true)   //для мигания
+
+    private val recompose = MutableStateFlow(0)
+
+
 
     var lineVisible by mutableStateOf(false)
 
@@ -76,11 +85,7 @@ class Console {
     var lastCount by mutableIntStateOf(0)
 
 
-    val _messages = mutableListOf<LineTextAndColor>()
 
-    //val messages: StateFlow<SnapshotStateList<LineTextAndColor>> = _messages
-
-    //val _messages = MutableList<LineTextAndColor>(emptyList<LineTextAndColor>())
 
     /**
      *  # Настройка шрифтов
@@ -114,13 +119,13 @@ class Console {
 
     fun clear() {
 
-        _messages.clear()
+        messages.clear()
 
-        _messages.forEach {
+        messages.forEach {
             it.deleted = true
         }
 
-        _messages.add(
+        messages.add(
             LineTextAndColor(
                 "...",
                 listOf(PairTextAndColor("///", Color.Red, Color.Green))
@@ -136,7 +141,7 @@ class Console {
         update.collectAsState().value
         recompose.collectAsState().value
 
-        val list = _messages //.filter { !it.deleted }
+        val list = messages
 
         //var update by remember { mutableStateOf(true) }  //для мигания
 
@@ -213,16 +218,16 @@ class Console {
         bgColor: Color = Color.Black,
         flash: Boolean = false
     ) {
-        if ((_messages.size > 0) && (_messages.last().text == " ")) {
-            _messages.removeAt(_messages.lastIndex)
-            _messages.add(
+        if ((messages.size > 0) && (messages.last().text == " ")) {
+            messages.removeAt(messages.lastIndex)
+            messages.add(
                 LineTextAndColor(
                     text,
                     listOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
                 )
             )
         } else {
-            _messages.add(
+            messages.add(
                 LineTextAndColor(
                     text,
                     listOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
@@ -250,6 +255,71 @@ class Console {
      */
     fun setFontSize(size: Int) {
         fontSize = size.sp
+    }
+
+
+
+    @Composable
+    fun ScriptItemDraw(item: () -> LineTextAndColor, index: () -> Int, select: () -> Boolean) {
+        //println("Draw  ${index()}")
+        val x = convertStringToAnnotatedString(item(), index())
+        Text( x, modifier = Modifier
+            .fillMaxWidth()
+            //.padding(top = 0.dp)
+            .background(if (select()) Color.Cyan else Color.Transparent),
+
+            fontSize = console.fontSize,
+            fontFamily = FontFamily(Font(R.font.jetbrains, FontWeight.Normal)),
+            //lineHeight = console.fontSize * 1.2f
+        )
+
+    }
+
+    private fun convertStringToAnnotatedString(item: LineTextAndColor, index: Int): AnnotatedString {
+
+
+        val s = item.pairList.size
+
+        //lateinit var x : AnnotatedString
+        var x = buildAnnotatedString {
+            withStyle(style = SpanStyle(color = Color.Gray)) {
+                append("${index}>")
+            }
+        }
+
+        for (i in 0 until s) {
+
+            x += buildAnnotatedString {
+                withStyle(
+                    style = SpanStyle(
+
+                        color = if (!item.pairList[i].flash)
+                            item.pairList[i].colorText
+                        else
+                            if (update.value)
+                                item.pairList[i].colorText
+                            else
+                                Color(0xFF090909),
+
+                        background = if (!item.pairList[i].flash)
+                            item.pairList[i].colorBg
+                        else
+                            if (update.value)
+                                item.pairList[i].colorBg
+                            else Color(0xFF090909),
+                        fontFamily = FontFamily(Font(R.font.jetbrains)),
+
+                        textDecoration = if (item.pairList[i].underline) TextDecoration.Underline else null,
+                        fontWeight = if (item.pairList[i].bold) FontWeight.Bold else null,
+                        fontStyle = if (item.pairList[i].italic) FontStyle.Italic else null,
+                    )
+                )
+                { append(item.pairList[i].text) }
+            }
+
+        }
+
+        return x
     }
 
 

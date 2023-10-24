@@ -23,15 +23,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.terminalm3.network.bluetoothAdapter
 import com.example.terminalm3.network.btIsReady
 import com.example.terminalm3.screen.info.ScreenInfo
 import com.example.terminalm3.screen.lazy.ScreenLazy
 import com.example.terminalm3.screen.web.Web
 import com.example.terminalm3.theme.RTTClientM3Theme
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import timber.log.Timber
@@ -50,8 +50,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!isInitialized)
-          Initialization(applicationContext)
+        if (!isInitialized) Initialization(applicationContext)
 
         isInitialized = true
 
@@ -63,50 +62,48 @@ class MainActivity : ComponentActivity() {
 
             RTTClientM3Theme {
 
-                val bluetoothPermissions =
-                    // Checks if the device has Android 12 or above
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        rememberMultiplePermissionsState(
-                            permissions = listOf(
-                                Manifest.permission.BLUETOOTH,
-                                Manifest.permission.BLUETOOTH_ADMIN,
-                                Manifest.permission.BLUETOOTH_CONNECT,
-                                Manifest.permission.BLUETOOTH_SCAN,
+                val bluetoothPermissions = // Checks if the device has Android 12 or above
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            rememberMultiplePermissionsState(
+                                permissions = listOf(
+                                    Manifest.permission.BLUETOOTH,
+                                    Manifest.permission.BLUETOOTH_ADMIN,
+                                    Manifest.permission.BLUETOOTH_CONNECT,
+                                    Manifest.permission.BLUETOOTH_SCAN,
+                                )
                             )
-                        )
-                    } else {
-                        rememberMultiplePermissionsState(
-                            permissions = listOf(
-                                Manifest.permission.BLUETOOTH,
-                                Manifest.permission.BLUETOOTH_ADMIN,
+                        } else {
+                            rememberMultiplePermissionsState(
+                                permissions = listOf(
+                                    Manifest.permission.BLUETOOTH,
+                                    Manifest.permission.BLUETOOTH_ADMIN,
+                                )
                             )
-                        )
-                    }
+                        }
 
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
                     BuildNavGraph()
                 }
 
-//                if (bluetoothPermissions.allPermissionsGranted) {
-//                    btIsReady
-//                    if (bluetoothAdapter.isEnabled) {
-//
-//                        Surface(
-//                            modifier = Modifier.fillMaxSize(),
-//                            color = MaterialTheme.colorScheme.background
-//                        ) {
-//                            BuildNavGraph(navController)
-//                        }
-//
-//                    } else {
-//
-//                        ButtonBluetooth()
-//
-//                    }
-//                }
+                //                if (bluetoothPermissions.allPermissionsGranted) {
+                //                    btIsReady
+                //                    if (bluetoothAdapter.isEnabled) {
+                //
+                //                        Surface(
+                //                            modifier = Modifier.fillMaxSize(),
+                //                            color = MaterialTheme.colorScheme.background
+                //                        ) {
+                //                            BuildNavGraph(navController)
+                //                        }
+                //
+                //                    } else {
+                //
+                //                        ButtonBluetooth()
+                //
+                //                    }
+                //                }
 
 
             }
@@ -123,8 +120,7 @@ private fun ButtonBluetooth() {
 
         btIsReady = if (it.resultCode == Activity.RESULT_OK) {
             Timber.w("bluetoothLauncher Success")
-            true
-            //bluetoothPrint.print()
+            true //bluetoothPrint.print()
         } else {
             Timber.w("bluetoothLauncher Failed")
             false
@@ -136,15 +132,12 @@ private fun ButtonBluetooth() {
     val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
 
 
-    Box(modifier = Modifier.fillMaxSize(), Alignment.Center)
-    {
-        Button(
-            onClick = {
-                if (!bluetoothAdapter.isEnabled) {
-                    // Bluetooth is off, ask user to turn it on
-                    enableBluetoothContract.launch(enableBluetoothIntent)
-                }
-            }) {
+    Box(modifier = Modifier.fillMaxSize(), Alignment.Center) {
+        Button(onClick = {
+            if (!bluetoothAdapter.isEnabled) { // Bluetooth is off, ask user to turn it on
+                enableBluetoothContract.launch(enableBluetoothIntent)
+            }
+        }) {
             Text(text = "Включить Bluetooth")
         }
     }
@@ -153,38 +146,30 @@ private fun ButtonBluetooth() {
 }
 
 
-
-
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun BuildNavGraph() {
 
-    val navController = rememberAnimatedNavController()
+    val navController = rememberNavController()
 
-    AnimatedNavHost(
+    NavHost(
         navController = navController,
         startDestination = "home",
+        enterTransition = { fadeIn(animationSpec = tween(0)) },
+        exitTransition = { fadeOut(animationSpec = tween(0)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(0)) },
+        popExitTransition = { fadeOut(animationSpec = tween(0)) },
     ) {
 
-        composable(
-            "home",
-            enterTransition = { fadeIn(animationSpec = tween(0)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
+        composable("home") {
             ScreenLazy(navController)
         }
 
-        composable("info",
-            enterTransition = { fadeIn(animationSpec = tween(0)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) })
-        {
+        composable("info") {
             ScreenInfo(navController)
         }
 
-        composable("web",
-            enterTransition = { fadeIn(animationSpec = tween(0)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
+        composable("web") {
             Web(navController)
         }
 
