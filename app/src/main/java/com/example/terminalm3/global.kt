@@ -39,6 +39,9 @@ var telnetSlegenie = MutableStateFlow(true)           //🟦Слежение з�
  */
 var telnetWarning = MutableLiveData(false) //Для отображения значка внимание
 
+val warning = MutableStateFlow(false)
+
+
 
 
 

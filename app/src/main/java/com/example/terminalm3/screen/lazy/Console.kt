@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -79,30 +81,20 @@ class Console {
     private val recompose = MutableStateFlow(0)
 
 
-    var lineVisible by mutableStateOf(false)
+    var lineVisible by mutableStateOf(false) //Отображение номер строки
 
     var tracking by mutableStateOf(true) //Слежение за последним полем
-    var lastCount by mutableIntStateOf(0)
 
+    var lastCount by mutableIntStateOf(0) //Количество записей
 
-    /**
-     *  # Настройка шрифтов
-     *  ### Размер шрифта
-     */
-    var fontSize by mutableStateOf(12.sp)
+    var fontSize by mutableStateOf(12.sp) //Размер шрифта
 
-    /**
-     * ### Используемый шрифт
-     */
-    private var fontFamily =
-            FontFamily(Font(R.font.jetbrains, FontWeight.Normal)) //FontFamily.Monospace
-
-
-    //val messages = mutableStateListOf<LineTextAndColor>()
-
-
-    //val messages = MutableStateFlow(emptyList<LineTextAndColor>().toMutableList())
-
+    private var fontFamily = FontFamily(
+        Font(
+            R.font.jetbrains,
+            FontWeight.Normal
+        )
+    ) //FontFamily.Monospace //Используемый шрифт
 
     /**
      * # ⛏️ Рекомпозиция списка
@@ -119,13 +111,9 @@ class Console {
 
         messages.clear()
 
-        messages.forEach {
-            it.deleted = true
-        }
-
         messages.add(
             LineTextAndColor(
-                "...", listOf(PairTextAndColor("///", Color.Red, Color.Green))
+                " ", listOf(PairTextAndColor("▁", Color.Green, Color.Black, flash = true))
             )
         )
         recompose()
@@ -137,6 +125,8 @@ class Console {
 
         update.collectAsState().value
         recompose.collectAsState().value
+
+        lastCount = messages.size
 
         val list = messages
 
@@ -154,15 +144,15 @@ class Console {
         //}
 
 
-        //        LaunchedEffect(key1 = lastVisibleItemIndex) {
-        //            while (true) {
-        //                delay(200L)
-        //                val s = messagesR.size
-        //                if ((s > 20) && tracking) {
-        //                    lazyListState.scrollToItem(index = messagesR.size - 1) //Анимация (плавная прокрутка) к данному элементу.
-        //                }
-        //            }
-        //        }
+        LaunchedEffect(key1 = lastVisibleItemIndex) {
+            while (true) {
+                delay(200L)
+                val s = list.size
+                if ((s > 20) && tracking) {
+                    lazyListState.scrollToItem(index = list.size - 1) //Анимация (плавная прокрутка) к данному элементу.
+                }
+            }
+        }
 
 
         LazyColumn(
@@ -175,7 +165,8 @@ class Console {
                     lazyListState,
                     horizontal = false, //countCorrection = 0,
                     hiddenAlpha = 0f
-                ), //state = lazyListState
+                ), 
+            state = rememberLazyListState()
         ) {
 
             itemsIndexed(list) { index, item ->

@@ -10,19 +10,22 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
+import com.siddroid.holi.colors.FlatColor
+import com.siddroid.holi.colors.MaterialColor
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
+    primary = MaterialColor.GREY_800,
     secondary = PurpleGrey80,
-    tertiary = Pink80
+    tertiary = MaterialColor.AMBER_100
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = FlatColor.PETER_RIVER,
     secondary = PurpleGrey40,
     tertiary = Pink40
 
@@ -44,6 +47,7 @@ fun RTTClientM3Theme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+
     val colorScheme = when {
       dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
         val context = LocalContext.current

@@ -103,7 +103,7 @@ fun Web(navController: NavController) {
                 )
 
             BottomNavigation(navController)
-
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
 

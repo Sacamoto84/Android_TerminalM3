@@ -4,23 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.terminalm3.R
-import com.example.terminalm3.screen.lazy.isSheetOpen
 import com.example.terminalm3.screen.lazy.ui.ButtonClear
 import com.example.terminalm3.screen.lazy.ui.ButtonSetting
 import com.example.terminalm3.screen.lazy.ui.ButtonSlegenie
@@ -43,33 +34,19 @@ fun BottomNavigationLazy(navController: NavController) {
         Row(
             Modifier
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
+
         ) {
-            ButtonSlegenie(Modifier.weight(1f))
+            ButtonSlegenie()//Modifier.weight(1f))
             //Кнопка сброса списка
-            Spacer(modifier = Modifier.width(8.dp))
+            //Spacer(modifier = Modifier.width(8.dp))
             ButtonClear() //Кнопка очистка списка
-            Spacer(modifier = Modifier.width(16.dp))
+            //Spacer(modifier = Modifier.width(16.dp))
             //ButtonReset() //Кнопка перегрузки контроллера
-            Spacer(modifier = Modifier.width(16.dp))
+            //Spacer(modifier = Modifier.width(16.dp))
             ButtonSetting(navController)
-            Spacer(modifier = Modifier.width(16.dp))
-
-            IconButton(
-                modifier = Modifier.size(34.dp),
-                colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFF505050)),
-                onClick = {
-                    isSheetOpen.value = true
-                }
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.settings1),
-                    tint = Color.LightGray,
-                    contentDescription = null
-                )
-            }
-
+            //Spacer(modifier = Modifier.width(16.dp))
 
         }
     }

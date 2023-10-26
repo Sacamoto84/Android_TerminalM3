@@ -9,8 +9,10 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
@@ -19,11 +21,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.example.terminalm3.network.bluetoothAdapter
 import com.example.terminalm3.network.btIsReady
 import com.example.terminalm3.theme.RTTClientM3Theme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import timber.log.Timber
 import timber.log.Timber.*
 
@@ -38,6 +42,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalPermissionsApi::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
         if (!isInitialized) Initialization(applicationContext)
@@ -50,7 +55,10 @@ class MainActivity : ComponentActivity() {
 
             vm.launchUIChanelReceive()
 
-            RTTClientM3Theme {
+            RTTClientM3Theme(
+                darkTheme = false,
+                dynamicColor = false
+            ) {
 
                 val bluetoothPermissions = // Checks if the device has Android 12 or above
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
