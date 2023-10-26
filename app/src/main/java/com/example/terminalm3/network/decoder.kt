@@ -1,5 +1,6 @@
 package com.example.terminalm3.network
 
+import com.example.terminalm3.isCheckUseCRLF
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -32,14 +33,15 @@ class NetCommandDecoder(
     private suspend fun decodeScope() {
 
         val bigStr: StringBuilder =
-            StringBuilder()//Большая строка в которую и складируются данные с канала
+                StringBuilder() //Большая строка в которую и складируются данные с канала
 
         while (true) {
 
             var string =
-                channelIn.receive() //Получить строку с канала, может содежать несколько строк
+                    channelIn.receive() //Получить строку с канала, может содежать несколько строк
 
-             string = string.replace("\r", "\u001B[01;39;05;0;49;05;10mCR\u001B[2m")
+            if (isCheckUseCRLF) string =
+                    string.replace("\r", "\u001B[01;39;05;0;49;05;10mCR\u001B[2m")
 
             //Timber.e( "in>>>${string.length} "+string )
 
@@ -48,31 +50,37 @@ class NetCommandDecoder(
             bigStr.append(string) //Захерячиваем в большую строку
 
             //MARK: Будем сами делить на строки
-            while (true) {
-                //Индекс \n
+            while (true) { //Индекс \n
                 val indexN = bigStr.indexOf('\n')
 
-                if (indexN != -1) {
-                    //Область полюбому имеет конец строки
+                if (indexN != -1) { //Область полюбому имеет конец строки
                     //MARK: Чета есть, копируем в подстроку
                     val stringDoN = bigStr.substring(0, indexN)
                     bigStr.delete(0, bigStr.indexOf('\n') + 1)
 
-                    lastString += "$stringDoN\u001B[01;39;05;15;49;05;27mLF\u001B[2m"
+                    lastString += stringDoN
+
+                    if (isCheckUseCRLF) lastString += "\u001B[01;39;05;15;49;05;27mLF\u001B[2m"
+
                     channelRoute.send(lastString)
-                    channelOutNetCommand.send(NetCommand(lastString, true))
-                    //Timber.i( "out>>>${lastString.length} "+lastString )
+                    channelOutNetCommand.send(
+                        NetCommand(
+                            lastString, true
+                        )
+                    ) //Timber.i( "out>>>${lastString.length} "+lastString )
                     lastString = ""
 
 
-                } else {
-                    //Конец строки не найден
+                } else { //Конец строки не найден
                     //MARK: Тут для дополнения прошлой строки
                     //Получить полную запись посленней строки
                     lastString += bigStr
                     if (lastString.isNotEmpty()) {
-                        channelOutNetCommand.send(NetCommand(lastString, false))
-                        //Timber.w( "out>>>${lastString.length} "+lastString )
+                        channelOutNetCommand.send(
+                            NetCommand(
+                                lastString, false
+                            )
+                        ) //Timber.w( "out>>>${lastString.length} "+lastString )
                     }
                     bigStr.clear() //Он отжил свое)
                     break
@@ -97,8 +105,7 @@ class NetCommandDecoder(
             val posCRC = raw.indexOf("²")
             val posEnd = raw.indexOf("³")
 
-            if ((posStart == -1) || (posEnd == -1) || (posCRC == -1) || (posCRC !in (posStart + 1) until posEnd)) {
-                //Timber.e("Ошибка позиции пакета S:$posStart C:$posCRC E:$posEnd")
+            if ((posStart == -1) || (posEnd == -1) || (posCRC == -1) || (posCRC !in (posStart + 1) until posEnd)) { //Timber.e("Ошибка позиции пакета S:$posStart C:$posCRC E:$posEnd")
                 continue
             }
 
@@ -127,8 +134,7 @@ class NetCommandDecoder(
             if (crc.toUByte() != crc8) {
                 Timber.e("Ошибка CRC $crc != CRC8 $crc8 $raw")
                 continue
-            }
-            //Прошли все проверкu
+            } //Прошли все проверкu
             channelOutCommand.send(s)
 
         }
@@ -171,9 +177,6 @@ class NetCommandDecoder(
 
     //Перевод на сет
     private val cmdList = mutableListOf<CliCommand>() //Список команд
-
-
-
 
 
     private suspend fun cliDecoder() {

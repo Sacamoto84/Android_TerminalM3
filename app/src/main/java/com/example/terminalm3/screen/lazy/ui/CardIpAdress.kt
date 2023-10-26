@@ -1,4 +1,4 @@
-package com.example.terminalm3.screen.lazy.bottomNavigation
+package com.example.terminalm3.screen.lazy.ui
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

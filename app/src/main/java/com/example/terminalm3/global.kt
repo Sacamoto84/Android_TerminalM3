@@ -20,7 +20,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 var isInitialized =
         false                                               //🟦Флаг того что произошла инициализация
-var isCheckedUseLiteralEnter by mutableStateOf(false) //🟦Показывать в конце строки символ энтер
+
+var isCheckUseCRLF by mutableStateOf(false) //🟦Показывать в конце строки символ CR LF
+
 val isCheckedUseLineVisible by mutableStateOf(false)  //🟦Показывать номер строки
 var telnetSlegenie = MutableStateFlow(true)           //🟦Слежение за последней строкой
 

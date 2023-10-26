@@ -1,4 +1,4 @@
-package com.example.terminalm3.screen.lazy.bottomNavigation
+package com.example.terminalm3.screen.lazy.ui
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,7 +18,7 @@ fun ButtonPortal(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     Button(modifier = Modifier
         .fillMaxWidth()
-        .padding(top = 0.dp, start = 8.dp, end = 8.dp),
+        .padding(top = 8.dp, start = 8.dp, end = 8.dp),
         onClick = {
             scope.launch(Dispatchers.Main) {
                 navController.navigate("web")

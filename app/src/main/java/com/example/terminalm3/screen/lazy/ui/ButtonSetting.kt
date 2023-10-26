@@ -1,4 +1,4 @@
-package com.example.terminalm3.screen.lazy.bottomNavigation
+package com.example.terminalm3.screen.lazy.ui
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon

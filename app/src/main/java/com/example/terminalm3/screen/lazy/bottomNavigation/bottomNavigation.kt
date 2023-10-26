@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.terminalm3.R
 import com.example.terminalm3.screen.lazy.isSheetOpen
+import com.example.terminalm3.screen.lazy.ui.ButtonClear
+import com.example.terminalm3.screen.lazy.ui.ButtonSetting
+import com.example.terminalm3.screen.lazy.ui.ButtonSlegenie
 
 val colorBg = Color(0xFF1B1B1B)
 

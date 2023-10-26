@@ -20,11 +20,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.terminalm3.console
 import com.example.terminalm3.screen.lazy.bottomNavigation.BottomNavigationLazy
-import com.example.terminalm3.screen.lazy.bottomNavigation.ButtonPortal
-import com.example.terminalm3.screen.lazy.bottomNavigation.CardFontSize
-import com.example.terminalm3.screen.lazy.bottomNavigation.CardIpAdress
-import com.example.terminalm3.screen.lazy.bottomNavigation.CheckVisibleCRLF
-import com.example.terminalm3.screen.lazy.bottomNavigation.CheckVisibleLineNumber
+import com.example.terminalm3.screen.lazy.bottomNavigation.ModalBottomSheetContent
+import com.example.terminalm3.screen.lazy.ui.ButtonPortal
+import com.example.terminalm3.screen.lazy.ui.CardFontSize
+import com.example.terminalm3.screen.lazy.ui.CardIpAdress
+import com.example.terminalm3.screen.lazy.ui.CheckVisibleCRLF
+import com.example.terminalm3.screen.lazy.ui.CheckVisibleLineNumber
 import kotlinx.coroutines.flow.MutableStateFlow
 
 
@@ -151,20 +152,4 @@ fun ScreenLazy(navController: NavHostController) {
 }
 
 
-@Composable
-fun ModalBottomSheetContent(navController: NavHostController) {
-    Column {
-
-        Canvas(modifier = Modifier.fillMaxWidth().height(4.dp), onDraw = {
-            drawLine(Color.Gray, Offset(size.width * 0.4f , size.height),Offset(size.width * 0.6f, size.height), strokeWidth = 2.dp.toPx())
-        })
-
-        CheckVisibleLineNumber()
-        CheckVisibleCRLF()
-        CardIpAdress()
-        ButtonPortal(navController)
-        CardFontSize()
-
-    }
-}
 

@@ -41,8 +41,6 @@ import com.google.accompanist.web.WebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
 import kotlinx.coroutines.CoroutineScope
 
-
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetJavaScriptEnabled")
 @Composable
 fun Web(navController: NavController) {

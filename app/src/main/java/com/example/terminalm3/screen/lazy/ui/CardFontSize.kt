@@ -1,4 +1,4 @@
-package com.example.terminalm3.screen.lazy.bottomNavigation
+package com.example.terminalm3.screen.lazy.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.console
+import com.example.terminalm3.shared
 import com.siddroid.holi.colors.MaterialColor
 
 @Composable
@@ -42,6 +43,9 @@ fun CardFontSize() {
             Slider(
                 value = console.fontSize.value, onValueChange = {
                     console.fontSize = it.toInt().sp
+
+                    shared.edit().putInt("fontSize", it.toInt()).apply()
+
                 }, valueRange = 12f..36f, steps = 24
             )
 

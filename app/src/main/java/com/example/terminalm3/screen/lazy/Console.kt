@@ -154,7 +154,6 @@ class Console {
         //}
 
 
-
         //        LaunchedEffect(key1 = lastVisibleItemIndex) {
         //            while (true) {
         //                delay(200L)
@@ -232,9 +231,7 @@ class Console {
 
     @Composable
     fun ScriptItemDraw(
-        item: () -> LineTextAndColor,
-        index: () -> Int,
-        select: () -> Boolean
+        item: () -> LineTextAndColor, index: () -> Int, select: () -> Boolean
     ) { //println("Draw  ${index()}")
         val x = convertStringToAnnotatedString(item(), index())
         Text(
@@ -246,8 +243,7 @@ class Console {
             fontSize = console.fontSize,
             fontFamily = FontFamily(
                 Font(
-                    R.font.jetbrains,
-                    FontWeight.Normal
+                    R.font.jetbrains, FontWeight.Normal
                 )
             ), //lineHeight = console.fontSize * 1.2f
         )
@@ -255,8 +251,7 @@ class Console {
     }
 
     private fun convertStringToAnnotatedString(
-        item: LineTextAndColor,
-        index: Int
+        item: LineTextAndColor, index: Int
     ): AnnotatedString {
 
 
@@ -264,7 +259,7 @@ class Console {
 
         //lateinit var x : AnnotatedString
         var x = buildAnnotatedString {
-            withStyle(style = SpanStyle(color = Color.Gray)) {
+            if (lineVisible) withStyle(style = SpanStyle(color = Color.Gray)) {
                 append("${index}>")
             }
         }
