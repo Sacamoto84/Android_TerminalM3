@@ -19,17 +19,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terminalm3.R
 import com.example.terminalm3.colorIn256
+import com.example.terminalm3.console
 import com.example.terminalm3.listSortedColor
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -94,18 +101,55 @@ fun ScreenInfo(navController: NavController) {
 
             }
 
-            Text(
-                text = """  \x1B \033 \u001b | 38;05;xxx Text | 48;05;xxx Bg""",
-                color = Color.White
-            )
-            Text(
-                text = "  01 Bold | 03 Italic | 04 Underline | 07 Revers | 08 Flash",
-                color = Color.White
-            )
-            Text(text = """  \033[01;03;38;05;147;48;05;21m Текст \033[0m\n""", color = Color.White)
-            Text(text = "  Порт 8888 | Очистка экрана \\033[1m ", color = Color.White)
-
             Spacer(modifier = Modifier.height(5.dp))
+
+            var x = buildAnnotatedString {
+
+                withStyle(style = SpanStyle(color = Color.Gray)) {
+                    append("""\x1B or \033 or \u001b""")
+                }
+                withStyle(style = SpanStyle(color = Color.White)) {
+                    append("""[""")
+                }
+                withStyle(style = SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) {
+                    append("01 - Bold\n")
+                }
+
+                withStyle(style = SpanStyle(color = Color.White,fontStyle = FontStyle.Italic)) {
+                    append("03 - Italic\n")
+                }
+
+                withStyle(style = SpanStyle(color = Color.White,textDecoration = TextDecoration.Underline)) {
+                    append("04 - Underline\n")
+                }
+
+                withStyle(style = SpanStyle(color = Color.Black, background = Color.White,textDecoration = TextDecoration.Underline)) {
+                    append("07 - Revers\n")
+                }
+
+                withStyle(style = SpanStyle(color = if (console.update.collectAsState().value) Color.White else Color.Transparent)) {
+                    append("08 - Flash +\n")
+                }
+
+                withStyle(style = SpanStyle(color = Color.White)) {
+                    append("38;05;xxx Цвет текста\n")
+                }
+
+                withStyle(style = SpanStyle(color = Color.White)) {
+                    append("48;05;xxx Цвет Фона\n")
+                }
+
+                withStyle(style = SpanStyle(color = Color.White)) {
+                    append("\\x1B[0m Сброс настроек цвета\n")
+                    append("\\x1B[1m + Очистка экрана\n")
+                    append("\\x1B[3m + Звуковой сигнал (Не готово)\n")
+                    append("\n\\x1B[01;03;38;05;147;48;05;21m Текст \\x1B[0m\n")
+                    append("\nUDP Порт 8888")
+                }
+
+            }
+
+            Text(x)
 
         }
 

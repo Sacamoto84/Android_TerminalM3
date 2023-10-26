@@ -24,14 +24,16 @@ import com.example.terminalm3.screen.lazy.ui.CheckVisibleLineNumber
 fun ModalBottomSheetContent(navController: NavHostController, scaffoldState: BottomSheetScaffoldState) {
     Column {
 
-        if (scaffoldState.bottomSheetState.targetValue == SheetValue.PartiallyExpanded)
-        Canvas(modifier = Modifier.fillMaxWidth().height(4.dp), onDraw = {
-            drawLine(
-                Color.Gray, Offset(size.width * 0.4f , size.height),
-                Offset(size.width * 0.6f, size.height), strokeWidth = 2.dp.toPx())
-        })
-
-
+        if (scaffoldState.bottomSheetState.targetValue == SheetValue.PartiallyExpanded) {
+            Canvas(modifier = Modifier.fillMaxWidth().height(4.dp), onDraw = {
+                drawLine(
+                    Color.Gray,
+                    Offset(size.width * 0.4f, size.height),
+                    Offset(size.width * 0.6f, size.height),
+                    strokeWidth = 2.dp.toPx()
+                )
+            })
+        }
 
         CheckVisibleLineNumber()
         CheckVisibleCRLF()

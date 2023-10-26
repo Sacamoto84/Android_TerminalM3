@@ -26,7 +26,7 @@ fun CardFontSize() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                top = 10.dp, start = 8.dp, end = 8.dp
+                top = 8.dp, start = 8.dp, end = 8.dp
             ),
         colors = CardDefaults.outlinedCardColors(containerColor = MaterialColor.GREY_900)
     ) {
@@ -46,7 +46,7 @@ fun CardFontSize() {
 
                     shared.edit().putInt("fontSize", it.toInt()).apply()
 
-                }, valueRange = 12f..36f, steps = 24
+                }, valueRange = 10f..36f, steps = 26, modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
             )
 
         }
