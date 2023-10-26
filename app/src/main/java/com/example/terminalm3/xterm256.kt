@@ -5,15 +5,32 @@ import com.example.terminalm3.screen.lazy.PairTextAndColor
 import timber.log.Timber
 
 val allColor = mutableListOf<Color>() //Палитра цветов по коду соответствие цвета
-var allColorHSL = mutableListOf<iHSL>()
 
+val listSortedColor = listOf(
+    16, 22, 28, 34, 40, 46, 82, 76, 70, 64, 58, 52,
+    17, 23, 29, 35, 41, 47, 83, 77, 71, 65, 59, 53,
+    18, 24, 30, 36, 42, 48, 84, 78, 72, 66, 60, 54,
+    19, 25, 31, 37, 43, 49, 85, 79, 73, 67, 61, 55,
+    20, 26, 32, 38, 44, 50, 86, 80, 74, 68, 62, 56,
+    21, 27, 33, 39, 45, 51, 87, 81, 75, 69, 63, 57,
 
+    93, 99,105,111,117,123,159,153,147,141,135,129,
+    92, 98,104,110,116,122,158,152,146,140,134,128,
+    91, 97,103,109,115,121,157,151,145,139,133,127,
+    90, 96,102,108,114,120,156,150,144,138,132,126,
+    89, 95,101,107,113,119,155,149,143,137,131,125,
+    88, 94,100,106,112,118,154,148,142,136,130,124,
 
+    160,166,172,178,184,190,226,220,214,208,202,196,
+    161,167,173,179,185,191,227,221,215,209,203,197,
+    162,168,174,180,186,192,228,222,216,210,204,198,
+    163,169,175,181,187,193,229,223,217,211,205,199,
+    164,170,176,182,188,194,230,224,218,212,206,200,
+    165,171,177,183,189,195,231,225,219,213,207,201,
 
-data class HSL(val hue: Double, val saturation: Double, val lightness: Double)
-
-data class iHSL(val index: Int, val hsl : HSL)
-
+    232,233,234,235,236,237,238,239,240,241,242,243,
+    244,245,246,247,248,249,250,252,253,253,254,255
+)
 
 val defaultTextColor: Color = Color.White
 val defaultBgColor: Color = Color.Black
@@ -41,9 +58,6 @@ fun colorJsonToList() {
     for (i in 0..255) {
         val value = ("FF" + matchResult[i].groupValues[1]).toLong(radix = 16)
         allColor.add(Color(value))
-        allColorHSL.add( iHSL(i,rgbToHsl(Color(value))))
-        allColorHSL = allColorHSL.sortedBy { it.hsl.hue }.toMutableList()
-        allColorHSL
     }
 }
 
@@ -233,32 +247,3 @@ fun calculateColorInEscString(str: String) { //"38;05;232;48;05;226"
 
 
 }
-
-fun rgbToHsl(rgb: Color): HSL {
-    val r = rgb.red / 255.0
-    val g = rgb.green / 255.0
-    val b = rgb.blue / 255.0
-
-    val max = maxOf(r, g, b)
-    val min = minOf(r, g, b)
-
-    var h = 0.0
-    var s = 0.0
-    val l = (max + min) / 2
-
-    if (max != min) {
-        val d = max - min
-        s = if (l > 0.5) d / (2 - max - min) else d / (max + min)
-
-        h = when (max) {
-            r -> (g - b) / d + (if (g < b) 6 else 0)
-            g -> (b - r) / d + 2
-            b -> (r - g) / d + 4
-            else -> 0.0
-        } * 60
-    }
-
-    return HSL(h, s, l)
-}
-
-
