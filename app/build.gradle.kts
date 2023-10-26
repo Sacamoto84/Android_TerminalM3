@@ -77,4 +77,7 @@ dependencies {
     //implementation ("com.google.accompanist:accompanist-navigation-animation:0.32.0")
 
     implementation ("com.jakewharton.timber:timber:5.0.1")
+
+    implementation ("com.holix.android:bottomsheetdialog-compose:1.3.1")
+
 }

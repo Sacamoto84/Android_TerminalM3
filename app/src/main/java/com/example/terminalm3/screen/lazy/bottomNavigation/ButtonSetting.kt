@@ -27,5 +27,4 @@ fun ButtonSetting(navController: NavController) {
             contentDescription = null
         )
     }
-
 }

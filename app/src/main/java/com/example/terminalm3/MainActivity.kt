@@ -146,35 +146,7 @@ private fun ButtonBluetooth() {
 }
 
 
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
-fun BuildNavGraph() {
 
-    val navController = rememberNavController()
-
-    NavHost(
-        navController = navController,
-        startDestination = "home",
-        enterTransition = { fadeIn(animationSpec = tween(0)) },
-        exitTransition = { fadeOut(animationSpec = tween(0)) },
-        popEnterTransition = { fadeIn(animationSpec = tween(0)) },
-        popExitTransition = { fadeOut(animationSpec = tween(0)) },
-    ) {
-
-        composable("home") {
-            ScreenLazy(navController)
-        }
-
-        composable("info") {
-            ScreenInfo(navController)
-        }
-
-        composable("web") {
-            Web(navController)
-        }
-
-    }
-}
 
 
 

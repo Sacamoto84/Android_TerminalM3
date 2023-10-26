@@ -180,8 +180,10 @@ class Console {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF090909)),
-            //.then(modifier)
+                //.background(Color(0xFF090909))
+                .background(Color(0xFFFF0909))
+                .then(modifier),
+
 //                        .scrollbar(
 //                            count = list.count { it.pairList.isNotEmpty() },
 //                            lazyListState,
