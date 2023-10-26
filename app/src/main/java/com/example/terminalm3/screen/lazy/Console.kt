@@ -34,6 +34,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import libs.modifier.scrollbar
 
 
 data class PairTextAndColor(
@@ -78,13 +79,10 @@ class Console {
     private val recompose = MutableStateFlow(0)
 
 
-
     var lineVisible by mutableStateOf(false)
 
     var tracking by mutableStateOf(true) //Слежение за последним полем
     var lastCount by mutableIntStateOf(0)
-
-
 
 
     /**
@@ -96,8 +94,8 @@ class Console {
     /**
      * ### Используемый шрифт
      */
-    private var fontFamily = FontFamily(Font(R.font.jetbrains, FontWeight.Normal))
-    //FontFamily.Monospace
+    private var fontFamily =
+            FontFamily(Font(R.font.jetbrains, FontWeight.Normal)) //FontFamily.Monospace
 
 
     //val messages = mutableStateListOf<LineTextAndColor>()
@@ -127,8 +125,7 @@ class Console {
 
         messages.add(
             LineTextAndColor(
-                "...",
-                listOf(PairTextAndColor("///", Color.Red, Color.Green))
+                "...", listOf(PairTextAndColor("///", Color.Red, Color.Green))
             )
         )
         recompose()
@@ -157,59 +154,34 @@ class Console {
         //}
 
 
-//        LaunchedEffect(key1 = list) {
-//            while (true) {
-//                delay(700L)
-//                //update = !update
-//                //recompose.value++
-//                //////////////////////telnetWarning.value = (telnetSlegenie.value == false) && (messages.size > lastCount)
-//            }
-//        }
 
-//        LaunchedEffect(key1 = lastVisibleItemIndex) {
-//            while (true) {
-//                delay(200L)
-//                val s = messagesR.size
-//                if ((s > 20) && tracking) {
-//                    lazyListState.scrollToItem(index = messagesR.size - 1) //Анимация (плавная прокрутка) к данному элементу.
-//                }
-//            }
-//        }
+        //        LaunchedEffect(key1 = lastVisibleItemIndex) {
+        //            while (true) {
+        //                delay(200L)
+        //                val s = messagesR.size
+        //                if ((s > 20) && tracking) {
+        //                    lazyListState.scrollToItem(index = messagesR.size - 1) //Анимация (плавная прокрутка) к данному элементу.
+        //                }
+        //            }
+        //        }
 
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                //.background(Color(0xFF090909))
-                .background(Color(0xFFFF0909))
-                .then(modifier),
+                .background(Color(0xFF090909))
+                .then(modifier)
+                .scrollbar(
+                    count = list.count { it.pairList.isNotEmpty() },
+                    lazyListState,
+                    horizontal = false, //countCorrection = 0,
+                    hiddenAlpha = 0f
+                ), //state = lazyListState
+        ) {
 
-//                        .scrollbar(
-//                            count = list.count { it.pairList.isNotEmpty() },
-//                            lazyListState,
-//                            horizontal = false,
-//                            countCorrection = 0,
-//                            hiddenAlpha = 0f
-//                        )
-            //state = lazyListState
-        )
-        {
-
-
-            itemsIndexed(list)
-            { index, item ->
-                if (!item.deleted)
-                    ScriptItemDraw({ item }, { index }, { false })
+            itemsIndexed(list) { index, item ->
+                ScriptItemDraw({ item }, { index }, { false })
             }
-
-
-            //if (messages.value.isNotEmpty())
-//            itemsIndexed(messages.value)
-//            { index, item ->
-//                //update.collectAsState().value
-//                //recompose.collectAsState().value
-//                //ScriptItemDraw({ item }, { index }, { false })
-//            }
 
         }
     }
@@ -224,15 +196,13 @@ class Console {
             messages.removeAt(messages.lastIndex)
             messages.add(
                 LineTextAndColor(
-                    text,
-                    listOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
+                    text, listOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
                 )
             )
         } else {
             messages.add(
                 LineTextAndColor(
-                    text,
-                    listOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
+                    text, listOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
                 )
             )
         }
@@ -260,24 +230,34 @@ class Console {
     }
 
 
-
     @Composable
-    fun ScriptItemDraw(item: () -> LineTextAndColor, index: () -> Int, select: () -> Boolean) {
-        //println("Draw  ${index()}")
+    fun ScriptItemDraw(
+        item: () -> LineTextAndColor,
+        index: () -> Int,
+        select: () -> Boolean
+    ) { //println("Draw  ${index()}")
         val x = convertStringToAnnotatedString(item(), index())
-        Text( x, modifier = Modifier
-            .fillMaxWidth()
-            //.padding(top = 0.dp)
-            .background(if (select()) Color.Cyan else Color.Transparent),
+        Text(
+            x,
+            modifier = Modifier
+                .fillMaxWidth() //.padding(top = 0.dp)
+                .background(if (select()) Color.Cyan else Color.Transparent),
 
             fontSize = console.fontSize,
-            fontFamily = FontFamily(Font(R.font.jetbrains, FontWeight.Normal)),
-            //lineHeight = console.fontSize * 1.2f
+            fontFamily = FontFamily(
+                Font(
+                    R.font.jetbrains,
+                    FontWeight.Normal
+                )
+            ), //lineHeight = console.fontSize * 1.2f
         )
 
     }
 
-    private fun convertStringToAnnotatedString(item: LineTextAndColor, index: Int): AnnotatedString {
+    private fun convertStringToAnnotatedString(
+        item: LineTextAndColor,
+        index: Int
+    ): AnnotatedString {
 
 
         val s = item.pairList.size
@@ -295,28 +275,20 @@ class Console {
                 withStyle(
                     style = SpanStyle(
 
-                        color = if (!item.pairList[i].flash)
-                            item.pairList[i].colorText
-                        else
-                            if (update.value)
-                                item.pairList[i].colorText
-                            else
-                                Color(0xFF090909),
+                        color = if (!item.pairList[i].flash) item.pairList[i].colorText
+                        else if (update.value) item.pairList[i].colorText
+                        else Color(0xFF090909),
 
-                        background = if (!item.pairList[i].flash)
-                            item.pairList[i].colorBg
-                        else
-                            if (update.value)
-                                item.pairList[i].colorBg
-                            else Color(0xFF090909),
+                        background = if (!item.pairList[i].flash) item.pairList[i].colorBg
+                        else if (update.value) item.pairList[i].colorBg
+                        else Color(0xFF090909),
                         fontFamily = FontFamily(Font(R.font.jetbrains)),
 
                         textDecoration = if (item.pairList[i].underline) TextDecoration.Underline else null,
                         fontWeight = if (item.pairList[i].bold) FontWeight.Bold else null,
                         fontStyle = if (item.pairList[i].italic) FontStyle.Italic else null,
                     )
-                )
-                { append(item.pairList[i].text) }
+                ) { append(item.pairList[i].text) }
             }
 
         }

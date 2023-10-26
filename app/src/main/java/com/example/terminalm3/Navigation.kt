@@ -19,8 +19,8 @@ fun BuildNavGraph() {
     NavHost(
         navController = navController,
         startDestination = "home",
-        enterTransition = { fadeIn(animationSpec = tween(2000)) },
-        exitTransition = { fadeOut(animationSpec = tween(2000)) },
+        enterTransition = { fadeIn(animationSpec = tween(1000)) },
+        exitTransition = { fadeOut(animationSpec = tween(1000)) },
         popEnterTransition = { fadeIn(animationSpec = tween(200)) },
         popExitTransition = { fadeOut(animationSpec = tween(200)) },
     ) {

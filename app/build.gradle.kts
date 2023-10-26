@@ -80,4 +80,6 @@ dependencies {
 
     implementation ("com.holix.android:bottomsheetdialog-compose:1.3.1")
 
+    implementation ("com.siddroid:holi:1.0.1")
+
 }
