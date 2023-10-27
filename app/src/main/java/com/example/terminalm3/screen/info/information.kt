@@ -1,22 +1,23 @@
 package com.example.terminalm3.screen.info
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.PlainTooltipBox
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,65 +39,103 @@ import com.example.terminalm3.R
 import com.example.terminalm3.colorIn256
 import com.example.terminalm3.console
 import com.example.terminalm3.listSortedColor
+import kotlinx.coroutines.flow.MutableStateFlow
 
-@OptIn(ExperimentalLayoutApi::class)
+private var textColorView = MutableStateFlow(Color.Transparent) //Цвет
+
+private var textColorView2 = MutableStateFlow(Color.Transparent) //Цвет
+
+@OptIn(
+    ExperimentalLayoutApi::class, ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class
+)
 @Composable
 fun ScreenInfo(navController: NavController) {
 
     val scrollState = rememberScrollState()
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(Color(0xFF090909))
+
+
+    Scaffold(
+        bottomBar = { BottomNavigationInfo(navController) },
+        containerColor = Color(0xFF090909)
     ) {
 
         Column(
             Modifier
                 .fillMaxSize()
+                .padding(bottom = it.calculateBottomPadding())
+                .background(Color(0xFF090909))
                 .verticalScroll(scrollState)
-                .weight(1f)
-        )
-        {
+        ) {
 
 
             FlowRow(maxItemsInEachRow = 8) {
 
-                for (i in 0..15)
-                {
+                for (i in 0..15) {
+
+
                     val textcolor = when (i) {
                         in 0..4 -> Color(0xFFBBBBBB)
                         else -> Color.Black
                     }
 
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .height(30.dp)
-                        .background(colorIn256(i))
-                        .border(0.5.dp, Color.Black),
-                        contentAlignment = Alignment.Center)
-                    { Text(text = i.toString(), fontSize = 14.sp, fontFamily = FontFamily.Monospace, color= textcolor)}
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .height(30.dp)
+                            .background(colorIn256(i))
+                            .border(0.5.dp, Color.Black)
+                            .combinedClickable(
+                                onClick = {
+
+                                    textColorView.value = colorIn256(i)
+
+                                },
+                            ),
+
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = i.toString(),
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily.Monospace,
+                            color = if (textColorView.collectAsState().value == Color.Transparent) textcolor else textColorView.collectAsState().value
+                        )
+                    }
                 }
             }
 
             FlowRow(maxItemsInEachRow = 12) {
 
-                listSortedColor.forEach{ value ->
+                listSortedColor.forEach { value ->
 
                     val textcolor = when (value) {
-                        in 0..4, in 16..27, in 52..57 , in 232..243 -> Color(0xFFBBBBBB)
+                        in 0..4, in 16..27, in 52..57, in 232..243 -> Color(0xFFBBBBBB)
                         else -> Color.Black
                     }
 
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .height(30.dp)
-                        .background(colorIn256(value))
-                        .border(0.5.dp, Color.Black),
-                        contentAlignment = Alignment.Center)
-                    { Text(text = value.toString(), fontSize = 12.sp, fontFamily = FontFamily(Font(R.font.quicksand)), fontWeight= FontWeight.ExtraBold, color= textcolor)}
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .height(30.dp)
+                            .background(colorIn256(value))
+                            .border(0.5.dp, Color.Black)
+                            .combinedClickable(
+                                onClick = {
+                                    textColorView.value = colorIn256(value)
+                                },
+                            ), contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = value.toString(),
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily(Font(R.font.jetbrains)),
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (textColorView.collectAsState().value == Color.Transparent) textcolor else textColorView.collectAsState().value
+                        )
+                    }
                 }
 
             }
@@ -115,15 +154,25 @@ fun ScreenInfo(navController: NavController) {
                     append("01 - Bold\n")
                 }
 
-                withStyle(style = SpanStyle(color = Color.White,fontStyle = FontStyle.Italic)) {
+                withStyle(style = SpanStyle(color = Color.White, fontStyle = FontStyle.Italic)) {
                     append("03 - Italic\n")
                 }
 
-                withStyle(style = SpanStyle(color = Color.White,textDecoration = TextDecoration.Underline)) {
+                withStyle(
+                    style = SpanStyle(
+                        color = Color.White, textDecoration = TextDecoration.Underline
+                    )
+                ) {
                     append("04 - Underline\n")
                 }
 
-                withStyle(style = SpanStyle(color = Color.Black, background = Color.White,textDecoration = TextDecoration.Underline)) {
+                withStyle(
+                    style = SpanStyle(
+                        color = Color.Black,
+                        background = Color.White,
+                        textDecoration = TextDecoration.Underline
+                    )
+                ) {
                     append("07 - Revers\n")
                 }
 
@@ -151,10 +200,38 @@ fun ScreenInfo(navController: NavController) {
 
             Text(x)
 
+            FlowRow(maxItemsInEachRow = 8) {
+
+                (0..255).forEach { value ->
+
+                    val textcolor = colorIn256(value)
+                    val colorBg =
+                            if (textColorView2.collectAsState().value == Color.Transparent) Color.Black else textColorView2.collectAsState().value
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .height(30.dp)
+                            .background(colorBg)
+                            .border(0.5.dp, Color.Black) //.tooltipAnchor()
+                            .combinedClickable(
+                                onClick = {
+                                    textColorView2.value = colorIn256(value)
+                                },
+                            ), contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = value.toString(),
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily(Font(R.font.jetbrains)),
+                            fontWeight = FontWeight.W900,
+                            color = textcolor
+                        )
+                    }
+                }
+            }
         }
-
-        BottomNavigationInfo(navController)
-
     }
 }
 
