@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.PlainTooltipBox
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,24 +34,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.terminalm3.R
-import com.example.terminalm3.colorIn256
 import com.example.terminalm3.console
 import com.example.terminalm3.listSortedColor
 import kotlinx.coroutines.flow.MutableStateFlow
+import utils.ColorPalette
 
 private var textColorView = MutableStateFlow(Color.Transparent) //Цвет
 
 private var textColorView2 = MutableStateFlow(Color.Transparent) //Цвет
 
 @OptIn(
-    ExperimentalLayoutApi::class, ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class
+    ExperimentalLayoutApi::class, ExperimentalFoundationApi::class
 )
 @Composable
 fun ScreenInfo(navController: NavController) {
 
     val scrollState = rememberScrollState()
-
-
 
     Scaffold(
         bottomBar = { BottomNavigationInfo(navController) },
@@ -84,12 +80,12 @@ fun ScreenInfo(navController: NavController) {
                             .fillMaxWidth()
                             .weight(1f)
                             .height(30.dp)
-                            .background(colorIn256(i))
+                            .background(ColorPalette.color[i])
                             .border(0.5.dp, Color.Black)
                             .combinedClickable(
                                 onClick = {
 
-                                    textColorView.value = colorIn256(i)
+                                    textColorView.value = ColorPalette.color[i]
 
                                 },
                             ),
@@ -120,11 +116,11 @@ fun ScreenInfo(navController: NavController) {
                             .fillMaxWidth()
                             .weight(1f)
                             .height(30.dp)
-                            .background(colorIn256(value))
+                            .background(ColorPalette.color[value])
                             .border(0.5.dp, Color.Black)
                             .combinedClickable(
                                 onClick = {
-                                    textColorView.value = colorIn256(value)
+                                    textColorView.value = ColorPalette.color[value]
                                 },
                             ), contentAlignment = Alignment.Center
                     ) {
@@ -204,7 +200,7 @@ fun ScreenInfo(navController: NavController) {
 
                 (0..255).forEach { value ->
 
-                    val textcolor = colorIn256(value)
+                    val textcolor = ColorPalette.color[value]
                     val colorBg =
                             if (textColorView2.collectAsState().value == Color.Transparent) Color.Black else textColorView2.collectAsState().value
 
@@ -217,7 +213,7 @@ fun ScreenInfo(navController: NavController) {
                             .border(0.5.dp, Color.Black) //.tooltipAnchor()
                             .combinedClickable(
                                 onClick = {
-                                    textColorView2.value = colorIn256(value)
+                                    textColorView2.value = ColorPalette.color[value]
                                 },
                             ), contentAlignment = Alignment.Center
                     ) {

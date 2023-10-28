@@ -62,9 +62,6 @@ class Initialization(private val context: Context) {
 
         console.fontSize = shared.getInt("fontSize", 18).sp
 
-        //Создаем список цветов из Json цветов
-        colorJsonToList()
-
         // Initialize DNS-SD service discovery
         nsdHelper?.initializeNsd()
 
