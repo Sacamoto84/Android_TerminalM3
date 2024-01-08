@@ -1,6 +1,9 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id ("com.google.devtools.ksp")
+    id ("com.google.dagger.hilt.android")
+    //id ("com.google.gms.google-services")
 }
 
 android {
@@ -22,7 +25,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -30,17 +33,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_19
-        targetCompatibility = JavaVersion.VERSION_19
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "19"
+        jvmTarget = "1.8"
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.7"
+        kotlinCompilerExtensionVersion = "1.5.3"
     }
     packaging {
         resources {
@@ -80,11 +83,24 @@ dependencies {
 
     implementation ("com.jakewharton.timber:timber:5.0.1")
 
-    implementation ("com.holix.android:bottomsheetdialog-compose:1.4.0")
+    implementation ("com.holix.android:bottomsheetdialog-compose:1.3.1")
 
     implementation ("com.siddroid:holi:1.0.1")
 
+    //https://github.com/ajitsing/Sherlock
+    debugImplementation("com.github.ajitsing:sherlock:1.0.4@aar") //{
+    //transitive = true
+    //}
+    releaseImplementation("com.github.ajitsing:sherlock-no-op:1.0.4@aar")
 
+    ///////////////////
+    //Hilt
+    implementation ("com.google.dagger:hilt-android:2.48.1")
+    implementation ("androidx.hilt:hilt-navigation-compose:1.1.0")
+    ksp ("com.google.dagger:hilt-compiler:2.48.1")
+    //implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
+    ksp ("androidx.hilt:hilt-compiler:1.1.0")
+    ///////////////////
 
 
 }

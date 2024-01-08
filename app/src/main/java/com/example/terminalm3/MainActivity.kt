@@ -24,6 +24,7 @@ import com.example.terminalm3.network.btIsReady
 import com.example.terminalm3.theme.RTTClientM3Theme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.singhajit.sherlock.core.Sherlock
 import timber.log.Timber
 import timber.log.Timber.*
 import utils.ColorPalette
@@ -42,7 +43,7 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-
+       // Sherlock.init(this) //Initializing Sherlock
 
 
 

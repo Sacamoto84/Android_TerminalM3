@@ -35,6 +35,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.internal.SynchronizedObject
 import kotlinx.coroutines.launch
 import libs.modifier.scrollbar
 
@@ -74,6 +75,7 @@ class Console {
         }
     }
 
+    @get:Synchronized
     val messages = mutableListOf<LineTextAndColor>()
 
     val update = MutableStateFlow(true)   //для мигания
@@ -91,8 +93,7 @@ class Console {
 
     private var fontFamily = FontFamily(
         Font(
-            R.font.jetbrains,
-            FontWeight.Normal
+            R.font.jetbrains, FontWeight.Normal
         )
     ) //FontFamily.Monospace //Используемый шрифт
 
@@ -126,9 +127,8 @@ class Console {
         update.collectAsState().value
         recompose.collectAsState().value
 
-        lastCount = messages.size
-
-        val list = messages
+        val list : List<LineTextAndColor> = messages.toList().map { it }
+        lastCount = list.size
 
         //var update by remember { mutableStateOf(true) }  //для мигания
 
@@ -165,8 +165,7 @@ class Console {
                     lazyListState,
                     horizontal = false, //countCorrection = 0,
                     hiddenAlpha = 0f
-                ), 
-            state = rememberLazyListState()
+                ), state = rememberLazyListState()
         ) {
 
             itemsIndexed(list) { index, item ->
@@ -176,6 +175,7 @@ class Console {
         }
     }
 
+    @Synchronized
     fun consoleAdd(
         text: String,
         color: Color = Color.Green,
