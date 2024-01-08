@@ -22,7 +22,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -30,17 +30,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_19
+        targetCompatibility = JavaVersion.VERSION_19
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "19"
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
+        kotlinCompilerExtensionVersion = "1.5.7"
     }
     packaging {
         resources {
@@ -53,7 +53,7 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.activity:activity-compose:1.8.0")
+    implementation("androidx.activity:activity-compose:1.8.2")
     implementation(platform("androidx.compose:compose-bom:2023.10.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -69,7 +69,7 @@ dependencies {
     //debugImplementation("androidx.compose.ui:ui-tooling")
     //debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-    implementation ("androidx.navigation:navigation-compose:2.7.4")
+    implementation ("androidx.navigation:navigation-compose:2.7.6")
 
     implementation ("com.google.accompanist:accompanist-webview:0.32.0")
     implementation ("com.google.accompanist:accompanist-pager:0.32.0")
@@ -80,7 +80,7 @@ dependencies {
 
     implementation ("com.jakewharton.timber:timber:5.0.1")
 
-    implementation ("com.holix.android:bottomsheetdialog-compose:1.3.1")
+    implementation ("com.holix.android:bottomsheetdialog-compose:1.4.0")
 
     implementation ("com.siddroid:holi:1.0.1")
 

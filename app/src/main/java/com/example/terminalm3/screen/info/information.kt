@@ -69,7 +69,6 @@ fun ScreenInfo(navController: NavController) {
 
                 for (i in 0..15) {
 
-
                     val textcolor = when (i) {
                         in 0..4 -> Color(0xFFBBBBBB)
                         else -> Color.Black
@@ -84,9 +83,7 @@ fun ScreenInfo(navController: NavController) {
                             .border(0.5.dp, Color.Black)
                             .combinedClickable(
                                 onClick = {
-
                                     textColorView.value = ColorPalette.color[i]
-
                                 },
                             ),
 
