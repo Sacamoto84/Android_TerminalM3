@@ -112,7 +112,7 @@ class Initialization(private val context: Context) {
             )
         )
 
-        console.consoleAdd("▁", flash = true)
+        console.print("▁", flash = true)
 
         //console.consoleAdd("") //Пустая строка
 

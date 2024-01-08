@@ -41,7 +41,6 @@ fun BottomNavigationInfo(navController: NavController) {
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-
                 Button(modifier = Modifier
                     .height(34.dp)
                     .fillMaxWidth()
@@ -57,7 +56,6 @@ fun BottomNavigationInfo(navController: NavController) {
 
                 Spacer(modifier = Modifier.width(8.dp))
             }
-
 
         }
 

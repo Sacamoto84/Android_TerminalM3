@@ -135,7 +135,7 @@ fun ScreenInfo(navController: NavController) {
 
             Spacer(modifier = Modifier.height(5.dp))
 
-            var x = buildAnnotatedString {
+            val x = buildAnnotatedString {
 
                 withStyle(style = SpanStyle(color = Color.Gray)) {
                     append("""\x1B or \033 or \u001b""")

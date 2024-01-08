@@ -78,7 +78,7 @@ class VM : ViewModel() {
 
                 //Если новая строка
                 if (s.newString)
-                    console.consoleAdd("▁", flash = true)
+                    console.print("▁", flash = true)
 
                 console.recompose() //Для ручной композиции списка
             }

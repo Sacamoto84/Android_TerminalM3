@@ -31,7 +31,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.R
 import com.example.terminalm3.console
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,12 +64,12 @@ data class LineTextAndColor(
 //println("Смещение прокрутки первого видимого элемента = " + lazyListState.firstVisibleItemScrollOffset.toString())
 //println("Количество строк выведенных на экран lastIndex = " + lazyListState.layoutInfo.visibleItemsInfo.lastIndex.toString())
 
-@OptIn(DelicateCoroutinesApi::class)
-@SuppressLint("MutableCollectionMutableState")
+//➕️ ✅️✏️⛏️ $${\color{red}Red}$$ 📥 📤  📃  📑 📁 📘 🇷🇺 🆗 ✳️
+
 class Console {
 
     init {
-        GlobalScope.launch {
+        CoroutineScope(Dispatchers.Main).launch {
             while (true) {
                 delay(700L)
                 update.value = !update.value
@@ -75,43 +77,39 @@ class Console {
         }
     }
 
-    @get:Synchronized
+
+    //PUBLIC
+    val update = MutableStateFlow(true)   //для мигания
+    var lineVisible by mutableStateOf(false) //Отображение номер строки
+    var tracking by mutableStateOf(true) //Слежение за последним полем
+    var lastCount by mutableIntStateOf(0) //Количество записей
+    var fontSize by mutableStateOf(12.sp) //Размер шрифта
     val messages = mutableListOf<LineTextAndColor>()
 
-    val update = MutableStateFlow(true)   //для мигания
-
+    //PRIVATE
     private val recompose = MutableStateFlow(0)
-
-
-    var lineVisible by mutableStateOf(false) //Отображение номер строки
-
-    var tracking by mutableStateOf(true) //Слежение за последним полем
-
-    var lastCount by mutableIntStateOf(0) //Количество записей
-
-    var fontSize by mutableStateOf(12.sp) //Размер шрифта
-
     private var fontFamily = FontFamily(
         Font(
             R.font.jetbrains, FontWeight.Normal
         )
     ) //FontFamily.Monospace //Используемый шрифт
+    private var lastVisibleItemIndex by mutableIntStateOf(0)
 
+
+    //PUBLIC METHOD
     /**
-     * # ⛏️ Рекомпозиция списка
+     * ⛏️ Рекомпозиция списка
      */
     fun recompose() {
         recompose.value++
     }
 
-    var lastVisibleItemIndex = 0
 
-    private val lazyListState: LazyListState = LazyListState()
-
+    /**
+     * Очистка списка
+     */
     fun clear() {
-
         messages.clear()
-
         messages.add(
             LineTextAndColor(
                 " ", listOf(PairTextAndColor("▁", Color.Green, Color.Black, flash = true))
@@ -120,63 +118,10 @@ class Console {
         recompose()
     }
 
-
-    @Composable
-    fun lazy(modifier: Modifier = Modifier) {
-
-        update.collectAsState().value
-        recompose.collectAsState().value
-
-        val list : List<LineTextAndColor> = messages.toList().map { it }
-        lastCount = list.size
-
-        //var update by remember { mutableStateOf(true) }  //для мигания
-
-        //val lazyListState: LazyListState = rememberLazyListState()
-
-
-        //println("Последний видимый индекс = $lastVisibleItemIndex")
-
-        //LaunchedEffect(key1 = messagesR) {
-        //lastVisibleItemIndex =
-        //    lazyListState.layoutInfo.visibleItemsInfo.lastIndex + lazyListState.firstVisibleItemIndex
-        //println("lazy lastVisibleItemIndex $lastVisibleItemIndex")
-        //}
-
-
-        LaunchedEffect(key1 = lastVisibleItemIndex) {
-            while (true) {
-                delay(200L)
-                val s = list.size
-                if ((s > 20) && tracking) {
-                    lazyListState.scrollToItem(index = list.size - 1) //Анимация (плавная прокрутка) к данному элементу.
-                }
-            }
-        }
-
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF090909))
-                .then(modifier)
-                .scrollbar(
-                    count = list.count { it.pairList.isNotEmpty() },
-                    lazyListState,
-                    horizontal = false, //countCorrection = 0,
-                    hiddenAlpha = 0f
-                ), state = rememberLazyListState()
-        ) {
-
-            itemsIndexed(list) { index, item ->
-                ScriptItemDraw({ item }, { index }, { false })
-            }
-
-        }
-    }
-
-    @Synchronized
-    fun consoleAdd(
+    /**
+     * Добавить запись
+     */
+    fun print(
         text: String,
         color: Color = Color.Green,
         bgColor: Color = Color.Black,
@@ -198,13 +143,80 @@ class Console {
         }
     }
 
+    /**
+     * Получить экземпляр списка
+    */
+    fun getList() = messages.toList().map { it }
 
-    //➕️ ✅️✏️⛏️ $${\color{red}Red}$$ 📥 📤  📃  📑 📁 📘 🇷🇺 🆗 ✳️
+
+
+
+
+
+
+
+
+
+    @Composable
+    fun lazy(modifier: Modifier = Modifier) {
+
+        update.collectAsState().value
+        recompose.collectAsState().value
+
+        val list = getList() //: List<LineTextAndColor> = messages.toList().map { it }
+        lastCount = list.size
+
+        val lazyListState = rememberLazyListState()
+
+        //var update by remember { mutableStateOf(true) }  //для мигания
+
+        //val lazyListState: LazyListState = rememberLazyListState()
+
+
+        //println("Последний видимый индекс = $lastVisibleItemIndex")
+
+        //LaunchedEffect(key1 = messagesR) {
+        //lastVisibleItemIndex =
+        //    lazyListState.layoutInfo.visibleItemsInfo.lastIndex + lazyListState.firstVisibleItemIndex
+        //println("lazy lastVisibleItemIndex $lastVisibleItemIndex")
+        //}
+
+        LaunchedEffect(key1 = list.size, key2 = update.collectAsState().value) { //while (true) {
+            val s = list.size
+            if ((s > 20) && tracking) {
+                lazyListState.scrollToItem(
+                    index = list.size - 1, 0
+                ) //Анимация (плавная прокрутка) к данному элементу.
+            }
+        }
+
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF090909))
+                .then(modifier)
+                .scrollbar(
+                    count = list.count { it.pairList.isNotEmpty() },
+                    lazyListState,
+                    horizontal = false, //countCorrection = 0,
+                    hiddenAlpha = 0f
+                ), state = lazyListState
+        ) {
+
+            itemsIndexed(list) { index, item ->
+                ScriptItemDraw({ item }, { index }, { false })
+            }
+
+        }
+    }
+
+
+
 
 
     /**
-     * # -------------------------------------------------------------------
-     * ## 🔧 Установка типа шрифта
+     * 🔧 Установка типа шрифта
      * 📥 **FontFamily(Font(R.font.jetbrains, FontWeight.Normal))**
      */
     fun setFontFamily(fontFamily: GenericFontFamily) {
@@ -212,16 +224,18 @@ class Console {
     }
 
     /**
-     * # -------------------------------------------------------------------
-     * ## 🔧 Установка размера шрифта
+     *  🔧 Установка размера шрифта
      */
     fun setFontSize(size: Int) {
         fontSize = size.sp
     }
 
+    //==================================================
+    //PRIVATE METHOD
+    //==================================================
 
     @Composable
-    fun ScriptItemDraw(
+    private fun ScriptItemDraw(
         item: () -> LineTextAndColor, index: () -> Int, select: () -> Boolean
     ) { //println("Draw  ${index()}")
         val x = convertStringToAnnotatedString(item(), index())
@@ -278,10 +292,8 @@ class Console {
             }
 
         }
-
         return x
     }
-
 
 }
 
