@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.terminalm3.console
@@ -29,28 +30,45 @@ var isConfimChange = mutableStateOf(false)
 fun ScreenLazy(navController: NavHostController) {
 
     val scaffoldState = rememberBottomSheetScaffoldState(
+
         bottomSheetState = SheetState(
-            false, initialValue = SheetValue.PartiallyExpanded, skipHiddenState = true
+            skipPartiallyExpanded = false, // pass false here
+            initialValue = SheetValue.Expanded
         )
+
+//        bottomSheetState = SheetState(
+//            false,
+//            LocalDensity.current,
+//            //initialValue = SheetValue.PartiallyExpanded,
+//            //skipHiddenState = true
+//        )
     )
 
-    BottomSheetScaffold(sheetShape = androidx.compose.ui.graphics.RectangleShape,
-        sheetContainerColor = Color.DarkGray,
-        containerColor = Color.Black,
-        sheetPeekHeight = 58.dp,
+    BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetDragHandle = { BottomNavigationLazy(navController) },
-        sheetSwipeEnabled = true,
-        sheetContent = { ModalBottomSheetContent(navController, scaffoldState) }) {
+        //sheetShape = androidx.compose.ui.graphics.RectangleShape,
+        //sheetContainerColor = Color.DarkGray,
+        //containerColor = Color.Black,
+        //sheetPeekHeight = 58.dp,
 
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(bottom = it.calculateBottomPadding())
-        ) {
-            console.lazy() //Modifier.padding(4.dp).recomposeHighlighter()
-            Warning()
-        }
+        //sheetDragHandle = {
+        //    BottomNavigationLazy(navController)
+        //},
+        // = true,
+        sheetContent = { ModalBottomSheetContent(navController, scaffoldState)
+}
+
+    )
+    {
+
+//        Box(
+//            Modifier
+//                .fillMaxSize()
+//                .padding(bottom = it.calculateBottomPadding())
+//        ) {
+//            console.lazy() //Modifier.padding(4.dp).recomposeHighlighter()
+//            Warning()
+//        }
 
     }
 

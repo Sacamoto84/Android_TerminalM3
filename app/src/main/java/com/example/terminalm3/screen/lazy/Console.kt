@@ -1,11 +1,10 @@
 package com.example.terminalm3.screen.lazy
 
-import android.annotation.SuppressLint
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
@@ -32,12 +31,9 @@ import androidx.compose.ui.unit.sp
 import com.example.terminalm3.R
 import com.example.terminalm3.console
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.internal.SynchronizedObject
 import kotlinx.coroutines.launch
 import libs.modifier.scrollbar
 
@@ -148,15 +144,6 @@ class Console {
     */
     fun getList() = messages.toList().map { it }
 
-
-
-
-
-
-
-
-
-
     @Composable
     fun lazy(modifier: Modifier = Modifier) {
 
@@ -171,7 +158,6 @@ class Console {
         //var update by remember { mutableStateOf(true) }  //для мигания
 
         //val lazyListState: LazyListState = rememberLazyListState()
-
 
         //println("Последний видимый индекс = $lastVisibleItemIndex")
 
@@ -210,10 +196,6 @@ class Console {
 
         }
     }
-
-
-
-
 
     /**
      * 🔧 Установка типа шрифта
