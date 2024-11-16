@@ -31,7 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import lan.ping
+import com.example.terminalm3.lan.ping
 import com.example.terminalm3.R
 import com.example.terminalm3.ipESP
 import com.google.accompanist.swiperefresh.SwipeRefresh

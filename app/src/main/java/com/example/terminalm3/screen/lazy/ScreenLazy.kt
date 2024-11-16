@@ -1,9 +1,6 @@
 package com.example.terminalm3.screen.lazy
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
@@ -11,15 +8,10 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Density
 import androidx.navigation.NavHostController
-import com.example.terminalm3.console
-import com.example.terminalm3.screen.lazy.bottomNavigation.BottomNavigationLazy
 import com.example.terminalm3.screen.lazy.bottomNavigation.ModalBottomSheetContent
-import com.example.terminalm3.screen.lazy.ui.Warning
 
 var isConfimChange = mutableStateOf(false)
 
@@ -33,15 +25,13 @@ fun ScreenLazy(navController: NavHostController) {
 
         bottomSheetState = SheetState(
             skipPartiallyExpanded = false, // pass false here
-            initialValue = SheetValue.Expanded
+            initialValue = SheetValue.PartiallyExpanded,
+
+            density = LocalDensity.current,
+            confirmValueChange = { true },
+            skipHiddenState = false
         )
 
-//        bottomSheetState = SheetState(
-//            false,
-//            LocalDensity.current,
-//            //initialValue = SheetValue.PartiallyExpanded,
-//            //skipHiddenState = true
-//        )
     )
 
     BottomSheetScaffold(

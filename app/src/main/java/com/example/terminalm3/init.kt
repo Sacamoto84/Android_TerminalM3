@@ -4,10 +4,10 @@ import android.content.Context
 import android.net.nsd.NsdServiceInfo
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
-import lan.ipToBroadCast
-import lan.readLocalIP
+import com.example.terminalm3.lan.ipToBroadCast
+import com.example.terminalm3.lan.readLocalIP
 import com.example.terminalm3.network.BT
-import lan.UDP
+import com.example.terminalm3.lan.UDP
 import com.example.terminalm3.network.channelNetworkIn
 import com.example.terminalm3.network.decoder
 import kotlinx.coroutines.DelicateCoroutinesApi

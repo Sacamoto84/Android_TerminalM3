@@ -14,7 +14,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,10 +26,8 @@ import com.example.terminalm3.network.btIsReady
 import com.example.terminalm3.theme.RTTClientM3Theme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.singhajit.sherlock.core.Sherlock
 import timber.log.Timber
-import timber.log.Timber.*
-import utils.ColorPalette
+import com.example.terminalm3.utils.ColorPalette
 
 lateinit var shared: SharedPreferences
 

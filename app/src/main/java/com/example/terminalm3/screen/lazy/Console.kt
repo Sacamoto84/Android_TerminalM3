@@ -30,12 +30,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.R
 import com.example.terminalm3.console
+import com.example.terminalm3.scrollbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import libs.modifier.scrollbar
 
 
 data class PairTextAndColor(

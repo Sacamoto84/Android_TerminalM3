@@ -37,7 +37,7 @@ import com.example.terminalm3.R
 import com.example.terminalm3.console
 import com.example.terminalm3.listSortedColor
 import kotlinx.coroutines.flow.MutableStateFlow
-import utils.ColorPalette
+import com.example.terminalm3.utils.ColorPalette
 
 private var textColorView = MutableStateFlow(Color.Transparent) //Цвет
 
