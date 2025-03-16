@@ -58,11 +58,7 @@ object BT {
 
     fun init(context: Context)
     {
-        bluetoothManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            context.getSystemService(BluetoothManager::class.java)
-        } else {
-            ContextCompat.getSystemService( context, BluetoothManager::class.java)!!
-        }
+        bluetoothManager = context.getSystemService(BluetoothManager::class.java)
         bluetoothAdapter = bluetoothManager.adapter
     }
 

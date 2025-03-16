@@ -45,8 +45,8 @@ class MainActivity : ComponentActivity() {
 
        // Sherlock.init(this) //Initializing Sherlock
 
-        if (!isInitialized) Initialization(applicationContext)
-
+        if (!isInitialized)
+            Initialization(applicationContext)
         isInitialized = true
 
         setContent {

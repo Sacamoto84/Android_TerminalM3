@@ -4,16 +4,17 @@ plugins {
     id ("com.google.devtools.ksp")
     id ("com.google.dagger.hilt.android")
     //id ("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.example.terminalm3"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.terminalm3"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -44,7 +45,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
     packaging {
         resources {
@@ -55,10 +56,10 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation(platform("androidx.compose:compose-bom:2024.11.00"))
+    implementation("androidx.activity:activity-compose:1.10.1")
+    implementation(platform("androidx.compose:compose-bom:2025.02.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     //implementation("androidx.compose.ui:ui-tooling-preview")
@@ -74,13 +75,13 @@ dependencies {
     //debugImplementation("androidx.compose.ui:ui-tooling")
     //debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-    implementation ("androidx.navigation:navigation-compose:2.8.4")
+    implementation ("androidx.navigation:navigation-compose:2.8.8")
 
-    implementation ("com.google.accompanist:accompanist-webview:0.34.0")
-    implementation ("com.google.accompanist:accompanist-pager:0.34.0")
+    implementation ("com.google.accompanist:accompanist-webview:0.36.0")
+    implementation ("com.google.accompanist:accompanist-pager:0.36.0")
     implementation ("com.google.accompanist:accompanist-swiperefresh:0.32.0")
-    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
-    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.37.2")
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
     //implementation ("com.google.accompanist:accompanist-navigation-animation:0.32.0")
 
     implementation ("com.jakewharton.timber:timber:5.0.1")
@@ -97,11 +98,11 @@ dependencies {
 
     ///////////////////
     //Hilt
-    implementation ("com.google.dagger:hilt-android:2.50")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.1.0")
-    ksp ("com.google.dagger:hilt-compiler:2.50")
+    implementation ("com.google.dagger:hilt-android:2.55")
+    implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
+    ksp ("com.google.dagger:hilt-compiler:2.55")
     //implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
-    ksp ("androidx.hilt:hilt-compiler:1.1.0")
+    ksp ("androidx.hilt:hilt-compiler:1.2.0")
     ///////////////////
 
 
