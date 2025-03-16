@@ -13,9 +13,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.terminalm3.screen.lazy.ui.ButtonPortal
+import com.example.terminalm3.screen.common.buttons.ButtonPortal
 import com.example.terminalm3.screen.lazy.ui.CardFontSize
-import com.example.terminalm3.screen.lazy.ui.CardIpAdress
+import com.example.terminalm3.screen.lazy.ui.CardIpAddress
 import com.example.terminalm3.screen.lazy.ui.CheckVisibleCRLF
 import com.example.terminalm3.screen.lazy.ui.CheckVisibleLineNumber
 
@@ -37,8 +37,12 @@ fun ModalBottomSheetContent(navController: NavHostController, scaffoldState: Bot
 
         CheckVisibleLineNumber()
         CheckVisibleCRLF()
-        CardIpAdress()
-        ButtonPortal(navController)
+        CardIpAddress()
+
+        ButtonPortal(onClick = {
+            navController.navigate("web")
+        })
+
         CardFontSize()
 
     }

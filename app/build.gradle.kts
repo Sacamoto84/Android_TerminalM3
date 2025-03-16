@@ -62,8 +62,8 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2025.02.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
-    //implementation("androidx.compose.ui:ui-tooling-preview")
-    //implementation("androidx.compose.material:material")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material:material")
     implementation("androidx.compose.material3:material3:1.3.1")
 
     //implementation("androidx.compose.material3:material3-android:1.2.0-alpha10")
@@ -89,9 +89,11 @@ dependencies {
     implementation ("com.holix.android:bottomsheetdialog-compose:1.4.0")
 
     implementation ("com.siddroid:holi:1.0.1")
+    implementation("androidx.compose.ui:ui-tooling-preview-android:1.7.8")
 
     //https://github.com/ajitsing/Sherlock
-    debugImplementation("com.github.ajitsing:sherlock:1.0.4@aar") //{
+    debugImplementation("com.github.ajitsing:sherlock:1.0.4@aar")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.7.8") //{
     //transitive = true
     //}
     releaseImplementation("com.github.ajitsing:sherlock-no-op:1.0.4@aar")

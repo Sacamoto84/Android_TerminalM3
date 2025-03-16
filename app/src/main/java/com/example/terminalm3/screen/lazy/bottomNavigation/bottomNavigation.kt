@@ -10,13 +10,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.terminalm3.screen.lazy.ui.ButtonClear
-import com.example.terminalm3.screen.lazy.ui.ButtonSetting
-import com.example.terminalm3.screen.lazy.ui.ButtonSlegenie
+import androidx.navigation.compose.rememberNavController
+import com.example.terminalm3.screen.common.buttons.ButtonClear
+import com.example.terminalm3.screen.common.buttons.ButtonSetting
+import com.example.terminalm3.screen.common.buttons.ButtonSlegenie
 
 val colorBg = Color(0xFF1B1B1B)
+
+
+@Preview
+@Composable
+private fun PreviewBottomNavigationLazy() {
+    val navController = rememberNavController()
+    BottomNavigationLazy(navController)
+}
+
+
+
 
 @Composable
 fun BottomNavigationLazy(navController: NavController) {
@@ -45,7 +58,9 @@ fun BottomNavigationLazy(navController: NavController) {
             //Spacer(modifier = Modifier.width(16.dp))
             //ButtonReset() //Кнопка перегрузки контроллера
             //Spacer(modifier = Modifier.width(16.dp))
-            ButtonSetting(navController)
+            ButtonSetting(onClick = {
+                navController.navigate("info")
+            })
             //Spacer(modifier = Modifier.width(16.dp))
 
         }

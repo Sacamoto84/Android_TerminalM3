@@ -116,7 +116,7 @@ class Initialization(private val context: Context) {
 
         //console.consoleAdd("") //Пустая строка
 
-        ipBroadcast = ipToBroadCast(readLocalIP(context))
+        global.ipBroadcast = ipToBroadCast(readLocalIP(context))
 
     }
 

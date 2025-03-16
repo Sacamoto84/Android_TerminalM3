@@ -1,4 +1,4 @@
-package com.example.terminalm3.screen.lazy.ui
+package com.example.terminalm3.screen.common.buttons
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,10 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.R
 import com.example.terminalm3.console
+
+@Preview(apiLevel = 31)
+@Composable
+private fun Preview(){
+    ButtonSlegenie()
+}
 
 @Composable
 fun ButtonSlegenie(modifier: Modifier = Modifier) {

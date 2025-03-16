@@ -15,7 +15,6 @@ import com.example.terminalm3.screen.lazy.bottomNavigation.ModalBottomSheetConte
 
 var isConfimChange = mutableStateOf(false)
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -45,7 +44,9 @@ fun ScreenLazy(navController: NavHostController) {
         //    BottomNavigationLazy(navController)
         //},
         // = true,
-        sheetContent = { ModalBottomSheetContent(navController, scaffoldState)
+
+        sheetContent = {
+            ModalBottomSheetContent(navController, scaffoldState)
 }
 
     )

@@ -9,7 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.terminalm3.screen.info.ScreenInfo
 import com.example.terminalm3.screen.lazy.ScreenLazy
-import com.example.terminalm3.screen.web.Web
+import com.example.terminalm3.screen.web.ScreenWeb
 
 @Composable
 fun BuildNavGraph() {
@@ -34,7 +34,9 @@ fun BuildNavGraph() {
         }
 
         composable("web") {
-            Web(navController)
+            ScreenWeb(onClickBack = {
+                navController.popBackStack()
+            })
         }
 
     }
