@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -48,14 +50,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetJavaScriptEnabled")
+@SuppressLint(
+    "UnusedMaterial3ScaffoldPaddingParameter", "SetJavaScriptEnabled",
+    "UnusedMaterialScaffoldPaddingParameter"
+)
 @Composable
 fun ScreenWeb(
     onClickBack: () -> Unit,
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val navigator = WebViewNavigator(coroutineScope)
-    var refreshing by remember { mutableStateOf(false) }
+    var refreshing by remember { mutableStateOf(true) }
     val refreshScope = rememberCoroutineScope()
     val ip = "http://" + global.ipESP.substring(global.ipESP.lastIndexOf('/') + 1)
     val ping = remember { mutableStateOf(ping(ip)) }
@@ -68,58 +73,76 @@ fun ScreenWeb(
         refreshing = false
     }
 
-    val stateRefresh = rememberPullRefreshState(refreshing = refreshing, onRefresh = ::refresh)
+    val stateRefresh = rememberPullRefreshState(refreshing, ::refresh)
     val state = rememberWebViewState(ip)
 
     println("URL $ip")
 
-    val swipeRefreshState = rememberSwipeRefreshState(false)
+    //val swipeRefreshState = rememberSwipeRefreshState(false)
 
-    Scaffold(bottomBar = { BottomNavigation(onClickBack) }) {
+    Scaffold(
+        modifier = Modifier
+            .background(Color.DarkGray)
+            ,
 
-
+        bottomBar = { BottomNavigation(onClickBack) }) {
 
         //pullRefresh modifier
-        Box(Modifier.padding(it).pullRefresh(stateRefresh)) {
+        Box(
+            Modifier.padding(it)
+                .fillMaxSize()
+                .background(Color.Blue)
+            , contentAlignment = Alignment.Center
+        ) {
 
-            if (ping.value){
-                WebView(
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .border(
-                            width = 5.dp,
-                            color = Color(0xFF6650a4),
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                        .verticalScroll(rememberScrollState()),
-                    navigator = navigator,
-                    state = state,
-                    captureBackPresses = false,
-                    onCreated = { webWiew ->
-                        webWiew.settings.javaScriptEnabled = true
-                    }
-                )
-            }
-            else
-                Text(text = "Отсутствует связь с $ip", modifier = Modifier.fillMaxSize(), textAlign = TextAlign.Center)
+
+
+
+                    Text(
+                        text = "Отсутствует связь с $ip",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Green),
+                        textAlign = TextAlign.Center
+                    )
+
+            PullRefreshIndicator(true, stateRefresh, Modifier)
+
+
+//            if (ping.value){
+//                WebView(
+//                    modifier = Modifier
+//                        .padding(5.dp)
+//                        .border(
+//                            width = 5.dp,
+//                            color = Color(0xFF6650a4),
+//                            shape = RoundedCornerShape(20.dp)
+//                        )
+//                        .background(Color.Magenta)
+//                        //.verticalScroll(rememberScrollState())
+//
+//                    ,
+//                    navigator = navigator,
+//                    state = state,
+//                    captureBackPresses = false,
+//                    onCreated = { webWiew ->
+//                        webWiew.settings.javaScriptEnabled = true
+//                    }
+//                )
+//            }
+//            else
+//                Text(text = "Отсутствует связь с $ip", modifier = Modifier.fillMaxWidth().background(Color.Green), textAlign = TextAlign.Center)
 
             //BottomNavigation(onClickBack)
             //Spacer(modifier = Modifier.height(8.dp))
-        }
-
-
 
             //standard Pull-Refresh indicator. You can also use a custom indicator
-            PullRefreshIndicator(refreshing, stateRefresh, Modifier)
+
+
         }
 
 
-
-
-
-
-
-
+    }
 
 
 }
