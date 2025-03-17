@@ -48,8 +48,8 @@ class Initialization(private val context: Context) {
         Timber.i("Привет")
 
         BT.init(context)
-        BT.getPairedDevices()
-        BT.autoconnect(context)
+        //BT.getPairedDevices()
+        //BT.autoconnect(context)
 
         shared = context.getSharedPreferences("size", Context.MODE_PRIVATE)
         console.fontSize = (shared.getString("size", "12")?.toInt() ?: 12).sp

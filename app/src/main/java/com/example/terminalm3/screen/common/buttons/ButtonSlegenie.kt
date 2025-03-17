@@ -3,6 +3,7 @@ package com.example.terminalm3.screen.common.buttons
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,11 +33,14 @@ fun ButtonSlegenie(modifier: Modifier = Modifier) {
 
     // Кнопка включения слежения
     Button(modifier = Modifier
-        .fillMaxHeight()
+        //.height(32.dp)
         .fillMaxWidth(0.6f)
         .padding(
             //start = 8.dp,
-            top = 8.dp, bottom = 8.dp)
+            //top = 8.dp,
+            //bottom = 8.dp
+        )
+
         .then(modifier),
         contentPadding = PaddingValues(0.dp, 0.dp),
         colors = ButtonDefaults.buttonColors(
