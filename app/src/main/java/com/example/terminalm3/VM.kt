@@ -17,8 +17,6 @@ class VM : ViewModel() {
         }
     }
 
-
-
     //Создание списка pairTextAndColor из исходного текста
     private fun text_to_paitList(txt: String, mod : PairTextAndColor? = null): List<PairTextAndColor> {
         val pair: MutableList<PairTextAndColor> = arrayListOf()
