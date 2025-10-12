@@ -10,9 +10,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.GenericFontFamily
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.terminalm3.R
 import com.example.terminalm3.console
 import com.example.terminalm3.scrollbar
@@ -35,7 +36,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 
 data class PairTextAndColor(
@@ -51,7 +54,8 @@ data class PairTextAndColor(
 data class LineTextAndColor(
     var text: String, //Строка вообще
     var pairList: List<PairTextAndColor>, //То что будет определено в этой строке
-    var deleted: Boolean = false
+    var deleted: Boolean = false,
+    val id: Long = Random.nextLong(),
 )
 
 //var manual_recomposeLazy = mutableStateOf(0)
@@ -62,11 +66,33 @@ data class LineTextAndColor(
 
 //➕️ ✅️✏️⛏️ $${\color{red}Red}$$ 📥 📤  📃  📑 📁 📘 🇷🇺 🆗 ✳️
 
+
+
+
+class ConsoleMessage{
+
+
+    val messages = mutableStateListOf<LineTextAndColor>()
+
+
+
+    fun add(){
+
+    }
+
+    fun clear(){
+
+    }
+}
+
+
+
+
 class Console {
 
     init {
-        CoroutineScope(Dispatchers.Main).launch {
-            while (true) {
+        CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
                 delay(700L)
                 update.value = !update.value
             }
@@ -80,7 +106,12 @@ class Console {
     var tracking by mutableStateOf(true) //Слежение за последним полем
     var lastCount by mutableIntStateOf(0) //Количество записей
     var fontSize by mutableStateOf(12.sp) //Размер шрифта
-    val messages = mutableListOf<LineTextAndColor>()
+
+
+    val messages = ConsoleMessage()//mutableStateListOf<LineTextAndColor>()
+
+
+
 
     //PRIVATE
     private val recompose = MutableStateFlow(0)
@@ -107,9 +138,7 @@ class Console {
     fun clear() {
         messages.clear()
         messages.add(
-            LineTextAndColor(
-                " ", listOf(PairTextAndColor("▁", Color.Green, Color.Black, flash = true))
-            )
+            LineTextAndColor( " ",  listOf(PairTextAndColor("▁", Color.Green, Color.Black, flash = true)) )
         )
         recompose()
     }
@@ -141,14 +170,16 @@ class Console {
 
     /**
      * Получить экземпляр списка
-    */
+     */
     fun getList() = messages.toList().map { it }
+
+
 
     @Composable
     fun lazy(modifier: Modifier = Modifier) {
 
-        update.collectAsState().value
-        recompose.collectAsState().value
+        //val _update = update.collectAsStateWithLifecycle().value
+        val _recompose = recompose.collectAsStateWithLifecycle().value
 
         val list = getList() //: List<LineTextAndColor> = messages.toList().map { it }
         lastCount = list.size
@@ -167,7 +198,9 @@ class Console {
         //println("lazy lastVisibleItemIndex $lastVisibleItemIndex")
         //}
 
-        LaunchedEffect(key1 = list.size, key2 = update.collectAsState().value) { //while (true) {
+        LaunchedEffect(key1 = list.size, //key2 = _update
+
+        ) { //while (true) {
             val s = list.size
             if ((s > 20) && tracking) {
                 lazyListState.scrollToItem(
@@ -190,7 +223,7 @@ class Console {
                 ), state = lazyListState
         ) {
 
-            itemsIndexed(list) { index, item ->
+            itemsIndexed(list, key = { index, item -> item.id }) { index, item ->
                 ScriptItemDraw({ item }, { index }, { false })
             }
 
@@ -220,7 +253,11 @@ class Console {
     private fun ScriptItemDraw(
         item: () -> LineTextAndColor, index: () -> Int, select: () -> Boolean
     ) { //println("Draw  ${index()}")
+
+        val _update = update.collectAsStateWithLifecycle().value
+
         val x = convertStringToAnnotatedString(item(), index())
+
         Text(
             x,
             modifier = Modifier
@@ -228,10 +265,7 @@ class Console {
                 .background(if (select()) Color.Cyan else Color.Transparent),
 
             fontSize = console.fontSize,
-            fontFamily = FontFamily(
-                Font(
-                    R.font.jetbrains, FontWeight.Normal
-                )
+            fontFamily = FontFamily( Font( R.font.jetbrains, FontWeight.Normal )
             ), //lineHeight = console.fontSize * 1.2f
         )
 

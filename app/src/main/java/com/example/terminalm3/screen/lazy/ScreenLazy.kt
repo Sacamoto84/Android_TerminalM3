@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
@@ -15,9 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.terminalm3.console
 import com.example.terminalm3.screen.common.buttons.ButtonSlegenie
@@ -33,19 +31,21 @@ fun ScreenLazy(navController: NavHostController) {
 
     val scaffoldState = rememberBottomSheetScaffoldState(
 
-        bottomSheetState = SheetState(
-            skipPartiallyExpanded = false, // pass false here
-            initialValue = SheetValue.PartiallyExpanded,
-            density = LocalDensity.current,
-            confirmValueChange = { true },
-            skipHiddenState = true
-        )
+//        bottomSheetState = SheetState(
+//            skipPartiallyExpanded = false, // pass false here
+//            initialValue = SheetValue.PartiallyExpanded,
+//            density = LocalDensity.current,
+//            confirmValueChange = { true },
+//            skipHiddenState = true,
+//            positionalThreshold = TODO(),
+//            velocityThreshold = TODO()
+//        )
 
     )
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetShape = androidx.compose.ui.graphics.RectangleShape,
+        sheetShape = RectangleShape,
         sheetContainerColor = Color.DarkGray,
         containerColor = Color.Black,
         //sheetPeekHeight = 58.dp,
@@ -55,11 +55,7 @@ fun ScreenLazy(navController: NavHostController) {
         //},
         // = true,
 
-        sheetDragHandle = {
-            Row{
-                ButtonSlegenie()
-            }
-        },
+        sheetDragHandle = { Row{ ButtonSlegenie() } },
 
         sheetContent = {
             ModalBottomSheetContent(navController, scaffoldState)
@@ -67,12 +63,8 @@ fun ScreenLazy(navController: NavHostController) {
 
     )
     {
-
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(bottom = it.calculateBottomPadding())
-        ) {
+        Box( Modifier.fillMaxSize().padding(bottom = it.calculateBottomPadding()) )
+        {
             console.lazy() //Modifier.padding(4.dp).recomposeHighlighter()
             Warning()
         }

@@ -17,7 +17,6 @@ val chBtReceive = Channel<String>(Channel.UNLIMITED)
 //Канал передачи в STM32, просто записываем команды
 val chBtSend = Channel<String>(Channel.UNLIMITED)
 
-
 var bt = BT("Tonometr", chBtReceive, chBtSend)
 
 val decoder = NetPacketDecoder(chBtReceive, chDecodedString)
