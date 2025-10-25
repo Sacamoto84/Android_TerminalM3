@@ -1,5 +1,7 @@
 package com.example.terminalm3
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,18 +10,19 @@ import com.example.terminalm3.network.channelLastString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 class VM : ViewModel() {
 
     fun launchUIChanelReceive() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.Main) {
             receiveUILastString()
         }
     }
 
     //Создание списка pairTextAndColor из исходного текста
-    private fun text_to_paitList(txt: String, mod : PairTextAndColor? = null): List<PairTextAndColor> {
-        val pair: MutableList<PairTextAndColor> = arrayListOf()
+    private fun text_to_paitList(txt: String, mod : PairTextAndColor? = null): SnapshotStateList<PairTextAndColor> {
+        val pair: SnapshotStateList<PairTextAndColor> = mutableStateListOf()// = arrayListOf()
 
         //замена [ на \u001C это и будет новый разделитель
         val str = txt.replace("\u001B", "\u001C\u001B")
@@ -55,8 +58,7 @@ class VM : ViewModel() {
             while (!channelLastString.isEmpty)
             {
                 val s = channelLastString.receive()
-                if(s.cmd == "")
-                    continue
+                if(s.cmd == "") continue
 
                 //Отображение курсора, без записи в массив
                 var mod: PairTextAndColor? = null
@@ -71,12 +73,11 @@ class VM : ViewModel() {
                 //mod = PairTextAndColor("▁", Color.Green, Color.Black, true, flash = true)
 
                 val pair = text_to_paitList(s.cmd, mod)
-                console.messages.last().text = s.cmd
-                console.messages.last().pairList = pair
+                console.messages.messages.last().text = s.cmd
+                console.messages.messages.last().pairList = pair
 
                 //Если новая строка
-                if (s.newString)
-                    console.print("▁", flash = true)
+                if (s.newString) console.print("▁", flash = true)
 
                 console.recompose() //Для ручной композиции списка
             }
@@ -86,7 +87,7 @@ class VM : ViewModel() {
                 //Timber.i("Ку ${channelLastString.isEmpty} ${colorline_and_text.size} ${colorline_and_text.last().text}")
                // console.recompose() //Для ручной композиции списка
             //}
-
+            yield()
 
         }
     }

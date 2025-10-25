@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -40,22 +41,21 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-
-data class PairTextAndColor(
-    var text: String,
-    var colorText: Color,
-    var colorBg: Color,
-    var bold: Boolean = false,
-    var italic: Boolean = false,
-    var underline: Boolean = false,
-    var flash: Boolean = false
-)
-
 data class LineTextAndColor(
     var text: String, //Строка вообще
-    var pairList: List<PairTextAndColor>, //То что будет определено в этой строке
+    var pairList: SnapshotStateList<PairTextAndColor>, //То что будет определено в этой строке
     var deleted: Boolean = false,
     val id: Long = Random.nextLong(),
+)
+
+data class PairTextAndColor(
+    val text: String,
+    val colorText: Color,
+    val colorBg: Color,
+    val bold: Boolean = false,
+    val italic: Boolean = false,
+    val underline: Boolean = false,
+    val flash: Boolean = false
 )
 
 //var manual_recomposeLazy = mutableStateOf(0)
@@ -66,27 +66,18 @@ data class LineTextAndColor(
 
 //➕️ ✅️✏️⛏️ $${\color{red}Red}$$ 📥 📤  📃  📑 📁 📘 🇷🇺 🆗 ✳️
 
-
-
-
-class ConsoleMessage{
-
+class ConsoleMessage {
 
     val messages = mutableStateListOf<LineTextAndColor>()
 
-
-
-    fun add(){
-
+    fun add(item: LineTextAndColor) {
+        messages.add(item)
     }
 
-    fun clear(){
+    fun clear() {
 
     }
 }
-
-
-
 
 class Console {
 
@@ -111,8 +102,6 @@ class Console {
     val messages = ConsoleMessage()//mutableStateListOf<LineTextAndColor>()
 
 
-
-
     //PRIVATE
     private val recompose = MutableStateFlow(0)
     private var fontFamily = FontFamily(
@@ -131,14 +120,16 @@ class Console {
         recompose.value++
     }
 
-
     /**
      * Очистка списка
      */
     fun clear() {
         messages.clear()
         messages.add(
-            LineTextAndColor( " ",  listOf(PairTextAndColor("▁", Color.Green, Color.Black, flash = true)) )
+            LineTextAndColor(
+                " ",
+                mutableStateListOf(PairTextAndColor("▁", Color.Green, Color.Black, flash = true))
+            )
         )
         recompose()
     }
@@ -152,17 +143,18 @@ class Console {
         bgColor: Color = Color.Black,
         flash: Boolean = false
     ) {
-        if ((messages.size > 0) && (messages.last().text == " ")) {
-            messages.removeAt(messages.lastIndex)
+        if ((messages.messages.isNotEmpty()) && (messages.messages.last().text == " ")) {
+
+            messages.messages.removeAt(messages.messages.lastIndex)
             messages.add(
                 LineTextAndColor(
-                    text, listOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
+                    text, mutableStateListOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
                 )
             )
         } else {
             messages.add(
                 LineTextAndColor(
-                    text, listOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
+                    text, mutableStateListOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
                 )
             )
         }
@@ -171,8 +163,7 @@ class Console {
     /**
      * Получить экземпляр списка
      */
-    fun getList() = messages.toList().map { it }
-
+    fun getList() = messages.messages.toList().map { it }
 
 
     @Composable
@@ -198,7 +189,8 @@ class Console {
         //println("lazy lastVisibleItemIndex $lastVisibleItemIndex")
         //}
 
-        LaunchedEffect(key1 = list.size, //key2 = _update
+        LaunchedEffect(
+            key1 = list.size, //key2 = _update
 
         ) { //while (true) {
             val s = list.size
@@ -265,7 +257,8 @@ class Console {
                 .background(if (select()) Color.Cyan else Color.Transparent),
 
             fontSize = console.fontSize,
-            fontFamily = FontFamily( Font( R.font.jetbrains, FontWeight.Normal )
+            fontFamily = FontFamily(
+                Font(R.font.jetbrains, FontWeight.Normal)
             ), //lineHeight = console.fontSize * 1.2f
         )
 

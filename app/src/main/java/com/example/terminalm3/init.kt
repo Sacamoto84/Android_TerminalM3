@@ -2,6 +2,8 @@ package com.example.terminalm3
 
 import android.content.Context
 import android.net.nsd.NsdServiceInfo
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.lan.ipToBroadCast
@@ -88,7 +90,8 @@ class Initialization(private val context: Context) {
         //Нужно добавить ее в список лази как текущую
         console.messages.add(
             LineTextAndColor(
-                text = "Первый нах", pairList = listOf(
+                text = "Первый нах",
+                pairList = mutableStateListOf(
                     PairTextAndColor(
                         text = " RTT ", colorText = Color(0xFFFFAA00), colorBg = Color(0xFF812C12)
                     ), PairTextAndColor(
