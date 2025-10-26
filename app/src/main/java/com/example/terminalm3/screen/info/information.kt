@@ -36,8 +36,8 @@ import androidx.navigation.NavController
 import com.example.terminalm3.R
 import com.example.terminalm3.console
 import com.example.terminalm3.listSortedColor
-import kotlinx.coroutines.flow.MutableStateFlow
 import com.example.terminalm3.utils.ColorPalette
+import kotlinx.coroutines.flow.MutableStateFlow
 
 private var textColorView = MutableStateFlow(Color.Transparent) //Цвет
 

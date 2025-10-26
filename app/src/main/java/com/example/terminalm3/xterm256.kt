@@ -2,8 +2,8 @@ package com.example.terminalm3
 
 import androidx.compose.ui.graphics.Color
 import com.example.terminalm3.screen.lazy.PairTextAndColor
-import timber.log.Timber
 import com.example.terminalm3.utils.ColorPalette
+import timber.log.Timber
 
 val allColor = mutableListOf<Color>() //Палитра цветов по коду соответствие цвета
 

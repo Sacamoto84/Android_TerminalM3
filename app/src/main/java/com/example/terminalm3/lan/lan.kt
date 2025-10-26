@@ -1,5 +1,6 @@
 package com.example.terminalm3.lan
 
+import java.lang.Exception
 import java.net.InetAddress
 
 // ! Добавить в манифест
@@ -48,7 +49,7 @@ fun runSystemCommand(command: String?): Boolean {
         {  println(s)  }
          */
 
-    } catch (e: java.lang.Exception) {
+    } catch (e: Exception) {
         e.printStackTrace()
         println(e.message)
     }

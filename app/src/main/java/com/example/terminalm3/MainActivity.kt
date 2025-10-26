@@ -13,7 +13,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,7 +28,6 @@ import com.example.terminalm3.theme.RTTClientM3Theme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import timber.log.Timber
-import com.example.terminalm3.utils.ColorPalette
 
 lateinit var shared: SharedPreferences
 
@@ -45,8 +45,11 @@ class MainActivity : ComponentActivity() {
 
        // Sherlock.init(this) //Initializing Sherlock
 
-        if (!isInitialized)
-            Initialization(applicationContext)
+
+
+
+        if (!isInitialized) Initialization(applicationContext)
+
         isInitialized = true
 
         setContent {
@@ -60,7 +63,7 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = false
             ) {
 
-                ColorPalette.color[0]
+                //ColorPalette.color[0]
 
                 val bluetoothPermissions = // Checks if the device has Android 12 or above
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

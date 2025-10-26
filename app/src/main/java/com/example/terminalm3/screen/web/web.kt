@@ -1,8 +1,6 @@
 package com.example.terminalm3.screen.web
 
 import android.annotation.SuppressLint
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -15,80 +13,106 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Scaffold
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.example.terminalm3.R
-import com.example.terminalm3.global
+import androidx.navigation.NavController
 import com.example.terminalm3.lan.ping
+import com.example.terminalm3.R
+import com.example.terminalm3.ipESP
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.accompanist.web.WebView
+import com.google.accompanist.web.WebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-
-@SuppressLint("SetJavaScriptEnabled")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetJavaScriptEnabled")
 @Composable
-fun ScreenWeb(
-    onClickBack: () -> Unit,
-) {
-    val ip = "http://" + global.ipESP.substring(global.ipESP.lastIndexOf('/') + 1)
-    println("URL $ip")
-    var isLoading by remember { mutableStateOf(true) }
-    Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { context ->
-                WebView(context).apply {
-                    settings.javaScriptEnabled = true
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            isLoading = false
-                        }
-                    }
-                }
-            },
-            update = { webView ->
-                webView.loadUrl(ip)
-            }
-        )
+fun Web(navController: NavController) {
 
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .align(Alignment.Center)
-            )
+    val reload = remember { mutableStateOf(false) }
+
+    val ip = "http://" + ipESP.substring(ipESP.lastIndexOf('/') + 1)
+    val state = rememberWebViewState(ip)
+    println("URL $ip")
+
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
+    val navigator = WebViewNavigator(coroutineScope)
+    val ping = remember { mutableStateOf(ping(ip)) }
+
+    val swipeRefreshState = rememberSwipeRefreshState(false)
+
+    SwipeRefresh(
+        modifier = Modifier.fillMaxSize(),
+        state = swipeRefreshState,
+        onRefresh = {
+            println("onRefresh")
+            ping.value = ping(ip)
+            navigator.reload()
         }
+    ) {
+
+        Column(
+            Modifier
+                .fillMaxSize(),
+            //.verticalScroll(rememberScrollState())
+        )
+        {
+
+            if (ping.value)
+                WebView(
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .weight(1f)
+                        .border(
+                            width = 5.dp,
+                            color = Color(0xFF6650a4),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .verticalScroll(rememberScrollState()),
+                    navigator = navigator,
+                    state = state,
+                    captureBackPresses = false,
+                    onCreated = { webWiew ->
+                        webWiew.settings.javaScriptEnabled = true
+                    }
+                )
+            else
+                Text(
+                    text = "Отсутствует связь с $ip",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    textAlign = TextAlign.Center,
+
+                )
+
+            BottomNavigation(navController)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
 
     }
 
 }
 
 @Composable
-private fun BottomNavigation(onClickBack: () -> Unit) {
+private fun BottomNavigation(navController: NavController) {
 
     Box(
         Modifier
@@ -113,9 +137,7 @@ private fun BottomNavigation(onClickBack: () -> Unit) {
                     .fillMaxWidth()
                     .weight(1f),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF505050)),
-                onClick = onClickBack
-            )
-            {
+                onClick = { navController.popBackStack() }) {
                 Icon(
                     painter = painterResource(R.drawable.back1),
                     tint = Color.LightGray,

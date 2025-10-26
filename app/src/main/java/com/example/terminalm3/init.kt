@@ -2,14 +2,14 @@ package com.example.terminalm3
 
 import android.content.Context
 import android.net.nsd.NsdServiceInfo
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import com.example.terminalm3.lan.UDP
 import com.example.terminalm3.lan.ipToBroadCast
 import com.example.terminalm3.lan.readLocalIP
+
 import com.example.terminalm3.network.BT
-import com.example.terminalm3.lan.UDP
+
 import com.example.terminalm3.network.channelNetworkIn
 import com.example.terminalm3.network.decoder
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -50,8 +50,8 @@ class Initialization(private val context: Context) {
         Timber.i("Привет")
 
         BT.init(context)
-        //BT.getPairedDevices()
-        //BT.autoconnect(context)
+        BT.getPairedDevices()
+        BT.autoconnect(context)
 
         shared = context.getSharedPreferences("size", Context.MODE_PRIVATE)
         console.fontSize = (shared.getString("size", "12")?.toInt() ?: 12).sp
@@ -90,8 +90,7 @@ class Initialization(private val context: Context) {
         //Нужно добавить ее в список лази как текущую
         console.messages.add(
             LineTextAndColor(
-                text = "Первый нах",
-                pairList = mutableStateListOf(
+                text = "Первый нах", pairList = listOf(
                     PairTextAndColor(
                         text = " RTT ", colorText = Color(0xFFFFAA00), colorBg = Color(0xFF812C12)
                     ), PairTextAndColor(
@@ -119,7 +118,7 @@ class Initialization(private val context: Context) {
 
         //console.consoleAdd("") //Пустая строка
 
-        global.ipBroadcast = ipToBroadCast(readLocalIP(context))
+        ipBroadcast = ipToBroadCast(readLocalIP(context))
 
     }
 
