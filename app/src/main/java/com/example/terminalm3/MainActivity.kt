@@ -42,15 +42,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-
-       // Sherlock.init(this) //Initializing Sherlock
-
-
-
-
-        if (!isInitialized) Initialization(applicationContext)
-
-        isInitialized = true
+        if (!Global.isInitialized) Initialization(applicationContext)
+        Global.isInitialized = true
 
         setContent {
 
