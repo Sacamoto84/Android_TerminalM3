@@ -2,22 +2,21 @@ package com.example.terminalm3
 
 import android.content.Context
 import android.net.nsd.NsdServiceInfo
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.lan.UDP
 import com.example.terminalm3.lan.ipToBroadCast
 import com.example.terminalm3.lan.readLocalIP
-
 import com.example.terminalm3.network.BT
-
 import com.example.terminalm3.network.channelNetworkIn
 import com.example.terminalm3.network.decoder
+import com.example.terminalm3.screen.lazy.LineTextAndColor
+import com.example.terminalm3.screen.lazy.PairTextAndColor
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import com.example.terminalm3.screen.lazy.LineTextAndColor
-import com.example.terminalm3.screen.lazy.PairTextAndColor
 import timber.log.Timber
 
 
@@ -57,7 +56,7 @@ class Initialization(private val context: Context) {
         console.fontSize = (shared.getString("size", "12")?.toInt() ?: 12).sp
 
         //MARK: Вывод символа энтер
-        isCheckUseCRLF = shared.getBoolean("enter", false)
+        Global.isCheckUseCRLF = shared.getBoolean("enter", false)
 
         //MARK: Вывод номера строки
         console.lineVisible = shared.getBoolean("lineVisible", true)
@@ -85,32 +84,22 @@ class Initialization(private val context: Context) {
 
         }
 
-        val version = 281 //BuildConfig.VERSION_NAME
+        val version = 300 //BuildConfig.VERSION_NAME
 
         //Нужно добавить ее в список лази как текущую
+        val pairList = listOf(
+            PairTextAndColor( text = " RTT ", colorText = Color(0xFFFFAA00), colorBg = Color(0xFF812C12) ),
+            PairTextAndColor( text = " Terminal ",  colorText = Color(0xFFC6D501), colorBg = Color(0xFF587C2F) ),
+            PairTextAndColor( text = " $version ", colorText = Color(0xFF00E2FF), colorBg = Color(0xFF334292) ),
+            PairTextAndColor( text = ">", colorText = Color(0), colorBg = Color(0xFFFF0000) ),
+            PairTextAndColor( text = "!", colorText = Color(0), colorBg = Color(0xFFFFCC00) ),
+            PairTextAndColor( text = ">", colorText = Color(0), colorBg = Color(0xFF339900) ),
+            PairTextAndColor( text = ">", colorText = Color(0), colorBg = Color(0xFF0033CC), flash = true )
+        )
+
         console.messages.add(
             LineTextAndColor(
-                text = "Первый нах", pairList = listOf(
-                    PairTextAndColor(
-                        text = " RTT ", colorText = Color(0xFFFFAA00), colorBg = Color(0xFF812C12)
-                    ), PairTextAndColor(
-                        text = " Terminal ",
-                        colorText = Color(0xFFC6D501),
-                        colorBg = Color(0xFF587C2F)
-                    ), PairTextAndColor(
-                        text = " $version ",
-                        colorText = Color(0xFF00E2FF),
-                        colorBg = Color(0xFF334292)
-                    ), PairTextAndColor(
-                        text = ">", colorText = Color(0), colorBg = Color(0xFFFF0000)
-                    ), PairTextAndColor(
-                        text = "!", colorText = Color(0), colorBg = Color(0xFFFFCC00)
-                    ), PairTextAndColor(
-                        text = ">", colorText = Color(0), colorBg = Color(0xFF339900)
-                    ), PairTextAndColor(
-                        text = ">", colorText = Color(0), colorBg = Color(0xFF0033CC), flash = true
-                    )
-                )
+                text = "Первый нах", pairList = pairList.toMutableStateList()
             )
         )
 
@@ -118,7 +107,7 @@ class Initialization(private val context: Context) {
 
         //console.consoleAdd("") //Пустая строка
 
-        ipBroadcast = ipToBroadCast(readLocalIP(context))
+        Global.ipBroadcast = ipToBroadCast(readLocalIP(context))
 
     }
 

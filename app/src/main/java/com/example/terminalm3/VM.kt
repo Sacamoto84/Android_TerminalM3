@@ -62,7 +62,7 @@ class VM : ViewModel() {
 
                 //Отображение курсора, без записи в массив
                 var mod: PairTextAndColor? = null
-                if ((isCheckUseCRLF) && ((!s.newString)))
+                if ((Global.isCheckUseCRLF) && ((!s.newString)))
                     mod = PairTextAndColor("▁", Color.Green, Color.Black, true, flash = true)
 
                     //s.cmd += '▁'//'⤵'▮ ▯ ▎

@@ -1,0 +1,3 @@
+[submodule "moduleBT"]
+	path = moduleBT
+	url = https://github.com/Sacamoto84/moduleBT.git

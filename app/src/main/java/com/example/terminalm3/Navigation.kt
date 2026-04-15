@@ -34,9 +34,7 @@ fun BuildNavGraph() {
         }
 
         composable("web") {
-            ScreenWeb(onClickBack = {
-                navController.popBackStack()
-            })
+            ScreenWeb(navController)
         }
 
     }

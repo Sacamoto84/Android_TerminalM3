@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.terminalm3.isCheckUseCRLF
+import com.example.terminalm3.Global
 import com.example.terminalm3.shared
 
 @Composable
@@ -22,8 +22,8 @@ fun CheckVisibleCRLF() {
     ) {
 
         Checkbox(
-            checked = isCheckUseCRLF, onCheckedChange = {
-                isCheckUseCRLF = it
+            checked = Global.isCheckUseCRLF, onCheckedChange = {
+                Global.isCheckUseCRLF = it
                 shared.edit().putBoolean("enter", it).apply()
             }, colors = CheckboxDefaults.colors(uncheckedColor = Color.LightGray)
         )

@@ -1,6 +1,6 @@
 package com.example.terminalm3.network
 
-import com.example.terminalm3.isCheckUseCRLF
+import com.example.terminalm3.Global
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -40,7 +40,7 @@ class NetCommandDecoder(
             var string =
                     channelIn.receive() //Получить строку с канала, может содежать несколько строк
 
-            if (isCheckUseCRLF) string =
+            if (Global.isCheckUseCRLF) string =
                     string.replace("\r", "\u001B[01;39;05;0;49;05;10mCR\u001B[2m")
 
             //Timber.e( "in>>>${string.length} "+string )
@@ -60,7 +60,7 @@ class NetCommandDecoder(
 
                     lastString += stringDoN
 
-                    if (isCheckUseCRLF) lastString += "\u001B[01;39;05;15;49;05;27mLF\u001B[2m"
+                    if (Global.isCheckUseCRLF) lastString += "\u001B[01;39;05;15;49;05;27mLF\u001B[2m"
 
                     channelRoute.send(lastString)
                     channelOutNetCommand.send(

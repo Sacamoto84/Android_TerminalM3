@@ -116,8 +116,8 @@ abstract class NsdHelper(context: Context) {
                 resolvedNsdServices.add(service)
                 onNsdServiceResolved(service)
 
-                global.ipESP = service.host.toString()
-                global.isESPmDNSFinding = true
+                Global.ipESP = service.host.toString()
+                Global.isESPmDNSFinding = true
 
                 // Process the next service waiting to be resolved
                 //resolveNextInQueue()

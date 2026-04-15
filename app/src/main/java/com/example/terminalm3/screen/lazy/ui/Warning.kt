@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.terminalm3.Global
 import com.example.terminalm3.R
-import com.example.terminalm3.warning
 
 @Composable
 fun Warning()
@@ -25,7 +25,7 @@ fun Warning()
     {
         val image: Painter = painterResource(id = R.drawable.error)
 
-        if (warning.collectAsState().value) {
+        if (Global.warning.collectAsState().value) {
             Image(
                 painter = image,
                 contentDescription = "",

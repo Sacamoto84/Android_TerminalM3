@@ -31,9 +31,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.terminalm3.Global
 import com.example.terminalm3.lan.ping
 import com.example.terminalm3.R
-import com.example.terminalm3.ipESP
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.web.WebView
@@ -43,11 +43,11 @@ import kotlinx.coroutines.CoroutineScope
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetJavaScriptEnabled")
 @Composable
-fun Web(navController: NavController) {
+fun ScreenWeb(navController: NavController) {
 
     val reload = remember { mutableStateOf(false) }
 
-    val ip = "http://" + ipESP.substring(ipESP.lastIndexOf('/') + 1)
+    val ip = "http://" + Global.ipESP.substring(Global.ipESP.lastIndexOf('/') + 1)
     val state = rememberWebViewState(ip)
     println("URL $ip")
 
