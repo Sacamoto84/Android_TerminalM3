@@ -11,6 +11,12 @@ import com.example.terminalm3.screen.info.ScreenInfo
 import com.example.terminalm3.screen.lazy.ScreenLazy
 import com.example.terminalm3.screen.web.ScreenWeb
 
+object AppRoute {
+    const val Home = "home"
+    const val Info = "info"
+    const val Web = "web"
+}
+
 @Composable
 fun BuildNavGraph() {
 
@@ -18,14 +24,23 @@ fun BuildNavGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = AppRoute.Home,
         enterTransition = { fadeIn(animationSpec = tween(200)) },
         exitTransition = { fadeOut(animationSpec = tween(200)) },
         popEnterTransition = { fadeIn(animationSpec = tween(200)) },
         popExitTransition = { fadeOut(animationSpec = tween(200)) },
     ) {
-        composable("home") { ScreenLazy(navController) }
-        composable("info") { ScreenInfo(navController) }
-        composable("web")  { ScreenWeb(navController)  }
+        composable(AppRoute.Home) {
+            ScreenLazy(
+                onOpenInfo = { navController.navigate(AppRoute.Info) },
+                onOpenWeb = { navController.navigate(AppRoute.Web) }
+            )
+        }
+        composable(AppRoute.Info) {
+            ScreenInfo(onBack = { navController.popBackStack() })
+        }
+        composable(AppRoute.Web) {
+            ScreenWeb(onBack = { navController.popBackStack() })
+        }
     }
 }

@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.terminalm3.screen.common.buttons.ButtonPortal
 import com.example.terminalm3.screen.lazy.ui.CardFontSize
 import com.example.terminalm3.screen.lazy.ui.CardIpAddress
@@ -23,10 +22,13 @@ import com.example.terminalm3.screen.lazy.ui.CheckVisibleLineNumber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModalBottomSheetContent(navController: NavHostController, scaffoldState: BottomSheetScaffoldState) {
+fun ModalBottomSheetContent(
+    scaffoldState: BottomSheetScaffoldState,
+    onNavigateToWeb: () -> Unit,
+) {
     ModalBottomSheetContentInternal(
         isPartiallyExpanded = scaffoldState.bottomSheetState.targetValue == SheetValue.PartiallyExpanded,
-        onNavigateToWeb = { navController.navigate("web") }
+        onNavigateToWeb = onNavigateToWeb
     )
 }
 

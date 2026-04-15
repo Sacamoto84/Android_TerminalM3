@@ -18,12 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.terminalm3.R
 import com.example.terminalm3.screen.lazy.bottomNavigation.colorBg
 
 @Composable
-fun BottomNavigationInfo(navController: NavController) {
+fun BottomNavigationInfo(onBack: () -> Unit) {
 
     Column {
         Box(
@@ -46,7 +45,7 @@ fun BottomNavigationInfo(navController: NavController) {
                     .fillMaxWidth()
                     .weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF505050)),
-                    onClick = { navController.popBackStack() }) {
+                    onClick = onBack) {
                     Icon(
                         painter = painterResource(R.drawable.back1),
                         tint = Color.LightGray,
@@ -62,4 +61,3 @@ fun BottomNavigationInfo(navController: NavController) {
     }
 
 }
-

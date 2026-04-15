@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.terminalm3.Global
 import com.example.terminalm3.lan.ping
 import com.example.terminalm3.R
@@ -43,7 +42,7 @@ import kotlinx.coroutines.CoroutineScope
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetJavaScriptEnabled")
 @Composable
-fun ScreenWeb(navController: NavController) {
+fun ScreenWeb(onBack: () -> Unit) {
 
     val reload = remember { mutableStateOf(false) }
 
@@ -102,7 +101,7 @@ fun ScreenWeb(navController: NavController) {
 
                 )
 
-            BottomNavigation(navController)
+            BottomNavigation(onBack = onBack)
             Spacer(modifier = Modifier.height(8.dp))
         }
 
@@ -112,7 +111,7 @@ fun ScreenWeb(navController: NavController) {
 }
 
 @Composable
-private fun BottomNavigation(navController: NavController) {
+private fun BottomNavigation(onBack: () -> Unit) {
 
     Box(
         Modifier
@@ -137,7 +136,7 @@ private fun BottomNavigation(navController: NavController) {
                     .fillMaxWidth()
                     .weight(1f),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF505050)),
-                onClick = { navController.popBackStack() }) {
+                onClick = onBack) {
                 Icon(
                     painter = painterResource(R.drawable.back1),
                     tint = Color.LightGray,

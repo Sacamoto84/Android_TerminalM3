@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.terminalm3.console
 import com.example.terminalm3.screen.common.buttons.ButtonClear
 import com.example.terminalm3.screen.common.buttons.ButtonSetting
@@ -32,11 +31,15 @@ import com.example.terminalm3.theme.RTTClientM3Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScreenLazy(navController: NavHostController) {
+fun ScreenLazy(
+    onOpenInfo: () -> Unit,
+    onOpenWeb: () -> Unit,
+) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     ScreenLazyInternal(
         scaffoldState = scaffoldState,
-        sheetContent = { ModalBottomSheetContent(navController, scaffoldState) }
+        onOpenInfo = onOpenInfo,
+        sheetContent = { ModalBottomSheetContent(scaffoldState, onNavigateToWeb = onOpenWeb) }
     )
 }
 
@@ -45,6 +48,7 @@ fun ScreenLazy(navController: NavHostController) {
 @Composable
 fun ScreenLazyInternal(
     scaffoldState: BottomSheetScaffoldState,
+    onOpenInfo: () -> Unit = {},
     sheetContent: @Composable () -> Unit
 ) {
     BottomSheetScaffold(
@@ -57,7 +61,7 @@ fun ScreenLazyInternal(
             ButtonClear()
             ButtonSlegenie()
             ButtonSetting(onClick = {
-                //navController.navigate("info")
+                onOpenInfo()
             })
 
         } },
@@ -80,6 +84,7 @@ fun ScreenLazyPreview() {
         val scaffoldState = rememberBottomSheetScaffoldState()
         ScreenLazyInternal(
             scaffoldState = scaffoldState,
+            onOpenInfo = {},
             sheetContent = {
                 ModalBottomSheetContentInternal(
                     isPartiallyExpanded = false,
