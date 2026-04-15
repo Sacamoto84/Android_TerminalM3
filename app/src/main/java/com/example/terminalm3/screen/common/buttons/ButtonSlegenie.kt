@@ -34,7 +34,7 @@ fun ButtonSlegenie(modifier: Modifier = Modifier) {
     // Кнопка включения слежения
     Button(modifier = Modifier
         //.height(32.dp)
-        .fillMaxWidth(0.6f)
+        .fillMaxWidth(0.5f)
         .padding(
             //start = 8.dp,
             //top = 8.dp,

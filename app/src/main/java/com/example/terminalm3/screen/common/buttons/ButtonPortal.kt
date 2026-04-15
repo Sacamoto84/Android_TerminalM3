@@ -15,13 +15,10 @@ import kotlinx.coroutines.launch
 
 @Preview(apiLevel = 31)
 @Composable
-private fun Preview(){
-    ButtonPortal()
-}
+private fun Preview(){ ButtonPortal() }
 
 @Composable
 fun ButtonPortal(
-    //navController: NavHostController
     onClick: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
@@ -30,7 +27,6 @@ fun ButtonPortal(
         .padding(top = 8.dp, start = 8.dp, end = 8.dp),
         onClick = {
             scope.launch(Dispatchers.Main) {
-                //navController.navigate("web")
                 onClick()
             }
         }) {

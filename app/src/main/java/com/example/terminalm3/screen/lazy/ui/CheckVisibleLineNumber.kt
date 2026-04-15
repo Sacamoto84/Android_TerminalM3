@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.terminalm3.console
 import com.example.terminalm3.shared
+import androidx.core.content.edit
 
 @Composable
 fun CheckVisibleLineNumber() {
@@ -17,13 +18,12 @@ fun CheckVisibleLineNumber() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-        //modifier = Modifier.background(Color.Red)
     ) {
         Checkbox(
             checked = console.lineVisible,
             onCheckedChange = {
                 console.lineVisible = it
-                shared.edit().putBoolean("lineVisible", it).apply()
+                shared.edit { putBoolean("lineVisible", it) }
             },
             colors = CheckboxDefaults.colors(uncheckedColor = Color.LightGray)
         )

@@ -70,13 +70,9 @@ class ConsoleMessage {
 
     val messages = mutableStateListOf<LineTextAndColor>()
 
-    fun add(item: LineTextAndColor) {
-        messages.add(item)
-    }
+    fun add(item: LineTextAndColor) { messages.add(item) }
 
-    fun clear() {
-
-    }
+    fun clear() { messages.clear() }
 }
 
 class Console {

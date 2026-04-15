@@ -12,23 +12,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.terminalm3.Global
 import com.example.terminalm3.shared
+import androidx.core.content.edit
 
 @Composable
 fun CheckVisibleCRLF() {
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-    ) {
-
+    Row( verticalAlignment = Alignment.CenterVertically, modifier = Modifier )
+    {
         Checkbox(
             checked = Global.isCheckUseCRLF, onCheckedChange = {
                 Global.isCheckUseCRLF = it
-                shared.edit().putBoolean("enter", it).apply()
+                shared.edit { putBoolean("enter", it) }
             }, colors = CheckboxDefaults.colors(uncheckedColor = Color.LightGray)
         )
-
         Text(text = "Вывести символ CR LF", color = Color.White)
     }
-
 }

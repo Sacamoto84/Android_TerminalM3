@@ -21,7 +21,7 @@ private fun Preview(){
 @Composable
 fun ButtonSetting(onClick: () -> Unit = {}) {
     IconButton(
-        modifier = Modifier.size(34.dp),
+        modifier = Modifier.size(40.dp),
         colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFF505050)),
         onClick = {
             //navController.navigate("info")

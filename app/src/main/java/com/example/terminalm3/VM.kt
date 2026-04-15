@@ -72,14 +72,16 @@ class VM : ViewModel() {
 
                 //mod = PairTextAndColor("▁", Color.Green, Color.Black, true, flash = true)
 
-                val pair = text_to_paitList(s.cmd, mod)
-                console.messages.messages.last().text = s.cmd
-                console.messages.messages.last().pairList = pair
+                if (console.messages.messages.isNotEmpty()) {
+                    val pair = text_to_paitList(s.cmd, mod)
+                    console.messages.messages.last().text = s.cmd
+                    console.messages.messages.last().pairList = pair
 
-                //Если новая строка
-                if (s.newString) console.print("▁", flash = true)
+                    //Если новая строка
+                    if (s.newString) console.print("▁", flash = true)
 
-                console.recompose() //Для ручной композиции списка
+                    console.recompose() //Для ручной композиции списка
+                }
             }
 
             //withContext(Dispatchers.Main)

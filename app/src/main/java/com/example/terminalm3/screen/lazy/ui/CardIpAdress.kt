@@ -17,11 +17,11 @@ import com.siddroid.holi.colors.MaterialColor
 @Preview
 @Composable
 private fun Preview() {
-    CardIpAddress()
+    CardIpAddress(ip = "192.168.1.100")
 }
 
 @Composable
-fun CardIpAddress() {
+fun CardIpAddress(ip: String = ipAddress) {
 
     OutlinedCard(
         modifier = Modifier
@@ -31,7 +31,7 @@ fun CardIpAddress() {
     )
     {
         Text(
-            text = "IP адрес телефона $ipAddress",
+            text = "IP адрес телефона $ip",
             color = Color.White,
             modifier = Modifier.padding(start = 20.dp, top = 5.dp)
         )

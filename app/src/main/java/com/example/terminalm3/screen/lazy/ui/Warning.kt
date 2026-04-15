@@ -18,20 +18,14 @@ import com.example.terminalm3.R
 @Composable
 fun Warning()
 {
-    Box(
-        Modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomEnd
-    )
+    Box( Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd )
     {
         val image: Painter = painterResource(id = R.drawable.error)
 
         if (Global.warning.collectAsState().value) {
             Image(
-                painter = image,
-                contentDescription = "",
-                Modifier
-                    .size(48.dp)
-                    .padding(end = 10.dp)
+                painter = image, contentDescription = "",
+                Modifier.size(48.dp).padding(end = 10.dp)
             )
         }
     }

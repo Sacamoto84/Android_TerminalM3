@@ -34,7 +34,7 @@ import timber.log.Timber
 
 lateinit var shared: SharedPreferences
 
-lateinit var ipAddress: String
+var ipAddress: String = "0.0.0.0"
 
 class MainActivity : ComponentActivity() {
 
