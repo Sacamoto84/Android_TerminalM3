@@ -44,7 +44,7 @@ fun ButtonSlegenie(modifier: Modifier = Modifier) {
         .then(modifier),
         contentPadding = PaddingValues(0.dp, 0.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (slegenie) Color(0xFF8AAF4A) else Color.DarkGray
+            containerColor = if (slegenie) Color(0xFF8AAF4A) else Color.Gray
         ),
         onClick = {
             console.tracking = !console.tracking
