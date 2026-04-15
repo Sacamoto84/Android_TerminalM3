@@ -24,18 +24,8 @@ fun BuildNavGraph() {
         popEnterTransition = { fadeIn(animationSpec = tween(200)) },
         popExitTransition = { fadeOut(animationSpec = tween(200)) },
     ) {
-
-        composable("home") {
-            ScreenLazy(navController)
-        }
-
-        composable("info") {
-            ScreenInfo(navController)
-        }
-
-        composable("web") {
-            ScreenWeb(navController)
-        }
-
+        composable("home") { ScreenLazy(navController) }
+        composable("info") { ScreenInfo(navController) }
+        composable("web")  { ScreenWeb(navController)  }
     }
 }

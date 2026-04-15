@@ -78,7 +78,6 @@ class Initialization(private val context: Context) {
         ) {
             udp.receiveScope(8888, channelNetworkIn)
         }
-
         decoder.run()
         decoder.addCmd("pong") {
 

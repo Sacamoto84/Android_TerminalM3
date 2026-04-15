@@ -22,6 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.example.terminalm3.network.bluetoothAdapter
 import com.example.terminalm3.network.btIsReady
 import com.example.terminalm3.theme.RTTClientM3Theme
@@ -42,6 +45,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
+        hideStatusBar()
         if (!Global.isInitialized) Initialization(applicationContext)
         Global.isInitialized = true
 
@@ -51,12 +55,8 @@ class MainActivity : ComponentActivity() {
 
             vm.launchUIChanelReceive()
 
-            RTTClientM3Theme(
-                darkTheme = false,
-                dynamicColor = false
-            ) {
-
-                //ColorPalette.color[0]
+            RTTClientM3Theme( darkTheme = false, dynamicColor = false )
+            {
 
                 val bluetoothPermissions = // Checks if the device has Android 12 or above
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -104,6 +104,29 @@ class MainActivity : ComponentActivity() {
 
             }
         }
+
+        // Re-apply after compose content is attached to avoid status bar reappearing on newer Android.
+        window.decorView.post { hideStatusBar() }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) hideStatusBar()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        hideStatusBar()
+    }
+
+    private fun hideStatusBar() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val decorView = window.peekDecorView() ?: return
+        WindowCompat.getInsetsController(window, decorView).apply {
+            hide(WindowInsetsCompat.Type.statusBars())
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
     }
 }
 
@@ -140,9 +163,6 @@ private fun ButtonBluetooth() {
 
 
 }
-
-
-
 
 
 

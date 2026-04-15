@@ -58,9 +58,7 @@ fun BottomNavigationInfo(navController: NavController) {
             }
 
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
     }
 
 }

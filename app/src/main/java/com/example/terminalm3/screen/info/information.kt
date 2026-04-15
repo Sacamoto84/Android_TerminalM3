@@ -30,12 +30,15 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.terminalm3.R
 import com.example.terminalm3.console
 import com.example.terminalm3.listSortedColor
+import com.example.terminalm3.theme.RTTClientM3Theme
 import com.example.terminalm3.utils.ColorPalette
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -43,9 +46,7 @@ private var textColorView = MutableStateFlow(Color.Transparent) //Цвет
 
 private var textColorView2 = MutableStateFlow(Color.Transparent) //Цвет
 
-@OptIn(
-    ExperimentalLayoutApi::class, ExperimentalFoundationApi::class
-)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ScreenInfo(navController: NavController) {
 
@@ -225,6 +226,14 @@ fun ScreenInfo(navController: NavController) {
                 }
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewScreenInfo() {
+    RTTClientM3Theme {
+        ScreenInfo(rememberNavController())
     }
 }
 

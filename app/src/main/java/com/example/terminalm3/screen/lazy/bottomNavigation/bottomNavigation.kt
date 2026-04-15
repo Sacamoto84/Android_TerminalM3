@@ -28,9 +28,6 @@ private fun PreviewBottomNavigationLazy() {
     BottomNavigationLazy(navController)
 }
 
-
-
-
 @Composable
 fun BottomNavigationLazy(navController: NavController) {
 
@@ -38,9 +35,7 @@ fun BottomNavigationLazy(navController: NavController) {
         Modifier
             .fillMaxWidth()
             .height(50.dp)
-            //.background(Color.Transparent)
             .background(colorBg),
-
         contentAlignment = Alignment.Center,
     )
     {
@@ -66,11 +61,6 @@ fun BottomNavigationLazy(navController: NavController) {
         }
     }
 }
-
-
-
-
-
 
 @Composable
 private fun ButtonReset() {
