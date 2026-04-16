@@ -48,12 +48,11 @@ class MainActivity : ComponentActivity() {
         hideStatusBar()
         if (!Global.isInitialized) Initialization(applicationContext)
         Global.isInitialized = true
+        vm.launchUIChanelReceive()
 
         setContent {
 
             KeepScreenOn()
-
-            vm.launchUIChanelReceive()
 
             RTTClientM3Theme( darkTheme = false, dynamicColor = false )
             {
@@ -163,6 +162,5 @@ private fun ButtonBluetooth() {
 
 
 }
-
 
 
