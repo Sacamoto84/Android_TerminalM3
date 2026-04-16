@@ -5,7 +5,6 @@ import android.net.nsd.NsdServiceInfo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -137,7 +136,7 @@ class Initialization(private val context: Context) {
         console.messages.add(
             LineTextAndColor(
                 text = "Первый нах",
-                pairList = pairList.toMutableStateList()
+                pairList = pairList
             )
         )
 

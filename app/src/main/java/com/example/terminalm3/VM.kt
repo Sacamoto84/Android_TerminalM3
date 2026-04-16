@@ -1,7 +1,5 @@
 package com.example.terminalm3
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,8 +25,8 @@ class VM : ViewModel() {
     private fun text_to_paitList(
         txt: String,
         mod: PairTextAndColor? = null
-    ): SnapshotStateList<PairTextAndColor> {
-        val pair: SnapshotStateList<PairTextAndColor> = mutableStateListOf()
+    ): List<PairTextAndColor> {
+        val pair = mutableListOf<PairTextAndColor>()
 
         val str = txt.replace("\u001B", "\u001C\u001B")
         val list = str.split("\u001C")
