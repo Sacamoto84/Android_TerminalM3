@@ -56,18 +56,25 @@ fun ScreenLazyInternal(
         sheetShape = RectangleShape,
         sheetContainerColor = Color.DarkGray,
         containerColor = Color.Black,
-        sheetDragHandle = { Row(modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-            , verticalAlignment = Alignment.CenterVertically) {
-            ButtonClear()
-            ButtonScrollEnd()
-            ButtonSlegenie(modifier = Modifier.fillMaxWidth(0.45f))
+        sheetDragHandle = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp,  end = 8.dp, top = 4.dp)
 
-            ButtonSetting(onClick = {
-                onOpenInfo()
-            })
-
-        } },
+                ,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ButtonClear(modifier = Modifier.weight(1f))
+                ButtonScrollEnd(modifier = Modifier.weight(1f))
+                ButtonSlegenie(modifier = Modifier.weight(1f))
+                ButtonSetting(
+                    modifier = Modifier.weight(1f),
+                    onClick = { onOpenInfo() }
+                )
+            }
+        },
         sheetContent = { sheetContent() }
     )
     {
