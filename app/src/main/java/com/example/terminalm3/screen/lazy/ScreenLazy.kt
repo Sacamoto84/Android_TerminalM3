@@ -60,7 +60,11 @@ fun ScreenLazyInternal(
         sheetDragHandle = { Row(modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
 
             ButtonClear()
+
+
+
             ButtonSlegenie()
+
             ButtonSetting(onClick = {
                 onOpenInfo()
             })

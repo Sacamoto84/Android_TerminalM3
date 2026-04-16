@@ -46,10 +46,10 @@ fun ButtonSlegenie(modifier: Modifier = Modifier) {
         colors = ButtonDefaults.buttonColors(
             containerColor = if (slegenie) Color(0xFF8AAF4A) else Color.Gray
         ),
-        onClick = {
-            console.tracking = !console.tracking
-        }) {
+        onClick = { console.tracking = !console.tracking })
+    {
         console.recompose()
+
         Text(
             text = "${console.lastCount}",
             color = Color.White,

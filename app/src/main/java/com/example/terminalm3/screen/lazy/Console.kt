@@ -114,9 +114,7 @@ class Console {
     /**
      * ⛏️ Рекомпозиция списка
      */
-    fun recompose() {
-        recompose.value++
-    }
+    fun recompose() { recompose.value++ }
 
     /**
      * Очистка списка
@@ -182,21 +180,23 @@ class Console {
         //println("Последний видимый индекс = $lastVisibleItemIndex")
 
         //LaunchedEffect(key1 = messagesR) {
-        //lastVisibleItemIndex =
-        //    lazyListState.layoutInfo.visibleItemsInfo.lastIndex + lazyListState.firstVisibleItemIndex
+        lastVisibleItemIndex = lazyListState.layoutInfo.visibleItemsInfo.lastIndex + lazyListState.firstVisibleItemIndex
         //println("lazy lastVisibleItemIndex $lastVisibleItemIndex")
         //}
 
         LaunchedEffect(
-            key1 = list.size, //key2 = _update
-
+            key1 = list.size,
+            key2 = tracking,
+            key3 = lastVisibleItemIndex
         ) { //while (true) {
+
+            //Анимация (плавная прокрутка) к последнему элементу.
             val s = list.size
-            if ((s > 20) && tracking) {
-                lazyListState.scrollToItem(
-                    index = list.size - 1, 0
-                ) //Анимация (плавная прокрутка) к данному элементу.
+
+            if ((s > 20) && tracking && (lastVisibleItemIndex < list.size)) {
+                lazyListState.scrollToItem( index = list.size - 1, 0 )
             }
+
         }
 
 

@@ -1,13 +1,13 @@
 package com.example.terminalm3.screen.info
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,10 +15,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.R
@@ -39,16 +48,26 @@ import com.example.terminalm3.listSortedColor
 import com.example.terminalm3.theme.RTTClientM3Theme
 import com.example.terminalm3.utils.ColorPalette
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.yield
 
 private var textColorView = MutableStateFlow(Color.Transparent) //Цвет
 
 private var textColorView2 = MutableStateFlow(Color.Transparent) //Цвет
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ScreenInfo(onBack: () -> Unit) {
 
+    val selectedTextColor by textColorView.collectAsState()
+    val selectedBackgroundColor by textColorView2.collectAsState()
+    val blinkOn by console.update.collectAsState()
+    val jetbrainsFont = remember { FontFamily(Font(R.font.jetbrains)) }
+    var showPreviewGrid by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(Unit) {
+        yield()
+        showPreviewGrid = true
+    }
 
     Scaffold(
         bottomBar = { BottomNavigationInfo(onBack = onBack) },
@@ -92,7 +111,7 @@ fun ScreenInfo(onBack: () -> Unit) {
                             text = i.toString(),
                             fontSize = 14.sp,
                             fontFamily = FontFamily.Monospace,
-                            color = if (textColorView.collectAsState().value == Color.Transparent) textcolor else textColorView.collectAsState().value
+                            color = if (selectedTextColor == Color.Transparent) textcolor else selectedTextColor
                         )
                     }
                 }
@@ -123,9 +142,9 @@ fun ScreenInfo(onBack: () -> Unit) {
                         Text(
                             text = value.toString(),
                             fontSize = 14.sp,
-                            fontFamily = FontFamily(Font(R.font.jetbrains)),
+                            fontFamily = jetbrainsFont,
                             fontWeight = FontWeight.ExtraBold,
-                            color = if (textColorView.collectAsState().value == Color.Transparent) textcolor else textColorView.collectAsState().value
+                            color = if (selectedTextColor == Color.Transparent) textcolor else selectedTextColor
                         )
                     }
                 }
@@ -134,7 +153,7 @@ fun ScreenInfo(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(5.dp))
 
-            val x = buildAnnotatedString {
+            val x = remember(blinkOn) { buildAnnotatedString {
 
                 withStyle(style = SpanStyle(color = Color.Gray)) {
                     append("""\x1B or \033 or \u001b""")
@@ -168,7 +187,7 @@ fun ScreenInfo(onBack: () -> Unit) {
                     append("07 - Revers\n")
                 }
 
-                withStyle(style = SpanStyle(color = if (console.update.collectAsState().value) Color.White else Color.Transparent)) {
+                withStyle(style = SpanStyle(color = if (blinkOn) Color.White else Color.Transparent)) {
                     append("08 - Flash +\n")
                 }
 
@@ -188,17 +207,18 @@ fun ScreenInfo(onBack: () -> Unit) {
                     append("\nUDP Порт 8888")
                 }
 
-            }
+            } }
 
             Text(x)
 
-            FlowRow(maxItemsInEachRow = 8) {
+            if (showPreviewGrid) {
+                FlowRow(maxItemsInEachRow = 8) {
 
                 (0..255).forEach { value ->
 
                     val textcolor = ColorPalette.color[value]
                     val colorBg =
-                            if (textColorView2.collectAsState().value == Color.Transparent) Color.Black else textColorView2.collectAsState().value
+                            if (selectedBackgroundColor == Color.Transparent) Color.Black else selectedBackgroundColor
 
                     Box(
                         modifier = Modifier
@@ -216,11 +236,12 @@ fun ScreenInfo(onBack: () -> Unit) {
                         Text(
                             text = value.toString(),
                             fontSize = 18.sp,
-                            fontFamily = FontFamily(Font(R.font.jetbrains)),
+                            fontFamily = jetbrainsFont,
                             fontWeight = FontWeight.W900,
                             color = textcolor
                         )
                     }
+                }
                 }
             }
         }
@@ -234,5 +255,3 @@ fun PreviewScreenInfo() {
         ScreenInfo(onBack = {})
     }
 }
-
-
