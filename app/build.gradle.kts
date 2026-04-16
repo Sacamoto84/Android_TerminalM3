@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
-    //id ("com.google.devtools.ksp")
-    //id ("com.google.dagger.hilt.android")
+    id ("com.google.devtools.ksp")
+    id ("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -89,11 +89,11 @@ dependencies {
 
     ///////////////////
     //Hilt
-    //implementation ("com.google.dagger:hilt-android:2.59.2")
-    //implementation ("androidx.hilt:hilt-navigation-compose:1.3.0")
-    //ksp ("com.google.dagger:hilt-compiler:2.59.2")
-    ////implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
-    //ksp ("androidx.hilt:hilt-compiler:1.3.0")
+    implementation ("com.google.dagger:hilt-android:2.59.2")
+    implementation ("androidx.hilt:hilt-navigation-compose:1.3.0")
+    ksp ("com.google.dagger:hilt-compiler:2.59.2")
+    //implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
+    ksp ("androidx.hilt:hilt-compiler:1.3.0")
     ///////////////////
 
 }

@@ -13,6 +13,8 @@ import com.example.terminalm3.network.decoder
 import com.example.terminalm3.screen.lazy.LineTextAndColor
 import com.example.terminalm3.screen.lazy.PairTextAndColor
 import com.example.terminalm3.utils.NsdHelper
+import com.example.terminalm3.utils.PhoneBeeper
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -69,38 +71,58 @@ class Initialization(private val context: Context) {
         Timber.i(ipAddress)
 
         val udp = UDP()
-        GlobalScope.launch( Dispatchers.IO ) { udp.receiveScope(8888, channelNetworkIn) }
+        GlobalScope.launch(Dispatchers.IO) { udp.receiveScope(8888, channelNetworkIn) }
 
         decoder.run()
-        decoder.addCmd("pong") {
+
+        decoder.addCmd("beep\r") {
+            CoroutineScope(Dispatchers.Main).launch {
+                PhoneBeeper.beep()
+                Timber.i("Команда beep")
+            }
         }
 
         val version = 301 //BuildConfig.VERSION_NAME
 
         //Нужно добавить ее в список лази как текущую
         val pairList = listOf(
-            PairTextAndColor( text = " RTT ", colorText = Color(0xFFFFAA00), colorBg = Color(0xFF812C12) ),
-            PairTextAndColor( text = " Terminal ",  colorText = Color(0xFFC6D501), colorBg = Color(0xFF587C2F) ),
-            PairTextAndColor( text = " $version ", colorText = Color(0xFF00E2FF), colorBg = Color(0xFF334292) ),
-            PairTextAndColor( text = ">", colorText = Color(0), colorBg = Color(0xFFFF0000) ),
-            PairTextAndColor( text = "!", colorText = Color(0), colorBg = Color(0xFFFFCC00) ),
-            PairTextAndColor( text = ">", colorText = Color(0), colorBg = Color(0xFF339900) ),
-            PairTextAndColor( text = ">", colorText = Color(0), colorBg = Color(0xFF0033CC), flash = true )
+            PairTextAndColor(
+                text = " RTT ",
+                colorText = Color(0xFFFFAA00),
+                colorBg = Color(0xFF812C12)
+            ),
+            PairTextAndColor(
+                text = " Terminal ",
+                colorText = Color(0xFFC6D501),
+                colorBg = Color(0xFF587C2F)
+            ),
+            PairTextAndColor(
+                text = " $version ",
+                colorText = Color(0xFF00E2FF),
+                colorBg = Color(0xFF334292)
+            ),
+            PairTextAndColor(text = ">", colorText = Color(0), colorBg = Color(0xFFFF0000)),
+            PairTextAndColor(text = "!", colorText = Color(0), colorBg = Color(0xFFFFCC00)),
+            PairTextAndColor(text = ">", colorText = Color(0), colorBg = Color(0xFF339900)),
+            PairTextAndColor(
+                text = ">",
+                colorText = Color(0),
+                colorBg = Color(0xFF0033CC),
+                flash = true
+            )
         )
 
         console.messages.add(
             LineTextAndColor(
-                text = "Первый нах", pairList = pairList.toMutableStateList()
+                text = "Первый нах",
+                pairList = pairList.toMutableStateList()
             )
         )
-
         console.print("▁", flash = true)
-
-        //console.consoleAdd("") //Пустая строка
 
         Global.ipBroadcast = ipToBroadCast(readLocalIP(context))
 
     }
 
-
 }
+
