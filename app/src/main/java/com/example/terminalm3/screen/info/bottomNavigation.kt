@@ -19,7 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.terminalm3.R
-import com.example.terminalm3.screen.lazy.bottomNavigation.colorBg
+
+val colorBg = Color(0xFF1B1B1B)
 
 @Composable
 fun BottomNavigationInfo(onBack: () -> Unit) {

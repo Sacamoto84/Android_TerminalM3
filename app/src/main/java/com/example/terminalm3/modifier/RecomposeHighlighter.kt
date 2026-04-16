@@ -1,4 +1,4 @@
-package libs.modifier
+package com.example.terminalm3.modifier
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable

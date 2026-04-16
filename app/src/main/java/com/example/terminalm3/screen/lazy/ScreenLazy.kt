@@ -26,7 +26,6 @@ import com.example.terminalm3.screen.common.buttons.ButtonSetting
 import com.example.terminalm3.screen.common.buttons.ButtonSlegenie
 import com.example.terminalm3.screen.lazy.bottomNavigation.ModalBottomSheetContent
 import com.example.terminalm3.screen.lazy.bottomNavigation.ModalBottomSheetContentInternal
-import com.example.terminalm3.screen.lazy.ui.Warning
 import com.example.terminalm3.theme.RTTClientM3Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,12 +80,6 @@ fun ScreenLazyInternal(
         Box(Modifier.fillMaxSize().padding(bottom = it.calculateBottomPadding()))
         {
             console.lazy()
-            Warning(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 10.dp, bottom = 72.dp)
-                    .zIndex(1f)
-            )
         }
     }
 }

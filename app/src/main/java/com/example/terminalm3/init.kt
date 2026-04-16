@@ -8,11 +8,11 @@ import androidx.compose.ui.unit.sp
 import com.example.terminalm3.lan.UDP
 import com.example.terminalm3.lan.ipToBroadCast
 import com.example.terminalm3.lan.readLocalIP
-import com.example.terminalm3.network.BT
 import com.example.terminalm3.network.channelNetworkIn
 import com.example.terminalm3.network.decoder
 import com.example.terminalm3.screen.lazy.LineTextAndColor
 import com.example.terminalm3.screen.lazy.PairTextAndColor
+import com.example.terminalm3.utils.NsdHelper
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -48,10 +48,6 @@ class Initialization(private val context: Context) {
         Timber.plant(Timber.DebugTree())
         Timber.i("Привет")
 
-        BT.init(context)
-        BT.getPairedDevices()
-        BT.autoconnect(context)
-
         shared = context.getSharedPreferences("size", Context.MODE_PRIVATE)
         console.fontSize = (shared.getString("size", "12")?.toInt() ?: 12).sp
 
@@ -78,6 +74,7 @@ class Initialization(private val context: Context) {
         ) {
             udp.receiveScope(8888, channelNetworkIn)
         }
+
         decoder.run()
         decoder.addCmd("pong") {
         }

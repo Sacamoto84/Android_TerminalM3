@@ -1,4 +1,4 @@
-package com.example.terminalm3
+package com.example.terminalm3.utils
 
 import android.app.Activity
 import android.content.Context

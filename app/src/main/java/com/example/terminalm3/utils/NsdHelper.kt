@@ -1,8 +1,9 @@
-package com.example.terminalm3
+package com.example.terminalm3.utils
 
 import android.content.Context
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
+import com.example.terminalm3.Global
 import timber.log.Timber
 import java.util.Collections
 import java.util.concurrent.ConcurrentLinkedQueue

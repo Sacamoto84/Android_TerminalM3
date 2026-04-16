@@ -27,19 +27,11 @@ object Global {
 
     var isCheckUseCRLF by mutableStateOf(false) //🟦Показывать в конце строки символ CR LF
 
-    val isCheckedUseLineVisible by mutableStateOf(false)  //🟦Показывать номер строки
-    var telnetSlegenie = MutableStateFlow(true)           //🟦Слежение за последней строкой
-
-    var telnetWarning = MutableLiveData(false) //Для отображения значка внимание
-
-    val warning = MutableStateFlow(false)
-
     //╔═════╗
     //║ NET ║
     //╚═════╝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┑
     var ipBroadcast = "0.0.0.0"            //│
-
-    //│
+                                           //│
     //IP адрес ESP                         //│
     var ipESP = "0.0.0.0"                  //│
 
