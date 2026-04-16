@@ -2,8 +2,14 @@ package com.example.terminalm3
 
 import android.content.Context
 import android.net.nsd.NsdServiceInfo
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.lan.UDP
 import com.example.terminalm3.lan.ipToBroadCast
@@ -79,8 +85,23 @@ class Initialization(private val context: Context) {
             CoroutineScope(Dispatchers.Main).launch {
                 PhoneBeeper.beep()
                 Timber.i("Команда beep")
-                console.printLocalAfterRemoteLine(lineId, "!!!", flash = true)
+                //console.printLocalAfterRemoteLine(lineId, "!!!", flash = true)
+
+                console.printComposableAfterRemoteLine(lineId) {
+                    Image(
+                        painter = painterResource(R.drawable.info),
+                        contentDescription = null
+                    )
+                }
+
+
+
+
+
             }
+
+
+
         }
 
         val version = 301 //BuildConfig.VERSION_NAME
@@ -119,6 +140,13 @@ class Initialization(private val context: Context) {
                 pairList = pairList.toMutableStateList()
             )
         )
+
+        console.printComposable {
+            Image(
+                painter = painterResource(R.drawable.log),
+                contentDescription = null, modifier = Modifier.size(48.dp)
+            )
+        }
 
         console.completeRemoteLine(0, 1)
 
