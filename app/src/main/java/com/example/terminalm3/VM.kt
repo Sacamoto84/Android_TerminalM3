@@ -64,13 +64,17 @@ class VM : ViewModel() {
 
             withContext(Dispatchers.Main.immediate) {
                 if (console.messages.messages.isNotEmpty()) {
-                    console.messages.messages.last().text = s.cmd
-                    console.messages.messages.last().pairList = pair
+                    val lastIndex = console.messages.messages.lastIndex
+                    val current = console.messages.messages[lastIndex]
+                    console.messages.messages[lastIndex] = current.copy(
+                        text = s.cmd,
+                        pairList = pair
+                    )
 
                     if (s.newString) {
                         console.print("▁", flash = true)
                     }
-                    console.recompose()
+                    //console.recompose()
                 }
             }
         }
