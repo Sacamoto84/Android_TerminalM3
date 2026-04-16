@@ -10,10 +10,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
@@ -107,7 +109,7 @@ class Console {
             R.font.jetbrains, FontWeight.Normal
         )
     ) //FontFamily.Monospace //Используемый шрифт
-    private var lastVisibleItemIndex by mutableIntStateOf(0)
+    private val consoleBackground = Color(0xFF090909)
 
 
     //PUBLIC METHOD
@@ -159,7 +161,7 @@ class Console {
     /**
      * Получить экземпляр списка
      */
-    fun getList() = messages.messages.toList().map { it }
+    fun getList(): List<LineTextAndColor> = messages.messages
 
 
     @Composable
@@ -169,9 +171,13 @@ class Console {
         val _recompose = recompose.collectAsStateWithLifecycle().value
 
         val list = getList() //: List<LineTextAndColor> = messages.toList().map { it }
-        lastCount = list.size
-
         val lazyListState = rememberLazyListState()
+        val lastVisibleItemIndex by remember(lazyListState) {
+            derivedStateOf {
+                lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                    ?: lazyListState.firstVisibleItemIndex
+            }
+        }
 
         //var update by remember { mutableStateOf(true) }  //для мигания
 
@@ -179,10 +185,9 @@ class Console {
 
         //println("Последний видимый индекс = $lastVisibleItemIndex")
 
-        //LaunchedEffect(key1 = messagesR) {
-        lastVisibleItemIndex = lazyListState.layoutInfo.visibleItemsInfo.lastIndex + lazyListState.firstVisibleItemIndex
-        //println("lazy lastVisibleItemIndex $lastVisibleItemIndex")
-        //}
+        LaunchedEffect(_recompose, list.size) {
+            lastCount = list.size
+        }
 
         LaunchedEffect(
             key1 = list.size,
@@ -191,10 +196,10 @@ class Console {
         ) { //while (true) {
 
             //Анимация (плавная прокрутка) к последнему элементу.
-            val s = list.size
+            val lastIndex = list.lastIndex
 
-            if ((s > 20) && tracking && (lastVisibleItemIndex < list.size)) {
-                lazyListState.scrollToItem( index = list.size - 1, 0 )
+            if ((lastIndex >= 20) && tracking && (lastVisibleItemIndex < lastIndex)) {
+                lazyListState.scrollToItem(index = lastIndex, scrollOffset = 0)
             }
 
         }
@@ -203,10 +208,10 @@ class Console {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF090909))
+                .background(consoleBackground)
                 .then(modifier)
                 .scrollbar(
-                    count = list.count { it.pairList.isNotEmpty() },
+                    count = list.size,
                     lazyListState,
                     horizontal = false, //countCorrection = 0,
                     hiddenAlpha = 0f
@@ -214,7 +219,7 @@ class Console {
         ) {
 
             itemsIndexed(list, key = { index, item -> item.id }) { index, item ->
-                ScriptItemDraw({ item }, { index }, { false })
+                ScriptItemDraw(item = item, index = index, select = false)
             }
 
         }
@@ -241,75 +246,64 @@ class Console {
 
     @Composable
     private fun ScriptItemDraw(
-        item: () -> LineTextAndColor, index: () -> Int, select: () -> Boolean
-    ) { //println("Draw  ${index()}")
+        item: LineTextAndColor, index: Int, select: Boolean
+    ) { //println("Draw  $index")
 
-        val _update = update.collectAsStateWithLifecycle().value
+        val blinkVisible = if (item.pairList.any { it.flash }) {
+            update.collectAsStateWithLifecycle().value
+        } else {
+            update.value
+        }
 
-        val x = convertStringToAnnotatedString(item(), index())
+        val x = convertStringToAnnotatedString(item = item, index = index, blinkVisible = blinkVisible)
 
         Text(
             x,
             modifier = Modifier
                 .fillMaxWidth() //.padding(top = 0.dp)
-                .background(if (select()) Color.Cyan else Color.Transparent),
+                .background(if (select) Color.Cyan else Color.Transparent),
 
             fontSize = fontSize,
             lineHeight = lineHeight,
-            fontFamily = FontFamily(
-                Font(R.font.jetbrains, FontWeight.Normal)
-            ),
+            fontFamily = fontFamily,
         )
 
     }
 
     private fun convertStringToAnnotatedString(
-        item: LineTextAndColor, index: Int
+        item: LineTextAndColor,
+        index: Int,
+        blinkVisible: Boolean
     ): AnnotatedString {
-
-
-        val s = item.pairList.size
-
-        //lateinit var x : AnnotatedString
-        var x = buildAnnotatedString {
+        return buildAnnotatedString {
             if (lineVisible) withStyle(style = SpanStyle(color = Color.Gray)) {
                 append("${index}>")
             }
-        }
 
-        for (i in 0 until s) {
+            item.pairList.forEach { part ->
+                val textColor = if (!part.flash || blinkVisible) {
+                    part.colorText
+                } else {
+                    consoleBackground
+                }
+                val backgroundColor = if (!part.flash || blinkVisible) {
+                    part.colorBg
+                } else {
+                    consoleBackground
+                }
 
-            x += buildAnnotatedString {
                 withStyle(
                     style = SpanStyle(
-
-                        color = if (!item.pairList[i].flash) item.pairList[i].colorText
-                        else if (update.value) item.pairList[i].colorText
-                        else Color(0xFF090909),
-
-                        background = if (!item.pairList[i].flash) item.pairList[i].colorBg
-                        else if (update.value) item.pairList[i].colorBg
-                        else Color(0xFF090909),
-                        fontFamily = FontFamily(Font(R.font.jetbrains)),
-
-                        textDecoration = if (item.pairList[i].underline) TextDecoration.Underline else null,
-                        fontWeight = if (item.pairList[i].bold) FontWeight.Bold else null,
-                        fontStyle = if (item.pairList[i].italic) FontStyle.Italic else null,
+                        color = textColor,
+                        background = backgroundColor,
+                        fontFamily = fontFamily,
+                        textDecoration = if (part.underline) TextDecoration.Underline else null,
+                        fontWeight = if (part.bold) FontWeight.Bold else null,
+                        fontStyle = if (part.italic) FontStyle.Italic else null,
                     )
-                ) { append(item.pairList[i].text) }
+                ) { append(part.text) }
             }
-
         }
-        return x
     }
 
 }
-
-
-
-
-
-
-
-
-

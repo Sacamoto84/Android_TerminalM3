@@ -83,7 +83,7 @@ class Initialization(private val context: Context) {
 
         }
 
-        val version = 300 //BuildConfig.VERSION_NAME
+        val version = 301 //BuildConfig.VERSION_NAME
 
         //Нужно добавить ее в список лази как текущую
         val pairList = listOf(
