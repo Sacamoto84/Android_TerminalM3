@@ -1,8 +1,7 @@
 plugins {
     id("com.android.application")
-    id ("com.google.devtools.ksp")
-    id ("com.google.dagger.hilt.android")
-    //id ("com.google.gms.google-services")
+    //id ("com.google.devtools.ksp")
+    //id ("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -30,6 +29,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -65,15 +65,6 @@ dependencies {
     implementation("androidx.compose.material:material")
     implementation("androidx.compose.material3:material3:1.4.0")
 
-    //implementation("androidx.compose.material3:material3-android:1.2.0-alpha10")
-    //testImplementation("junit:junit:4.13.2")
-    //androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    //androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    //androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
-    //androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    //debugImplementation("androidx.compose.ui:ui-tooling")
-    //debugImplementation("androidx.compose.ui:ui-test-manifest")
-
     implementation ("androidx.navigation:navigation-compose:2.9.7")
 
     implementation ("com.google.accompanist:accompanist-webview:0.36.0")
@@ -81,7 +72,6 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-swiperefresh:0.36.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
-    //implementation ("com.google.accompanist:accompanist-navigation-animation:0.32.0")
 
     implementation ("com.jakewharton.timber:timber:5.0.1")
 
@@ -99,12 +89,11 @@ dependencies {
 
     ///////////////////
     //Hilt
-    implementation ("com.google.dagger:hilt-android:2.59.2")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.3.0")
-    ksp ("com.google.dagger:hilt-compiler:2.59.2")
-    //implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
-    ksp ("androidx.hilt:hilt-compiler:1.3.0")
+    //implementation ("com.google.dagger:hilt-android:2.59.2")
+    //implementation ("androidx.hilt:hilt-navigation-compose:1.3.0")
+    //ksp ("com.google.dagger:hilt-compiler:2.59.2")
+    ////implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
+    //ksp ("androidx.hilt:hilt-compiler:1.3.0")
     ///////////////////
-
 
 }

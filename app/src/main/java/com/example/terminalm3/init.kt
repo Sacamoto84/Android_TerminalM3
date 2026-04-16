@@ -69,11 +69,7 @@ class Initialization(private val context: Context) {
         Timber.i(ipAddress)
 
         val udp = UDP()
-        GlobalScope.launch(
-            Dispatchers.IO
-        ) {
-            udp.receiveScope(8888, channelNetworkIn)
-        }
+        GlobalScope.launch( Dispatchers.IO ) { udp.receiveScope(8888, channelNetworkIn) }
 
         decoder.run()
         decoder.addCmd("pong") {

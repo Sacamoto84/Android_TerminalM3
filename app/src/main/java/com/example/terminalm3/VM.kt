@@ -66,14 +66,9 @@ class VM : ViewModel() {
                 if (console.messages.messages.isNotEmpty()) {
                     val lastIndex = console.messages.messages.lastIndex
                     val current = console.messages.messages[lastIndex]
-                    console.messages.messages[lastIndex] = current.copy(
-                        text = s.cmd,
-                        pairList = pair
-                    )
+                    console.messages.messages[lastIndex] = current.copy( text = s.cmd, pairList = pair )
 
-                    if (s.newString) {
-                        console.print("▁", flash = true)
-                    }
+                    if (s.newString) { console.print("▁", flash = true) }
                     //console.recompose()
                 }
             }

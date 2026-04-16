@@ -128,13 +128,8 @@ class Console {
      */
     fun clear() {
         messages.clear()
-        messages.add(
-            LineTextAndColor(
-                " ",
-                mutableStateListOf(PairTextAndColor("▁", Color.Green, Color.Black, flash = true))
-            )
-        )
-        recompose()
+        messages.add( LineTextAndColor( " ",  mutableStateListOf(PairTextAndColor("▁", Color.Green, Color.Black, flash = true)) ) )
+        //recompose()
     }
 
     /**
