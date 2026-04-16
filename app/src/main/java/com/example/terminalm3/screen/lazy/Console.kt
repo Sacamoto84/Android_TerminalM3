@@ -95,6 +95,8 @@ class Console {
     var fontSize by mutableStateOf(12.sp) //Размер шрифта
 
 
+    private val lineHeight get() = (fontSize.value * 1.25f).sp
+
     val messages = ConsoleMessage()//mutableStateListOf<LineTextAndColor>()
 
 
@@ -252,10 +254,11 @@ class Console {
                 .fillMaxWidth() //.padding(top = 0.dp)
                 .background(if (select()) Color.Cyan else Color.Transparent),
 
-            fontSize = console.fontSize,
+            fontSize = fontSize,
+            lineHeight = lineHeight,
             fontFamily = FontFamily(
                 Font(R.font.jetbrains, FontWeight.Normal)
-            ), //lineHeight = console.fontSize * 1.2f
+            ),
         )
 
     }
@@ -301,7 +304,6 @@ class Console {
     }
 
 }
-
 
 
 

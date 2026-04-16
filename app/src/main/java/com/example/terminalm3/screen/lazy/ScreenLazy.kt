@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.example.terminalm3.console
 import com.example.terminalm3.screen.common.buttons.ButtonClear
 import com.example.terminalm3.screen.common.buttons.ButtonSetting
@@ -71,7 +72,12 @@ fun ScreenLazyInternal(
         Box(Modifier.fillMaxSize().padding(bottom = it.calculateBottomPadding()))
         {
             console.lazy()
-            Warning()
+            Warning(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 10.dp, bottom = 72.dp)
+                    .zIndex(1f)
+            )
         }
     }
 }
