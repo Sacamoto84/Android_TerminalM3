@@ -110,6 +110,7 @@ class Console {
         )
     ) //FontFamily.Monospace //Используемый шрифт
     private val consoleBackground = Color(0xFF090909)
+    private var scrollToEndRequest by mutableIntStateOf(0)
 
 
     //PUBLIC METHOD
@@ -117,6 +118,11 @@ class Console {
      * ⛏️ Рекомпозиция списка
      */
     fun recompose() { recompose.value++ }
+
+    fun requestScrollToEnd() {
+        tracking = true
+        scrollToEndRequest++
+    }
 
     /**
      * Очистка списка
@@ -172,10 +178,19 @@ class Console {
 
         val list = getList() //: List<LineTextAndColor> = messages.toList().map { it }
         val lazyListState = rememberLazyListState()
-        val lastVisibleItemIndex by remember(lazyListState) {
+        val isAtEnd by remember(lazyListState, list) {
             derivedStateOf {
-                lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
-                    ?: lazyListState.firstVisibleItemIndex
+                val lastIndex = list.lastIndex
+                if (lastIndex <= 0) {
+                    true
+                } else {
+                    val layoutInfo = lazyListState.layoutInfo
+                    val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()
+                    val viewportEnd = layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
+
+                    lastVisibleItem?.index == lastIndex &&
+                            (lastVisibleItem.offset + lastVisibleItem.size) <= viewportEnd
+                }
             }
         }
 
@@ -189,16 +204,20 @@ class Console {
             lastCount = list.size
         }
 
-        LaunchedEffect(
-            key1 = list.size,
-            key2 = tracking,
-            key3 = lastVisibleItemIndex
-        ) { //while (true) {
+        LaunchedEffect(lazyListState.isScrollInProgress, isAtEnd) {
+            if (lazyListState.isScrollInProgress && tracking && !isAtEnd) {
+                tracking = false
+            } else if (!lazyListState.isScrollInProgress && isAtEnd && !tracking) {
+                tracking = true
+            }
+        }
+
+        LaunchedEffect(list.size, tracking, scrollToEndRequest) {
 
             //Анимация (плавная прокрутка) к последнему элементу.
             val lastIndex = list.lastIndex
 
-            if ((lastIndex >= 20) && tracking && (lastVisibleItemIndex < lastIndex)) {
+            if (lastIndex >= 0 && tracking && !isAtEnd) {
                 lazyListState.scrollToItem(index = lastIndex, scrollOffset = 0)
             }
 

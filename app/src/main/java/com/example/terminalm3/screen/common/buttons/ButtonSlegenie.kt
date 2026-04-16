@@ -1,9 +1,6 @@
 package com.example.terminalm3.screen.common.buttons
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,34 +26,23 @@ private fun Preview(){
 fun ButtonSlegenie(modifier: Modifier = Modifier) {
 
     //По кнопке включаем слежение
-    val slegenie = console.tracking
+    val count = console.lastCount
 
     // Кнопка включения слежения
     Button(modifier = Modifier
-        //.height(32.dp)
-        .fillMaxWidth(0.5f)
-        .padding(
-            //start = 8.dp,
-            //top = 8.dp,
-            //bottom = 8.dp
-        )
-
+        .padding(horizontal = 4.dp)
         .then(modifier),
         contentPadding = PaddingValues(0.dp, 0.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (slegenie) Color(0xFF8AAF4A) else Color.Gray
+            containerColor = Color(0xFF505050)
         ),
-        onClick = { console.tracking = !console.tracking })
+        onClick = {})
     {
-        console.recompose()
-
         Text(
-            text = "${console.lastCount}",
+            text = "$count",
             color = Color.White,
             fontFamily = FontFamily(Font(R.font.jetbrains)),
             fontSize = 18.sp
         )
     }
 }
-
-

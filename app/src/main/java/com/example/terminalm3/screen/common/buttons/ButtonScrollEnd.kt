@@ -8,6 +8,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.res.painterResource
@@ -25,6 +26,8 @@ private fun Preview(){
 
 @Composable
 fun ButtonScrollEnd(onClick: () -> Unit = {}) {
+    val isTracking = console.tracking
+
     IconButton(
         modifier = Modifier.size(40.dp)
             .dropShadow(
@@ -35,14 +38,20 @@ fun ButtonScrollEnd(onClick: () -> Unit = {}) {
                 offset = DpOffset(0.dp, 0.dp)
             )
         ),
-        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFF606060)),
-        onClick = { console.clear() }
+        colors = IconButtonDefaults.iconButtonColors(
+            containerColor = if (isTracking) Color(0xFF8AAF4A) else Color(0xFF606060)
+        ),
+        onClick = {
+            console.requestScrollToEnd()
+            onClick()
+        }
     )
     {
         Icon(
-            painter = painterResource(R.drawable.eraser),
-            tint = Color.LightGray,
-            contentDescription = null
+            modifier = Modifier.rotate(-90f),
+            painter = painterResource(R.drawable.back),
+            tint = if (isTracking) Color.White else Color.LightGray,
+            contentDescription = "Scroll to end"
         )
     }
 }

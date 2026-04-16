@@ -80,7 +80,6 @@ class Initialization(private val context: Context) {
         }
         decoder.run()
         decoder.addCmd("pong") {
-
         }
 
         val version = 301 //BuildConfig.VERSION_NAME

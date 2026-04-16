@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.terminalm3.screen.common.buttons.ButtonClear
+import com.example.terminalm3.screen.common.buttons.ButtonScrollEnd
 import com.example.terminalm3.screen.common.buttons.ButtonSetting
 import com.example.terminalm3.screen.common.buttons.ButtonSlegenie
 
@@ -39,11 +40,12 @@ fun BottomNavigationLazy(onOpenInfo: () -> Unit = {}) {
         Row(
             Modifier
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
 
         ) {
-            ButtonSlegenie()//Modifier.weight(1f))
+            ButtonScrollEnd()
+            ButtonSlegenie(Modifier.fillMaxWidth(0.45f))
             //Кнопка сброса списка
             //Spacer(modifier = Modifier.width(8.dp))
             ButtonClear() //Кнопка очистка списка
@@ -90,5 +92,3 @@ private fun ButtonReset() {
 //    }
 
 }
-
-
