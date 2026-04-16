@@ -75,10 +75,11 @@ class Initialization(private val context: Context) {
 
         decoder.run()
 
-        decoder.addCmd("beep\r") {
+        decoder.addCmd("beep\r") { _, lineId ->
             CoroutineScope(Dispatchers.Main).launch {
                 PhoneBeeper.beep()
                 Timber.i("Команда beep")
+                console.printLocalAfterRemoteLine(lineId, "!!!", flash = true)
             }
         }
 
@@ -118,11 +119,12 @@ class Initialization(private val context: Context) {
                 pairList = pairList.toMutableStateList()
             )
         )
-        console.print("▁", flash = true)
+
+        console.completeRemoteLine(0, 1)
+
 
         Global.ipBroadcast = ipToBroadCast(readLocalIP(context))
 
     }
 
 }
-

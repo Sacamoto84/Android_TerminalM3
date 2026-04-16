@@ -9,18 +9,16 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class NetCommandDecoder(
-    private val channelIn: Channel<String>,               //Входной канал от bt и wifi
-    private val channelOutNetCommand: Channel<NetCommand> //Для Отображения списка текст.новая строка
+    private val channelIn: Channel<String>,
+    private val channelOutNetCommand: Channel<NetCommand>
 ) {
 
-    /**
-     * # Добавить команду
-     */
-    fun addCmd(name: String, cb: (List<String>) -> Unit = { }) = cmdList.add(CliCommand(name, cb))
+    fun addCmd(name: String, cb: (List<String>, Long) -> Unit = { _, _ -> }) {
+        cmdList.add(CliCommand(name, cb))
+    }
 
-
-    private var lastString: String = "" //Прошлая строка
-    private val channelRoute = Channel<String>(1000000)
+    private var lastString: String = ""
+    private var currentLineId: Long = 1L
 
     @OptIn(DelicateCoroutinesApi::class)
     fun run() {
@@ -30,98 +28,81 @@ class NetCommandDecoder(
     }
 
     private suspend fun decodeScope() {
-
-        val bigStr: StringBuilder =
-                StringBuilder() //Большая строка в которую и складируются данные с канала
+        val bigStr = StringBuilder()
 
         while (true) {
+            var string = channelIn.receive()
 
-            var string =  channelIn.receive() //Получить строку с канала, может содежать несколько строк
-
-            if (Global.isCheckUseCRLF) string =
-                    string.replace("\r", "\u001B[01;39;05;0;49;05;10mCR\u001B[2m")
-
-            //Timber.e( "in>>>${string.length} "+string )
+            if (Global.isCheckUseCRLF) {
+                string = string.replace("\r", "\u001B[01;39;05;0;49;05;10mCR\u001B[2m")
+            }
 
             if (string.isEmpty()) continue
 
-            bigStr.append(string) //Захерячиваем в большую строку
+            bigStr.append(string)
 
-            //MARK: Будем сами делить на строки
-            while (true) { //Индекс \n
+            while (true) {
                 val indexN = bigStr.indexOf('\n')
 
-                if (indexN != -1) { //Область полюбому имеет конец строки
-                    //MARK: Чета есть, копируем в подстроку
+                if (indexN != -1) {
                     val stringDoN = bigStr.substring(0, indexN)
-                    bigStr.delete(0, bigStr.indexOf('\n') + 1)
+                    bigStr.delete(0, indexN + 1)
 
                     lastString += stringDoN
 
-                    if (Global.isCheckUseCRLF) lastString += "\u001B[01;39;05;15;49;05;27mLF\u001B[2m"
+                    if (Global.isCheckUseCRLF) {
+                        lastString += "\u001B[01;39;05;15;49;05;27mLF\u001B[2m"
+                    }
 
-                    channelOutCommand.send(lastString)
-                    channelOutNetCommand.send(
-                        NetCommand(
-                            lastString, true
-                        )
-                    ) //Timber.i( "out>>>${lastString.length} "+lastString )
+                    val lineId = currentLineId
+                    channelOutCommand.send(CommandPacket(lastString, lineId))
+                    channelOutNetCommand.send(NetCommand(lastString, true, lineId))
+
                     lastString = ""
-
-
-                } else { //Конец строки не найден
-                    //MARK: Тут для дополнения прошлой строки
-                    //Получить полную запись посленней строки
+                    currentLineId++
+                } else {
                     lastString += bigStr
                     if (lastString.isNotEmpty()) {
-                        channelOutNetCommand.send(
-                            NetCommand(
-                                lastString, false
-                            )
-                        ) //Timber.w( "out>>>${lastString.length} "+lastString )
+                        channelOutNetCommand.send(NetCommand(lastString, false, currentLineId))
                     }
-                    bigStr.clear() //Он отжил свое)
+                    bigStr.clear()
                     break
                 }
-
             }
-
-
         }
-
-
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    private val channelOutCommand = Channel<String>(1000000) //Готовые команды из пакета
+    private val channelOutCommand = Channel<CommandPacket>(1_000_000)
 
-    data class CliCommand(var name: String, var cb: (List<String>) -> Unit)
+    data class CommandPacket(val raw: String, val lineId: Long)
 
-    //Перевод на сет
-    private val cmdList = mutableListOf<CliCommand>() //Список команд
+    data class CliCommand(
+        var name: String,
+        var cb: (List<String>, Long) -> Unit
+    )
 
+    private val cmdList = mutableListOf<CliCommand>()
 
     private suspend fun cliDecoder() {
         while (true) {
-            val s = channelOutCommand.receive()
-            parse(s)
+            parse(channelOutCommand.receive())
         }
     }
 
-    private fun parse(str: String) {
+    private fun parse(packet: CommandPacket) {
+        val str = packet.raw
         if (str.isEmpty()) return
-        val l = str.split(' ').toMutableList()
-        val name = l.first()
-        l.removeFirst()
-        val arg: List<String> = l.filter { it.isNotEmpty() }
+
+        val parts = str.split(' ').toMutableList()
+        val name = parts.first()
+        parts.removeFirst()
+        val arg = parts.filter { it.isNotEmpty() }
+
         try {
-            val command: CliCommand = cmdList.first { it.name == name }
-            command.cb.invoke(arg)
+            val command = cmdList.first { it.name == name }
+            command.cb.invoke(arg, packet.lineId)
         } catch (e: Exception) {
             Timber.e("CLI отсутствует команда $name")
         }
-
     }
-
-
 }

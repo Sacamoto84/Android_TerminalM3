@@ -1,6 +1,5 @@
 package com.example.terminalm3.screen.lazy
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,13 +39,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import libs.modifier.scrollbar
+import kotlin.math.max
 import kotlin.random.Random
 
 data class LineTextAndColor(
-    var text: String, //Строка вообще
-    var pairList: SnapshotStateList<PairTextAndColor>, //То что будет определено в этой строке
+    var text: String,
+    var pairList: SnapshotStateList<PairTextAndColor>,
     var deleted: Boolean = false,
     val id: Long = Random.nextLong(),
+    val remoteLineId: Long? = null
 )
 
 data class PairTextAndColor(
@@ -59,24 +60,24 @@ data class PairTextAndColor(
     val flash: Boolean = false
 )
 
-//var manual_recomposeLazy = mutableStateOf(0)
-
-//println("Индекс первого видимого элемента = " + lazyListState.firstVisibleItemIndex.toString())
-//println("Смещение прокрутки первого видимого элемента = " + lazyListState.firstVisibleItemScrollOffset.toString())
-//println("Количество строк выведенных на экран lastIndex = " + lazyListState.layoutInfo.visibleItemsInfo.lastIndex.toString())
-
-//➕️ ✅️✏️⛏️ $${\color{red}Red}$$ 📥 📤  📃  📑 📁 📘 🇷🇺 🆗 ✳️
-
 class ConsoleMessage {
-
     val messages = mutableStateListOf<LineTextAndColor>()
 
-    fun add(item: LineTextAndColor) { messages.add(item) }
+    fun add(item: LineTextAndColor) {
+        messages.add(item)
+    }
 
-    fun clear() { messages.clear() }
+    fun clear() {
+        messages.clear()
+    }
 }
 
 class Console {
+
+    private data class PendingLocalMessage(
+        val remoteLineId: Long,
+        val line: LineTextAndColor
+    )
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
@@ -87,53 +88,51 @@ class Console {
         }
     }
 
-
-    //PUBLIC
-    val update = MutableStateFlow(true)   //для мигания
-    var lineVisible by mutableStateOf(false) //Отображение номер строки
-    var tracking by mutableStateOf(true) //Слежение за последним полем
-    var lastCount by mutableIntStateOf(0) //Количество записей
-    var fontSize by mutableStateOf(12.sp) //Размер шрифта
-
+    val update = MutableStateFlow(true)
+    var lineVisible by mutableStateOf(false)
+    var tracking by mutableStateOf(true)
+    var lastCount by mutableIntStateOf(0)
+    var fontSize by mutableStateOf(12.sp)
 
     private val lineHeight get() = (fontSize.value * 1.25f).sp
 
-    val messages = ConsoleMessage()//mutableStateListOf<LineTextAndColor>()
+    val messages = ConsoleMessage()
 
-
-    //PRIVATE
     private val recompose = MutableStateFlow(0)
-    private var fontFamily = FontFamily(
-        Font(
-            R.font.jetbrains, FontWeight.Normal
-        )
-    ) //FontFamily.Monospace //Используемый шрифт
+    private var fontFamily = FontFamily(Font(R.font.jetbrains, FontWeight.Normal))
     private val consoleBackground = Color(0xFF090909)
     private var scrollToEndRequest by mutableIntStateOf(0)
+    private val pendingLocalMessages = mutableListOf<PendingLocalMessage>()
+    private var lastCompletedRemoteLineId = 0L
 
-
-    //PUBLIC METHOD
     /**
-     * ⛏️ Рекомпозиция списка
+     * Принудительно дергает счетчик рекомпозиции, если нужно обновить список
+     * без изменения его размера.
      */
-    fun recompose() { recompose.value++ }
+    fun recompose() {
+        recompose.value++
+    }
 
+    /**
+     * Включает режим слежения за концом списка и инициирует прокрутку вниз.
+     */
     fun requestScrollToEnd() {
         tracking = true
         scrollToEndRequest++
     }
 
     /**
-     * Очистка списка
+     * Полностью очищает консоль и сбрасывает временное состояние,
+     * связанное с незавершенными сетевыми строками.
      */
     fun clear() {
         messages.clear()
-        messages.add( LineTextAndColor( " ",  mutableStateListOf(PairTextAndColor("▁", Color.Green, Color.Black, flash = true)) ) )
-        //recompose()
+        pendingLocalMessages.clear()
+        lastCompletedRemoteLineId = 0L
     }
 
     /**
-     * Добавить запись
+     * Добавляет обычную локальную строку в конец консоли.
      */
     fun print(
         text: String,
@@ -141,36 +140,79 @@ class Console {
         bgColor: Color = Color.Black,
         flash: Boolean = false
     ) {
-        if ((messages.messages.isNotEmpty()) && (messages.messages.last().text == " ")) {
+        messages.add(buildLine(text, color, bgColor, flash))
+    }
 
-            messages.messages.removeAt(messages.messages.lastIndex)
-            messages.add(
-                LineTextAndColor(
-                    text, mutableStateListOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
-                )
-            )
+    /**
+     * Добавляет локальное сообщение после конкретной сетевой строки.
+     * Если сетевой хвост еще не завершен, сообщение временно откладывается.
+     */
+    fun printLocalAfterRemoteLine(
+        remoteLineId: Long,
+        text: String,
+        color: Color = Color.Green,
+        bgColor: Color = Color.Black,
+        flash: Boolean = false
+    ) {
+        val line = buildLine(text, color, bgColor, flash)
+        if (remoteLineId <= lastCompletedRemoteLineId) {
+            insertBeforeTrailingPlaceholder(line)
         } else {
-            messages.add(
-                LineTextAndColor(
-                    text, mutableStateListOf(PairTextAndColor(text = text, color, bgColor, flash = flash))
-                )
-            )
+            pendingLocalMessages.add(PendingLocalMessage(remoteLineId, line))
         }
     }
 
     /**
-     * Получить экземпляр списка
+     * Обновляет содержимое уже известной сетевой строки или создает ее,
+     * если эта строка еще не была добавлена в список.
+     */
+    fun updateRemoteLine(
+        remoteLineId: Long,
+        text: String,
+        pairList: SnapshotStateList<PairTextAndColor>
+    ) {
+        val index = messages.messages.indexOfLast { it.remoteLineId == remoteLineId }
+        val line = LineTextAndColor(
+            text = text,
+            pairList = pairList,
+            remoteLineId = remoteLineId
+        )
+
+        if (index >= 0) {
+            val current = messages.messages[index]
+            messages.messages[index] = current.copy(
+                text = text,
+                pairList = pairList,
+                remoteLineId = remoteLineId
+            )
+        } else {
+            messages.add(line)
+        }
+    }
+
+    /**
+     * Помечает сетевую строку завершенной, создает placeholder для следующей
+     * строки и вставляет все отложенные локальные сообщения, привязанные к ней.
+     */
+    fun completeRemoteLine(remoteLineId: Long, nextRemoteLineId: Long) {
+        lastCompletedRemoteLineId = max(lastCompletedRemoteLineId, remoteLineId)
+        ensureRemotePlaceholder(nextRemoteLineId)
+        flushPendingLocalMessages(remoteLineId)
+    }
+
+    /**
+     * Возвращает текущее содержимое консоли в порядке отображения.
      */
     fun getList(): List<LineTextAndColor> = messages.messages
 
-
+    /**
+     * Рисует консоль как `LazyColumn`, управляет автопрокруткой
+     * и обновляет служебное состояние списка.
+     */
     @Composable
     fun lazy(modifier: Modifier = Modifier) {
-
-        //val _update = update.collectAsStateWithLifecycle().value
         val _recompose = recompose.collectAsStateWithLifecycle().value
-
-        val list = getList() //: List<LineTextAndColor> = messages.toList().map { it }
+        val list = getList()
         val lazyListState = rememberLazyListState()
         val isAtEnd by remember(lazyListState, list) {
             derivedStateOf {
@@ -183,16 +225,10 @@ class Console {
                     val viewportEnd = layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
 
                     lastVisibleItem?.index == lastIndex &&
-                            (lastVisibleItem.offset + lastVisibleItem.size) <= viewportEnd
+                        (lastVisibleItem.offset + lastVisibleItem.size) <= viewportEnd
                 }
             }
         }
-
-        //var update by remember { mutableStateOf(true) }  //для мигания
-
-        //val lazyListState: LazyListState = rememberLazyListState()
-
-        //println("Последний видимый индекс = $lastVisibleItemIndex")
 
         LaunchedEffect(_recompose, list.size) {
             lastCount = list.size
@@ -207,16 +243,12 @@ class Console {
         }
 
         LaunchedEffect(list.size, tracking, scrollToEndRequest) {
-
-            //Анимация (плавная прокрутка) к последнему элементу.
             val lastIndex = list.lastIndex
 
             if (lastIndex >= 0 && tracking && !isAtEnd) {
                 lazyListState.scrollToItem(index = lastIndex, scrollOffset = 0)
             }
-
         }
-
 
         LazyColumn(
             modifier = Modifier
@@ -225,72 +257,74 @@ class Console {
                 .then(modifier)
                 .scrollbar(
                     count = list.size,
-                    lazyListState,
-                    horizontal = false, //countCorrection = 0,
+                    state = lazyListState,
+                    horizontal = false,
                     hiddenAlpha = 0f
-                ), state = lazyListState
+                ),
+            state = lazyListState
         ) {
-
-            itemsIndexed(list, key = { index, item -> item.id }) { index, item ->
+            itemsIndexed(list, key = { _, item -> item.id }) { index, item ->
                 ScriptItemDraw(item = item, index = index, select = false)
             }
-
         }
     }
 
     /**
-     * 🔧 Установка типа шрифта
-     * 📥 **FontFamily(Font(R.font.jetbrains, FontWeight.Normal))**
+     * Меняет семейство шрифта, используемое при отрисовке консоли.
      */
     fun setFontFamily(fontFamily: GenericFontFamily) {
         this.fontFamily = fontFamily
     }
 
     /**
-     *  🔧 Установка размера шрифта
+     * Меняет размер шрифта консоли в `sp`.
      */
     fun setFontSize(size: Int) {
         fontSize = size.sp
     }
 
-    //==================================================
-    //PRIVATE METHOD
-    //==================================================
-
+    /**
+     * Отрисовывает одну строку консоли с учетом мигающих сегментов.
+     */
     @Composable
     private fun ScriptItemDraw(
-        item: LineTextAndColor, index: Int, select: Boolean
-    ) { //println("Draw  $index")
-
+        item: LineTextAndColor,
+        index: Int,
+        select: Boolean
+    ) {
         val blinkVisible = if (item.pairList.any { it.flash }) {
             update.collectAsStateWithLifecycle().value
         } else {
             update.value
         }
 
-        val x = convertStringToAnnotatedString(item = item, index = index, blinkVisible = blinkVisible)
+        val text = convertStringToAnnotatedString(item, index, blinkVisible)
 
         Text(
-            x,
+            text = text,
             modifier = Modifier
-                .fillMaxWidth() //.padding(top = 0.dp)
+                .fillMaxWidth()
                 .background(if (select) Color.Cyan else Color.Transparent),
-
             fontSize = fontSize,
             lineHeight = lineHeight,
-            fontFamily = fontFamily,
+            fontFamily = fontFamily
         )
-
     }
 
+    /**
+     * Собирает `AnnotatedString` из цветных сегментов строки и,
+     * при необходимости, добавляет номер строки слева.
+     */
     private fun convertStringToAnnotatedString(
         item: LineTextAndColor,
         index: Int,
         blinkVisible: Boolean
     ): AnnotatedString {
         return buildAnnotatedString {
-            if (lineVisible) withStyle(style = SpanStyle(color = Color.Gray)) {
-                append("${index}>")
+            if (lineVisible) {
+                withStyle(style = SpanStyle(color = Color.Gray)) {
+                    append("${index}>")
+                }
             }
 
             item.pairList.forEach { part ->
@@ -299,6 +333,7 @@ class Console {
                 } else {
                     consoleBackground
                 }
+
                 val backgroundColor = if (!part.flash || blinkVisible) {
                     part.colorBg
                 } else {
@@ -312,11 +347,95 @@ class Console {
                         fontFamily = fontFamily,
                         textDecoration = if (part.underline) TextDecoration.Underline else null,
                         fontWeight = if (part.bold) FontWeight.Bold else null,
-                        fontStyle = if (part.italic) FontStyle.Italic else null,
+                        fontStyle = if (part.italic) FontStyle.Italic else null
                     )
-                ) { append(part.text) }
+                ) {
+                    append(part.text)
+                }
             }
         }
     }
 
+    /**
+     * Создает одну строку консоли из простого текста и базовых параметров оформления.
+     */
+    private fun buildLine(
+        text: String,
+        color: Color,
+        bgColor: Color,
+        flash: Boolean,
+        remoteLineId: Long? = null
+    ): LineTextAndColor {
+        return LineTextAndColor(
+            text = text,
+            pairList = mutableStateListOf(
+                PairTextAndColor(
+                    text = text,
+                    colorText = color,
+                    colorBg = bgColor,
+                    flash = flash
+                )
+            ),
+            remoteLineId = remoteLineId
+        )
+    }
+
+    /**
+     * Гарантирует, что для следующей сетевой строки существует placeholder,
+     * в который можно безопасно дописывать приходящие данные.
+     */
+    private fun ensureRemotePlaceholder(remoteLineId: Long) {
+        val exists = messages.messages.any { it.remoteLineId == remoteLineId }
+        if (exists) return
+
+        messages.add(
+            buildLine(
+                text = " ",
+                color = Color.Green,
+                bgColor = Color.Black,
+                flash = true,
+                remoteLineId = remoteLineId
+            ).copy(
+                pairList = mutableStateListOf(
+                    PairTextAndColor(
+                        text = "▁",
+                        colorText = Color.Green,
+                        colorBg = Color.Black,
+                        flash = true
+                    )
+                )
+            )
+        )
+    }
+
+    /**
+     * Вставляет все локальные сообщения, которые ждали завершения
+     * указанной сетевой строки.
+     */
+    private fun flushPendingLocalMessages(remoteLineId: Long) {
+        val iterator = pendingLocalMessages.iterator()
+        while (iterator.hasNext()) {
+            val pending = iterator.next()
+            if (pending.remoteLineId == remoteLineId) {
+                insertBeforeTrailingPlaceholder(pending.line)
+                iterator.remove()
+            }
+        }
+    }
+
+    /**
+     * Вставляет локальную строку перед завершающим placeholder сетевого хвоста,
+     * чтобы она не затиралась последующими обновлениями входящих данных.
+     */
+    private fun insertBeforeTrailingPlaceholder(line: LineTextAndColor) {
+        val placeholderIndex = messages.messages.indexOfLast {
+            it.remoteLineId != null && it.text == " "
+        }
+
+        if (placeholderIndex >= 0) {
+            messages.messages.add(placeholderIndex, line)
+        } else {
+            messages.add(line)
+        }
+    }
 }

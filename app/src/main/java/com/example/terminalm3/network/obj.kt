@@ -2,7 +2,11 @@ package com.example.terminalm3.network
 
 import kotlinx.coroutines.channels.Channel
 
-data class NetCommand(var cmd : String, var newString : Boolean =  false)
+data class NetCommand(
+    var cmd: String,
+    var newString: Boolean = false,
+    var lineId: Long = 0L
+)
 
 //Канал передачи
 val channelNetworkIn = Channel<String>(Channel.UNLIMITED)

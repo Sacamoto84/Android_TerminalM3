@@ -24,14 +24,12 @@ class VM : ViewModel() {
         }
     }
 
-    // Создание списка pairTextAndColor из исходного текста
     private fun text_to_paitList(
         txt: String,
         mod: PairTextAndColor? = null
     ): SnapshotStateList<PairTextAndColor> {
         val pair: SnapshotStateList<PairTextAndColor> = mutableStateListOf()
 
-        // замена ESC [ на \u001C — это и будет новый разделитель
         val str = txt.replace("\u001B", "\u001C\u001B")
         val list = str.split("\u001C")
 
@@ -53,23 +51,18 @@ class VM : ViewModel() {
         for (s in channelLastString) {
             if (s.cmd.isEmpty()) continue
 
-            val mod =
-                if (Global.isCheckUseCRLF && !s.newString) {
-                    PairTextAndColor("_", Color.Green, Color.Black, true, flash = true)
-                } else {
-                    null
-                }
+            val mod = if (Global.isCheckUseCRLF && !s.newString) {
+                PairTextAndColor("_", Color.Green, Color.Black, true, flash = true)
+            } else {
+                null
+            }
 
             val pair = text_to_paitList(s.cmd, mod)
 
             withContext(Dispatchers.Main.immediate) {
-                if (console.messages.messages.isNotEmpty()) {
-                    val lastIndex = console.messages.messages.lastIndex
-                    val current = console.messages.messages[lastIndex]
-                    console.messages.messages[lastIndex] = current.copy( text = s.cmd, pairList = pair )
-
-                    if (s.newString) { console.print("▁", flash = true) }
-                    //console.recompose()
+                console.updateRemoteLine(s.lineId, s.cmd, pair)
+                if (s.newString) {
+                    console.completeRemoteLine(s.lineId, s.lineId + 1)
                 }
             }
         }
