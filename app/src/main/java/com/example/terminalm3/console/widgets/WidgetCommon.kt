@@ -24,7 +24,10 @@ import com.example.terminalm3.console.AlarmSeverity
 import com.example.terminalm3.console.ConsoleWidgetSpec
 import com.example.terminalm3.console.KeyValueGridItem
 import com.example.terminalm3.console.LedRowItem
+import com.example.terminalm3.console.ModbusDirection
+import com.example.terminalm3.console.ModbusFieldRow
 import com.example.terminalm3.console.PinBankItem
+import com.example.terminalm3.console.RegisterTableRow
 import com.example.terminalm3.console.TimelineItem
 
 internal const val CONSOLE_WIDGET_PREVIEW_BG = 0xFF090909
@@ -113,13 +116,17 @@ internal fun severityLabel(severity: AlarmSeverity): String {
  * `ui type=pin-bank title="GPIO" items="D1:on|D2:off|D3:warn|A0:adc|PWM1:pwm"`
  * `ui type=timeline title="Boot" items="12:01 Boot|12:03 WiFi connected|12:05 MQTT online"`
  * `ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|T2|T3|T4|T5" min=23 max=25 color=#4FC3F7`
+ * `ui type=bitfield label="STATUS" value=0xB38F bits=16`
+ * `ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width=8 addr=0x1000 ascii=on`
+ * `ui type=register-table title="Holding Registers" rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"`
+ * `ui type=modbus-frame title="Read Holding Registers" direction=request data="01 03 00 10 00 02 C5 CE" fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"`
  */
 @Preview(
     name = "Widget Gallery",
     showBackground = true,
     backgroundColor = CONSOLE_WIDGET_PREVIEW_BG,
     widthDp = 420,
-    heightDp = 3200
+    heightDp = 4700
 )
 @Composable
 internal fun PreviewConsoleWidgetGallery() {
@@ -144,6 +151,10 @@ internal fun PreviewConsoleWidgetGallery() {
             PinBankConsoleWidget(previewPinBankSpec())
             TimelineConsoleWidget(previewTimelineSpec())
             LineChartConsoleWidget(previewLineChartSpec())
+            BitFieldConsoleWidget(previewBitFieldSpec())
+            HexDumpConsoleWidget(previewHexDumpSpec())
+            RegisterTableConsoleWidget(previewRegisterTableSpec())
+            ModbusFrameConsoleWidget(previewModbusFrameSpec())
         }
     }
 }
@@ -315,4 +326,44 @@ internal fun previewLineChartSpec() = ConsoleWidgetSpec.LineChart(
     max = 25f,
     color = Color(0xFF4FC3F7),
     fillColor = Color(0x224FC3F7)
+)
+
+internal fun previewBitFieldSpec() = ConsoleWidgetSpec.BitField(
+    label = "STATUS",
+    value = 0xB38Fu,
+    bitCount = 16
+)
+
+internal fun previewHexDumpSpec() = ConsoleWidgetSpec.HexDump(
+    title = "RX Buffer",
+    bytes = listOf(
+        0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F,
+        0x72, 0x6C, 0x64, 0x21, 0x00, 0x1B, 0x0D, 0x0A
+    ),
+    bytesPerRow = 8,
+    startAddress = 0x1000,
+    showAscii = true
+)
+
+internal fun previewRegisterTableSpec() = ConsoleWidgetSpec.RegisterTable(
+    title = "Holding Registers",
+    rows = listOf(
+        RegisterTableRow("0000", "0x1234", "Status"),
+        RegisterTableRow("0001", "0x00A5", "Flags"),
+        RegisterTableRow("0002", "0x03E8", "Speed")
+    )
+)
+
+internal fun previewModbusFrameSpec() = ConsoleWidgetSpec.ModbusFrame(
+    title = "Read Holding Registers",
+    direction = ModbusDirection.Request,
+    bytes = listOf(0x01, 0x03, 0x00, 0x10, 0x00, 0x02, 0xC5, 0xCE),
+    fields = listOf(
+        ModbusFieldRow("0", "Addr", "01", "Slave ID"),
+        ModbusFieldRow("1", "Func", "03", "Read Holding"),
+        ModbusFieldRow("2-3", "Start", "0010", "Address"),
+        ModbusFieldRow("4-5", "Count", "0002", "Registers"),
+        ModbusFieldRow("6-7", "CRC", "C5CE", "CRC16")
+    ),
+    accentColor = Color(0xFF4FC3F7)
 )

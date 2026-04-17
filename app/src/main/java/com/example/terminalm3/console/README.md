@@ -8,6 +8,8 @@
 - `ConsoleWidgetProtocolExtras.kt`
 - `ConsoleWidgetProtocolTelemetry.kt`
 - `ConsoleWidgetProtocolDashboard.kt`
+- `ConsoleWidgetProtocolMemory.kt`
+- `ConsoleWidgetProtocolFrames.kt`
 - `widgets/*.kt`
 - `img/*.png`
 
@@ -96,6 +98,10 @@ ui type=kv-grid title="Motor 1" items="Voltage:24.3V|Current:1.8A|Temp:62C|State
 ui type=pin-bank title="GPIO" items="D1:on|D2:off|D3:warn|A0:adc|PWM1:pwm"
 ui type=timeline title="Boot" items="12:01 Boot|12:03 WiFi connected|12:05 MQTT online"
 ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|T2|T3|T4|T5" min=23 max=25 color=#4FC3F7
+ui type=bitfield label="STATUS" value=0xB38F bits=16
+ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width=8 addr=0x1000 ascii=on
+ui type=register-table title="Holding Registers" rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"
+ui type=modbus-frame title="Read Holding Registers" direction=request data="01 03 00 10 00 02 C5 CE" fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"
 ```
 
 ## Виджеты
@@ -728,6 +734,152 @@ ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|
 - `labelColor` - цвет подписей
 - `axisColor` - цвет линий сетки
 
+---
+
+### `type=bitfield`
+
+Побитовое представление регистра, байта, short или word. Виджет полезен для флагов состояния, регистров, масок и контрольных полей.
+
+Пример:
+
+```text
+ui type=bitfield label="STATUS" value=0xB38F bits=16
+```
+
+Картинку для этого виджета можно будет добавить позже, когда подготовишь `BitFieldConsoleWidget.png`.
+
+Параметры:
+
+- `label` - заголовок регистра или поля
+- `value` - значение в `hex`, `bin` или `dec`, например `0xA5`, `0b10100101`, `165`
+- `bits` - разрядность: обычно `8`, `16`, `32`
+- `kind` - альтернативный способ задать разрядность: `byte`, `short`, `word`
+- `setColor` - цвет установленного бита
+- `clearColor` - цвет сброшенного бита
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `labelColor` - цвет заголовка
+- `indexColor` - цвет индексов битов
+- `valueColor` - цвет значения справа
+
+Примечание:
+
+- в этом протоколе `byte = 8`, `short = 16`, `word = 32`
+
+---
+
+### `type=hex-dump`
+
+Табличный вывод байтов в hex-формате с адресами и, при необходимости, ASCII-представлением. Подходит для буферов, пакетов, EEPROM, flash-страниц и любых дампов памяти.
+
+Пример:
+
+```text
+ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width=8 addr=0x1000 ascii=on
+```
+
+Картинку для этого виджета можно будет добавить позже, когда подготовишь `HexDumpConsoleWidget.png`.
+
+Параметры:
+
+- `title` - заголовок блока
+- `data` или `bytes` - строка байтов в hex-формате
+- `width` - сколько байтов выводить в одной строке, обычно `8` или `16`
+- `addr` - стартовый адрес строки, можно в `hex` или `dec`
+- `ascii` - показывать ASCII-колонку (`on/off`)
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `addressColor` - цвет адресов
+- `byteColor` - цвет hex-байтов
+- `asciiColor` - цвет ASCII-колонки
+
+Форматы `data`:
+
+- байты через пробел: `data="48 65 6C 6C 6F"`
+- байты через запятую: `data="48,65,6C,6C,6F"`
+- слитная строка hex: `data="48656C6C6F"`
+
+---
+
+### `type=register-table`
+
+Таблица регистров в формате `addr / value / desc`. Подходит для holding/input регистров, карт регистров устройства и отладочного вывода конфигурации.
+
+Пример:
+
+```text
+ui type=register-table title="Holding Registers" rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"
+```
+
+Картинку для этого виджета можно будет добавить позже, когда подготовишь `RegisterTableConsoleWidget.png`.
+
+Параметры:
+
+- `title` - заголовок таблицы
+- `rows` или `registers` - строки таблицы
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `headerBg` - фон строки заголовков
+- `headerColor` - цвет текста заголовков
+- `addressColor` - цвет колонки адреса
+- `valueColor` - цвет колонки значения
+- `descriptionColor` - цвет описания
+
+Формат `rows`:
+
+- строки разделяются через `;`
+- колонки внутри строки разделяются через `|`
+- формат строки: `ADDR|VALUE|DESC`
+
+Пример:
+
+```text
+rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"
+```
+
+---
+
+### `type=modbus-frame`
+
+Красивый разбор Modbus-кадра по байтам и полям протокола. Подходит для запросов, ответов и exception-фреймов.
+
+Пример:
+
+```text
+ui type=modbus-frame title="Read Holding Registers" direction=request data="01 03 00 10 00 02 C5 CE" fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"
+```
+
+Картинку для этого виджета можно будет добавить позже, когда подготовишь `ModbusFrameConsoleWidget.png`.
+
+Параметры:
+
+- `title` - заголовок блока
+- `direction` - направление кадра: `request`, `response`, `error`
+- `data` или `bytes` - байты кадра в hex-формате
+- `fields` - расшифровка полей кадра
+- `accent` - акцентный цвет
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `byteColor` - цвет байтов
+- `fieldNameColor` - цвет имени поля
+- `fieldMetaColor` - цвет значения поля
+- `fieldDescriptionColor` - цвет описания поля
+
+Формат `fields`:
+
+- поля разделяются через `;`
+- колонки поля разделяются через `|`
+- формат поля: `RANGE|NAME|VALUE|DESC`
+
+Пример:
+
+```text
+fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"
+```
+
 ## Алиасы и заметки
 
 - `widget` полностью эквивалентен `ui`
@@ -749,6 +901,10 @@ ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|
 - `pin-bank`, `pins`, `gpio` - одно и то же
 - `timeline`, `events`, `log` - одно и то же
 - `line-chart`, `chart`, `plot` - одно и то же
+- `bitfield`, `bits`, `register` - одно и то же
+- `hex-dump`, `hexdump`, `dump` - одно и то же
+- `register-table`, `registers`, `reg-table` - одно и то же
+- `modbus-frame`, `modbus`, `frame` - одно и то же
 
 ## Где смотреть реализацию
 
@@ -756,6 +912,8 @@ ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|
 - Базовый разбор команд: [ConsoleWidgetProtocolExtras.kt](./ConsoleWidgetProtocolExtras.kt)
 - Разбор телеметрических команд: [ConsoleWidgetProtocolTelemetry.kt](./ConsoleWidgetProtocolTelemetry.kt)
 - Разбор диагностических команд: [ConsoleWidgetProtocolDashboard.kt](./ConsoleWidgetProtocolDashboard.kt)
+- Разбор бинарных команд и дампов: [ConsoleWidgetProtocolMemory.kt](./ConsoleWidgetProtocolMemory.kt)
+- Разбор кадров и таблиц регистров: [ConsoleWidgetProtocolFrames.kt](./ConsoleWidgetProtocolFrames.kt)
 - Compose-виджеты: [`widgets/`](./widgets)
 
 

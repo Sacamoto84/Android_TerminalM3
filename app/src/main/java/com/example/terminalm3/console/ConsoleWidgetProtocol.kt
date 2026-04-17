@@ -6,15 +6,19 @@ import com.example.terminalm3.console.widgets.AlarmCardConsoleWidget
 import com.example.terminalm3.console.widgets.BadgeConsoleWidget
 import com.example.terminalm3.console.widgets.BarGroupConsoleWidget
 import com.example.terminalm3.console.widgets.BatteryConsoleWidget
+import com.example.terminalm3.console.widgets.BitFieldConsoleWidget
 import com.example.terminalm3.console.widgets.DotConsoleWidget
 import com.example.terminalm3.console.widgets.GaugeConsoleWidget
+import com.example.terminalm3.console.widgets.HexDumpConsoleWidget
 import com.example.terminalm3.console.widgets.ImageConsoleWidget
 import com.example.terminalm3.console.widgets.KeyValueGridConsoleWidget
 import com.example.terminalm3.console.widgets.LedRowConsoleWidget
 import com.example.terminalm3.console.widgets.LineChartConsoleWidget
+import com.example.terminalm3.console.widgets.ModbusFrameConsoleWidget
 import com.example.terminalm3.console.widgets.PanelConsoleWidget
 import com.example.terminalm3.console.widgets.PinBankConsoleWidget
 import com.example.terminalm3.console.widgets.ProgressConsoleWidget
+import com.example.terminalm3.console.widgets.RegisterTableConsoleWidget
 import com.example.terminalm3.console.widgets.SparklineConsoleWidget
 import com.example.terminalm3.console.widgets.StatsCardConsoleWidget
 import com.example.terminalm3.console.widgets.SwitchConsoleWidget
@@ -432,6 +436,98 @@ sealed interface ConsoleWidgetSpec {
         val axisColor: Color = Color(0xFF30404C),
         val showDots: Boolean = true
     ) : ConsoleWidgetSpec
+
+    /**
+     * Побитовое представление регистра, байта или слова.
+     * По умолчанию удобно подходит для `byte=8`, `short=16`, `word=32`.
+     *
+     * Сетевая команда:
+     * `ui type=bitfield label="STATUS" value=0xA5 bits=8`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.BitField(label = "STATUS", value = 0xA5u, bitCount = 8))`
+     */
+    data class BitField(
+        val label: String? = null,
+        val value: ULong,
+        val bitCount: Int = 8,
+        val setColor: Color = Color(0xFF36C36B),
+        val clearColor: Color = Color(0xFF202A31),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val labelColor: Color = Color.White,
+        val indexColor: Color = Color(0xFF8FA1AD),
+        val valueColor: Color = Color(0xFFE3EEF5)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Табличный дамп байтов в hex-формате с адресами и ASCII-представлением.
+     *
+     * Сетевая команда:
+     * `ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width=8 addr=0x1000 ascii=on`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.HexDump(title = "RX Buffer", bytes = listOf(0x48, 0x65)))`
+     */
+    data class HexDump(
+        val title: String? = null,
+        val bytes: List<Int>,
+        val bytesPerRow: Int = 8,
+        val startAddress: Int = 0,
+        val showAscii: Boolean = true,
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val addressColor: Color = Color(0xFF8FA1AD),
+        val byteColor: Color = Color(0xFFE3EEF5),
+        val asciiColor: Color = Color(0xFFB5C0C8)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Таблица регистров в формате `addr / value / desc`.
+     *
+     * Сетевая команда:
+     * `ui type=register-table title="Holding Registers" rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.RegisterTable(rows = listOf(RegisterTableRow("0000", "0x1234", "Status"))))`
+     */
+    data class RegisterTable(
+        val title: String? = null,
+        val rows: List<RegisterTableRow>,
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val headerBackgroundColor: Color = Color(0xFF1A2630),
+        val headerTextColor: Color = Color.White,
+        val addressColor: Color = Color(0xFF8FA1AD),
+        val valueColor: Color = Color(0xFFE3EEF5),
+        val descriptionColor: Color = Color(0xFFB5C0C8)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Разбор Modbus-кадра по байтам и полям протокола.
+     *
+     * Сетевая команда:
+     * `ui type=modbus-frame title="Read Holding Registers" direction=request data="01 03 00 10 00 02 C5 CE" fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.ModbusFrame(bytes = listOf(0x01, 0x03), fields = listOf(ModbusFieldRow("0", "Addr", "01"))))`
+     */
+    data class ModbusFrame(
+        val title: String? = null,
+        val direction: ModbusDirection = ModbusDirection.Request,
+        val bytes: List<Int>,
+        val fields: List<ModbusFieldRow> = emptyList(),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val accentColor: Color,
+        val byteColor: Color = Color(0xFFE3EEF5),
+        val fieldNameColor: Color = Color.White,
+        val fieldMetaColor: Color = Color(0xFF8FA1AD),
+        val fieldDescriptionColor: Color = Color(0xFFB5C0C8)
+    ) : ConsoleWidgetSpec
 }
 
 /**
@@ -472,6 +568,34 @@ data class TimelineItem(
 )
 
 /**
+ * Строка таблицы [ConsoleWidgetSpec.RegisterTable].
+ */
+data class RegisterTableRow(
+    val address: String,
+    val value: String,
+    val description: String? = null
+)
+
+/**
+ * Одно поле в [ConsoleWidgetSpec.ModbusFrame].
+ */
+data class ModbusFieldRow(
+    val range: String,
+    val name: String,
+    val value: String? = null,
+    val description: String? = null
+)
+
+/**
+ * Направление Modbus-кадра.
+ */
+enum class ModbusDirection {
+    Request,
+    Response,
+    Error
+}
+
+/**
  * Уровень важности для [ConsoleWidgetSpec.AlarmCard].
  */
 enum class AlarmSeverity {
@@ -504,6 +628,10 @@ enum class AlarmSeverity {
  * - `type=pin-bank`
  * - `type=timeline`
  * - `type=line-chart`
+ * - `type=bitfield`
+ * - `type=hex-dump`
+ * - `type=register-table`
+ * - `type=modbus-frame`
  *
  * Значения с пробелами нужно оборачивать в кавычки.
  *
@@ -512,6 +640,8 @@ enum class AlarmSeverity {
  * `ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"`
  * `ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" color=#36C36B`
  * `ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12"`
+ * `ui type=bitfield label="STATUS" value=0xA5 bits=8`
+ * `ui type=register-table title="Holding Registers" rows="0000|0x1234|Status"`
  */
 object ConsoleWidgetProtocol {
 
@@ -546,6 +676,10 @@ object ConsoleWidgetProtocol {
             "pin-bank", "pins", "gpio" -> parsePinBankWidget(attributes)
             "timeline", "events", "log" -> parseTimelineWidget(attributes)
             "line-chart", "chart", "plot" -> parseLineChartWidget(attributes)
+            "bitfield", "bits", "register" -> parseBitFieldWidget(attributes)
+            "hex-dump", "hexdump", "dump" -> parseHexDumpWidget(attributes)
+            "register-table", "registers", "reg-table" -> parseRegisterTableWidget(attributes)
+            "modbus-frame", "modbus", "frame" -> parseModbusFrameWidget(attributes)
             else -> error("Unknown widget type: $type")
         }
     }
@@ -718,15 +852,19 @@ fun ConsoleWidget(spec: ConsoleWidgetSpec) {
         is ConsoleWidgetSpec.Badge -> BadgeConsoleWidget(spec)
         is ConsoleWidgetSpec.BarGroup -> BarGroupConsoleWidget(spec)
         is ConsoleWidgetSpec.Battery -> BatteryConsoleWidget(spec)
+        is ConsoleWidgetSpec.BitField -> BitFieldConsoleWidget(spec)
         is ConsoleWidgetSpec.Dot -> DotConsoleWidget(spec)
         is ConsoleWidgetSpec.Gauge -> GaugeConsoleWidget(spec)
+        is ConsoleWidgetSpec.HexDump -> HexDumpConsoleWidget(spec)
         is ConsoleWidgetSpec.Image -> ImageConsoleWidget(spec)
         is ConsoleWidgetSpec.KeyValueGrid -> KeyValueGridConsoleWidget(spec)
         is ConsoleWidgetSpec.LedRow -> LedRowConsoleWidget(spec)
         is ConsoleWidgetSpec.LineChart -> LineChartConsoleWidget(spec)
+        is ConsoleWidgetSpec.ModbusFrame -> ModbusFrameConsoleWidget(spec)
         is ConsoleWidgetSpec.Panel -> PanelConsoleWidget(spec)
         is ConsoleWidgetSpec.PinBank -> PinBankConsoleWidget(spec)
         is ConsoleWidgetSpec.Progress -> ProgressConsoleWidget(spec)
+        is ConsoleWidgetSpec.RegisterTable -> RegisterTableConsoleWidget(spec)
         is ConsoleWidgetSpec.Sparkline -> SparklineConsoleWidget(spec)
         is ConsoleWidgetSpec.StatsCard -> StatsCardConsoleWidget(spec)
         is ConsoleWidgetSpec.TwoColumn -> TwoColumnConsoleWidget(spec)
