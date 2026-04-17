@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terminalm3.network.channelLastString
-import com.example.terminalm3.screen.lazy.PairTextAndColor
+import com.example.terminalm3.console.PairTextAndColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

@@ -3,7 +3,6 @@ package com.example.terminalm3
 import android.content.Context
 import android.net.nsd.NsdServiceInfo
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,8 +14,10 @@ import com.example.terminalm3.lan.ipToBroadCast
 import com.example.terminalm3.lan.readLocalIP
 import com.example.terminalm3.network.channelNetworkIn
 import com.example.terminalm3.network.decoder
-import com.example.terminalm3.screen.lazy.LineTextAndColor
-import com.example.terminalm3.screen.lazy.PairTextAndColor
+import com.example.terminalm3.console.LineTextAndColor
+import com.example.terminalm3.console.PairTextAndColor
+import com.example.terminalm3.console.ConsoleWidgetProtocol
+import com.example.terminalm3.console.printWidgetAfterRemoteLine
 import com.example.terminalm3.utils.NsdHelper
 import com.example.terminalm3.utils.PhoneBeeper
 import kotlinx.coroutines.CoroutineScope
@@ -102,6 +103,25 @@ class Initialization(private val context: Context) {
 
 
         }
+
+        val widgetCommandHandler: (List<String>, Long) -> Unit = { args, lineId ->
+            CoroutineScope(Dispatchers.Main).launch {
+                val spec = ConsoleWidgetProtocol.parse(args).getOrElse { error ->
+                    Timber.w(error, "Не удалось распарсить команду UI")
+                    console.printLocalAfterRemoteLine(
+                        remoteLineId = lineId,
+                        text = "UI command error: ${error.message}",
+                        color = Color(0xFFFF8A80)
+                    )
+                    return@launch
+                }
+
+                console.printWidgetAfterRemoteLine(lineId, spec)
+            }
+        }
+
+        decoder.addCmd("ui", widgetCommandHandler)
+        decoder.addCmd("widget", widgetCommandHandler)
 
         val version = 301 //BuildConfig.VERSION_NAME
 

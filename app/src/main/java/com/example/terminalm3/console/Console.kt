@@ -1,4 +1,4 @@
-package com.example.terminalm3.screen.lazy
+package com.example.terminalm3.console
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

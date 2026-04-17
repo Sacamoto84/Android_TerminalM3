@@ -1,7 +1,7 @@
 package com.example.terminalm3
 
 import androidx.compose.ui.graphics.Color
-import com.example.terminalm3.screen.lazy.PairTextAndColor
+import com.example.terminalm3.console.PairTextAndColor
 import com.example.terminalm3.utils.ColorPalette
 import timber.log.Timber
 

@@ -210,9 +210,7 @@ class NetCommandDecoder(
             return
         }
 
-        val parts = normalizedLine
-            .split(ARGUMENT_SPLIT_REGEX)
-            .filter { it.isNotEmpty() }
+        val parts = tokenizeCommandLine(normalizedLine)
 
         val name = parts.firstOrNull() ?: return
         val arg = parts.drop(1)
@@ -343,6 +341,61 @@ class NetCommandDecoder(
             .trim()
     }
 
+    /**
+     * Разбивает строку команды на токены с поддержкой кавычек.
+     *
+     * Примеры:
+     * - `ui type=badge text="READY NOW"` -> `["ui", "type=badge", "text=READY NOW"]`
+     * - `ui title='Motor 1' value=OK` -> `["ui", "title=Motor 1", "value=OK"]`
+     *
+     * Обратный слеш работает как простой escape следующего символа.
+     */
+    private fun tokenizeCommandLine(value: String): List<String> {
+        val result = mutableListOf<String>()
+        val token = StringBuilder()
+        var quoteChar: Char? = null
+        var escaping = false
+
+        fun flushToken() {
+            if (token.isNotEmpty()) {
+                result.add(token.toString())
+                token.clear()
+            }
+        }
+
+        value.forEach { char ->
+            when {
+                escaping -> {
+                    token.append(char)
+                    escaping = false
+                }
+
+                char == '\\' -> escaping = true
+
+                quoteChar != null -> {
+                    if (char == quoteChar) {
+                        quoteChar = null
+                    } else {
+                        token.append(char)
+                    }
+                }
+
+                char == '"' || char == '\'' -> quoteChar = char
+
+                char.isWhitespace() -> flushToken()
+
+                else -> token.append(char)
+            }
+        }
+
+        if (escaping) {
+            token.append('\\')
+        }
+
+        flushToken()
+        return result
+    }
+
     companion object {
         /**
          * Большая емкость внутреннего канала команд.
@@ -350,11 +403,6 @@ class NetCommandDecoder(
          * Так прием сетевых данных не упирается в парсер слишком рано.
          */
         private const val COMMAND_CHANNEL_CAPACITY = 1_000_000
-
-        /**
-         * Последовательность пробельных символов считается разделителем аргументов.
-         */
-        private val ARGUMENT_SPLIT_REGEX = Regex("\\s+")
 
         /**
          * Визуальная метка символа `CR` для консоли.
