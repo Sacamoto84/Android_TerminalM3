@@ -1,20 +1,22 @@
-# Команды консольных виджетов
+﻿# Команды консольных виджетов
 
-Гайд по командам, которые понимает консольный декодер и через которые можно
-создавать Compose-виджеты прямо из сообщений микроконтроллера.
+Гайд по командам, которые понимает консольный декодер и через которые можно создавать Compose-виджеты прямо из сообщений микроконтроллера.
 
 Файлы, на которые опирается этот гайд:
 
 - `ConsoleWidgetProtocol.kt`
 - `ConsoleWidgetProtocolExtras.kt`
+- `ConsoleWidgetProtocolTelemetry.kt`
 - `widgets/*.kt`
+- `img/*.png`
+
+Картинки виджетов лежат рядом с этим файлом в папке `./img`, поэтому ссылки в этом README будут корректно работать и локально, и на GitHub.
 
 ## Зарегистрированные команды
 
 ### `beep`
 
-Служебная команда. Проигрывает звуковой сигнал на телефоне и вставляет локальный
-элемент в консоль.
+Служебная команда. Проигрывает звуковой сигнал на телефоне и вставляет локальный элемент в консоль.
 
 Пример:
 
@@ -49,6 +51,8 @@ ui type=<widgetType> key=value key=value ...
 ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14
 ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B icon=info
 ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"
+ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" color=#36C36B
+ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"
 ```
 
 ## Правила синтаксиса
@@ -66,8 +70,8 @@ ui type=panel title="Motor 1" subtitle="24.3V 1.8A"
 6. Булевы значения можно передавать как:
    `on/off`, `true/false`, `1/0`, `yes/no`.
 7. Цвета можно передавать как:
-   `#RRGGBB`, `#AARRGGBB`, либо именами `black`, `white`, `red`, `green`,
-   `blue`, `yellow`, `cyan`, `magenta`, `gray`, `orange`.
+   `#RRGGBB`, `#AARRGGBB`, либо именами `black`, `white`, `red`, `green`, `blue`, `yellow`, `cyan`, `magenta`, `gray`, `orange`.
+8. Для списков значений используются разделители `|`, `,` или `;` в зависимости от типа виджета.
 
 ## Быстрые примеры
 
@@ -81,6 +85,11 @@ ui type=2col left="Voltage" right="24.3V"
 ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9;M3|ALARM|91.8"
 ui type=switch label="Pump enable" state=on subtitle="Remote mode"
 ui type=alarm-card title="Overheat" message="Motor 1 temperature reached 92C" severity=critical time="12:41:03" icon=warn2
+ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" min=18 max=28 color=#36C36B display="25C" points=on
+ui type=bar-group title="Motors" labels="M1|M2|M3" values="20|45|80" max=100 colors="#36C36B|#4FC3F7|#FFB300"
+ui type=gauge label="CPU" value=72 max=100 unit="%" color=#36C36B
+ui type=battery label="Battery A" value=78 max=100 charging=true voltage=4.08
+ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"
 ```
 
 ## Виджеты
@@ -94,6 +103,14 @@ ui type=alarm-card title="Overheat" message="Motor 1 temperature reached 92C" se
 ```text
 ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14
 ```
+
+<p align="center">
+  <img src="./img/BadgeConsoleWidget.png" alt="BadgeConsoleWidget" width="320" />
+  <br />
+  <sub>Compose: <code>BadgeConsoleWidget(spec: ConsoleWidgetSpec.Badge)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14</code></sub>
+</p>
 
 Параметры:
 
@@ -112,6 +129,14 @@ ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14
 ui type=dot color=#00E676 size=16 label="Link active"
 ```
 
+<p align="center">
+  <img src="./img/DotConsoleWidget.png" alt="DotConsoleWidget" width="320" />
+  <br />
+  <sub>Compose: <code>DotConsoleWidget(spec: ConsoleWidgetSpec.Dot)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=dot color=#00E676 size=16 label="Link active"</code></sub>
+</p>
+
 Параметры:
 
 - `color` - цвет круга
@@ -129,6 +154,14 @@ ui type=dot color=#00E676 size=16 label="Link active"
 ui type=image name=info size=40 desc="Info icon"
 ```
 
+<p align="center">
+  <img src="./img/ImageConsoleWidget.png" alt="ImageConsoleWidget" width="240" />
+  <br />
+  <sub>Compose: <code>ImageConsoleWidget(spec: ConsoleWidgetSpec.Image)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=image name=info size=40 desc="Info icon"</code></sub>
+</p>
+
 Параметры:
 
 - `name` - имя drawable без расширения
@@ -144,6 +177,14 @@ ui type=image name=info size=40 desc="Info icon"
 ```text
 ui type=panel title="Motor 1" value=READY subtitle="24.3V 1.8A" accent=#36C36B icon=info
 ```
+
+<p align="center">
+  <img src="./img/PanelConsoleWidget.png" alt="PanelConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>PanelConsoleWidget(spec: ConsoleWidgetSpec.Panel)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=panel title="Motor 1" value=READY subtitle="24.3V 1.8A" accent=#36C36B icon=info</code></sub>
+</p>
 
 Параметры:
 
@@ -168,6 +209,14 @@ ui type=panel title="Motor 1" value=READY subtitle="24.3V 1.8A" accent=#36C36B i
 ui type=progress label="Battery" value=72 max=100 fill=#36C36B display="72%"
 ```
 
+<p align="center">
+  <img src="./img/ProgressConsoleWidget.png" alt="ProgressConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>ProgressConsoleWidget(spec: ConsoleWidgetSpec.Progress)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=progress label="Battery" value=72 max=100 fill=#36C36B display="72%"</code></sub>
+</p>
+
 Параметры:
 
 - `label` - подпись слева
@@ -191,6 +240,14 @@ ui type=progress label="Battery" value=72 max=100 fill=#36C36B display="72%"
 ui type=2col left="Voltage" right="24.3V"
 ```
 
+<p align="center">
+  <img src="./img/TwoColumnConsoleWidget.png" alt="TwoColumnConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>TwoColumnConsoleWidget(spec: ConsoleWidgetSpec.TwoColumn)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=2col left="Voltage" right="24.3V"</code></sub>
+</p>
+
 Параметры:
 
 - `left` - левый текст
@@ -209,6 +266,14 @@ ui type=2col left="Voltage" right="24.3V"
 ```text
 ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9;M3|ALARM|91.8"
 ```
+
+<p align="center">
+  <img src="./img/TableConsoleWidget.png" alt="TableConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>TableConsoleWidget(spec: ConsoleWidgetSpec.Table)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9;M3|ALARM|91.8"</code></sub>
+</p>
 
 Параметры:
 
@@ -230,6 +295,14 @@ ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9;M3|ALAR
 ```text
 ui type=switch label="Pump enable" state=on subtitle="Remote mode"
 ```
+
+<p align="center">
+  <img src="./img/SwitchConsoleWidget.png" alt="SwitchConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>SwitchConsoleWidget(spec: ConsoleWidgetSpec.Switch)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=switch label="Pump enable" state=on subtitle="Remote mode"</code></sub>
+</p>
 
 Параметры:
 
@@ -254,6 +327,14 @@ ui type=switch label="Pump enable" state=on subtitle="Remote mode"
 ui type=alarm-card title="Overheat" message="Motor 1 temperature reached 92C" severity=critical time="12:41:03" icon=warn2
 ```
 
+<p align="center">
+  <img src="./img/AlarmCardConsoleWidget.png" alt="AlarmCardConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>AlarmCardConsoleWidget(spec: ConsoleWidgetSpec.AlarmCard)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=alarm-card title="Overheat" message="Motor 1 temperature reached 92C" severity=critical time="12:41:03" icon=warn2</code></sub>
+</p>
+
 Параметры:
 
 - `title` - заголовок события
@@ -268,6 +349,174 @@ ui type=alarm-card title="Overheat" message="Motor 1 temperature reached 92C" se
 - `messageColor` - цвет описания
 - `metaColor` - цвет времени
 
+### `type=sparkline`
+
+Мини-график тренда внутри одной карточки. Подходит для температуры, тока, RSSI, напряжения и других быстро меняющихся значений.
+
+Пример:
+
+```text
+ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" min=18 max=28 color=#36C36B display="25C" points=on
+```
+
+<p align="center">
+  <img src="./img/SparklineConsoleWidget.png" alt="SparklineConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>SparklineConsoleWidget(spec: ConsoleWidgetSpec.Sparkline)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" min=18 max=28 color=#36C36B display="25C" points=on</code></sub>
+</p>
+
+Параметры:
+
+- `values` - список чисел через `,`, `|` или `;`
+- `label` - подпись слева сверху
+- `display` - значение справа сверху
+- `min` - нижняя граница шкалы
+- `max` - верхняя граница шкалы
+- `color` - цвет линии
+- `fill` - цвет подложки под графиком
+- `points` - показывать точки (`on/off`)
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `labelColor` - цвет подписи
+- `valueColor` - цвет значения
+
+### `type=bar-group`
+
+Группа столбиков для сравнения нескольких каналов или устройств.
+
+Пример:
+
+```text
+ui type=bar-group title="Motors" labels="M1|M2|M3" values="20|45|80" max=100 colors="#36C36B|#4FC3F7|#FFB300"
+```
+
+<p align="center">
+  <img src="./img/BarGroupConsoleWidget.png" alt="BarGroupConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>BarGroupConsoleWidget(spec: ConsoleWidgetSpec.BarGroup)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=bar-group title="Motors" labels="M1|M2|M3" values="20|45|80" max=100 colors="#36C36B|#4FC3F7|#FFB300"</code></sub>
+</p>
+
+Параметры:
+
+- `labels` - подписи столбиков через `|`
+- `values` - значения столбиков через `|`, `,` или `;`
+- `max` - верхняя граница шкалы
+- `title` - заголовок карточки
+- `color` - общий цвет всех столбиков
+- `colors` - список цветов по столбикам через `|`
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `labelColor` - цвет подписей под столбиками
+- `valueColor` - цвет чисел над столбиками
+
+### `type=gauge`
+
+Полукруглый индикатор одного значения.
+
+Пример:
+
+```text
+ui type=gauge label="CPU" value=72 max=100 unit="%" color=#36C36B
+```
+
+<p align="center">
+  <img src="./img/GaugeConsoleWidget.png" alt="GaugeConsoleWidget" width="360" />
+  <br />
+  <sub>Compose: <code>GaugeConsoleWidget(spec: ConsoleWidgetSpec.Gauge)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=gauge label="CPU" value=72 max=100 unit="%" color=#36C36B</code></sub>
+</p>
+
+Параметры:
+
+- `value` - текущее значение
+- `max` - максимальное значение
+- `label` - подпись сверху
+- `unit` - единица измерения, например `%`
+- `display` - текст в центре вместо автогенерации
+- `color` - цвет дуги
+- `track` - цвет фоновой дуги
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `labelColor` - цвет подписи
+- `valueColor` - цвет центрального текста
+
+### `type=battery`
+
+Виджет состояния батареи с уровнем заряда и дополнительной подписью.
+
+Пример:
+
+```text
+ui type=battery label="Battery A" value=78 max=100 charging=true voltage=4.08
+```
+
+<p align="center">
+  <img src="./img/BatteryConsoleWidget.png" alt="BatteryConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>BatteryConsoleWidget(spec: ConsoleWidgetSpec.Battery)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=battery label="Battery A" value=78 max=100 charging=true voltage=4.08</code></sub>
+</p>
+
+Параметры:
+
+- `value` - текущий заряд
+- `max` - максимум, обычно `100`
+- `label` - подпись слева
+- `display` - текст справа, например `78%`
+- `subtitle` - дополнительная строка
+- `voltage` - альтернативный способ передать подпись напряжения
+- `charging` - флаг зарядки (`true/false`, `on/off`)
+- `fill` - цвет заполнения батареи
+- `track` - цвет внутреннего фона батареи
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `labelColor` - цвет подписи
+- `valueColor` - цвет значения
+- `subtitleColor` - цвет второй строки
+
+### `type=led-row`
+
+Ряд светодиодных индикаторов состояния. Хорошо подходит для каналов связи, датчиков, режимов и флагов.
+
+Пример:
+
+```text
+ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"
+```
+
+<p align="center">
+  <img src="./img/LedRowConsoleWidget.png" alt="LedRowConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>LedRowConsoleWidget(spec: ConsoleWidgetSpec.LedRow)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"</code></sub>
+</p>
+
+Параметры:
+
+- `items` - список элементов в формате `NAME:STATE_OR_COLOR` через `|`
+- `title` - заголовок карточки
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `labelColor` - цвет подписи элемента
+- `offColor` - цвет выключенного индикатора
+
+Поддерживаемые состояния в `items`:
+
+- `on`, `true`, `1`, `active`, `ok` - активный зеленый индикатор
+- `off`, `false`, `0`, `inactive`, `disabled` - выключенный индикатор
+- `warn`, `warning` - желтый индикатор
+- `error`, `err`, `alarm`, `critical` - красный индикатор
+- вместо состояния можно сразу передать цвет: `NET:#00E676`
+
 ## Алиасы и заметки
 
 - `widget` полностью эквивалентен `ui`
@@ -279,9 +528,15 @@ ui type=alarm-card title="Overheat" message="Motor 1 temperature reached 92C" se
 - `table`, `grid` - одно и то же
 - `switch`, `toggle` - одно и то же
 - `alarm-card`, `alarm`, `alert` - одно и то же
+- `sparkline`, `trend` - одно и то же
+- `bar-group`, `bars`, `columns` - одно и то же
+- `gauge`, `dial` - одно и то же
+- `battery`, `cell` - одно и то же
+- `led-row`, `leds`, `status-row` - одно и то же
 
 ## Где смотреть реализацию
 
 - Протокол и `spec`: [ConsoleWidgetProtocol.kt](./ConsoleWidgetProtocol.kt)
-- Разбор сложных команд: [ConsoleWidgetProtocolExtras.kt](./ConsoleWidgetProtocolExtras.kt)
+- Базовый разбор команд: [ConsoleWidgetProtocolExtras.kt](./ConsoleWidgetProtocolExtras.kt)
+- Разбор телеметрических команд: [ConsoleWidgetProtocolTelemetry.kt](./ConsoleWidgetProtocolTelemetry.kt)
 - Compose-виджеты: [`widgets/`](./widgets)

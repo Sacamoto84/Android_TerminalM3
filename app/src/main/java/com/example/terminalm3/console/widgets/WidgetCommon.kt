@@ -99,13 +99,18 @@ internal fun severityLabel(severity: AlarmSeverity): String {
  * `ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9;M3|ALARM|91.8"`
  * `ui type=switch label="Pump enable" state=on subtitle="Remote mode"`
  * `ui type=alarm-card title="Overheat" message="Motor 1 temperature reached 92C" severity=critical time="12:41:03" icon=warn2`
+ * `ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" min=18 max=28 color=#36C36B display="25C" points=on`
+ * `ui type=bar-group title="Motors" labels="M1|M2|M3" values="20|45|80" max=100 colors="#36C36B|#4FC3F7|#FFB300"`
+ * `ui type=gauge label="CPU" value=72 max=100 unit="%" color=#36C36B`
+ * `ui type=battery label="Battery A" value=78 max=100 charging=true voltage=4.08`
+ * `ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"`
  */
 @Preview(
     name = "Widget Gallery",
     showBackground = true,
     backgroundColor = CONSOLE_WIDGET_PREVIEW_BG,
     widthDp = 420,
-    heightDp = 1400
+    heightDp = 2200
 )
 @Composable
 internal fun PreviewConsoleWidgetGallery() {
@@ -120,6 +125,11 @@ internal fun PreviewConsoleWidgetGallery() {
             TableConsoleWidget(previewTableSpec())
             SwitchConsoleWidget(previewSwitchSpec())
             AlarmCardConsoleWidget(previewAlarmCardSpec())
+            SparklineConsoleWidget(previewSparklineSpec())
+            BarGroupConsoleWidget(previewBarGroupSpec())
+            GaugeConsoleWidget(previewGaugeSpec())
+            BatteryConsoleWidget(previewBatterySpec())
+            LedRowConsoleWidget(previewLedRowSpec())
         }
     }
 }
@@ -189,4 +199,55 @@ internal fun previewAlarmCardSpec() = ConsoleWidgetSpec.AlarmCard(
     messageColor = Color(0xFFFFD8E1),
     metaColor = Color(0xFFFF9AB0),
     iconName = "warn2"
+)
+
+internal fun previewSparklineSpec() = ConsoleWidgetSpec.Sparkline(
+    label = "Temp",
+    values = listOf(21f, 22f, 22f, 23f, 24f, 23f, 25f),
+    min = 18f,
+    max = 28f,
+    text = "25C",
+    lineColor = Color(0xFF36C36B),
+    fillColor = Color(0x2236C36B),
+    showDots = true
+)
+
+internal fun previewBarGroupSpec() = ConsoleWidgetSpec.BarGroup(
+    title = "Motors",
+    labels = listOf("M1", "M2", "M3"),
+    values = listOf(20f, 45f, 80f),
+    max = 100f,
+    colors = listOf(
+        Color(0xFF36C36B),
+        Color(0xFF4FC3F7),
+        Color(0xFFFFB300)
+    )
+)
+
+internal fun previewGaugeSpec() = ConsoleWidgetSpec.Gauge(
+    label = "CPU",
+    value = 72f,
+    max = 100f,
+    unit = "%",
+    text = "72%",
+    color = Color(0xFF36C36B)
+)
+
+internal fun previewBatterySpec() = ConsoleWidgetSpec.Battery(
+    label = "Battery A",
+    value = 78f,
+    max = 100f,
+    text = "78%",
+    subtitle = "4.08V",
+    charging = true
+)
+
+internal fun previewLedRowSpec() = ConsoleWidgetSpec.LedRow(
+    title = "Links",
+    items = listOf(
+        com.example.terminalm3.console.LedRowItem("NET", Color(0xFF00E676), true),
+        com.example.terminalm3.console.LedRowItem("MQTT", Color(0xFF00E676), true),
+        com.example.terminalm3.console.LedRowItem("ERR", Color(0xFFFF5252), true),
+        com.example.terminalm3.console.LedRowItem("GPS", Color(0xFF54616C), false)
+    )
 )

@@ -4,10 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.example.terminalm3.console.widgets.AlarmCardConsoleWidget
 import com.example.terminalm3.console.widgets.BadgeConsoleWidget
+import com.example.terminalm3.console.widgets.BarGroupConsoleWidget
+import com.example.terminalm3.console.widgets.BatteryConsoleWidget
 import com.example.terminalm3.console.widgets.DotConsoleWidget
+import com.example.terminalm3.console.widgets.GaugeConsoleWidget
 import com.example.terminalm3.console.widgets.ImageConsoleWidget
+import com.example.terminalm3.console.widgets.LedRowConsoleWidget
 import com.example.terminalm3.console.widgets.PanelConsoleWidget
 import com.example.terminalm3.console.widgets.ProgressConsoleWidget
+import com.example.terminalm3.console.widgets.SparklineConsoleWidget
 import com.example.terminalm3.console.widgets.SwitchConsoleWidget
 import com.example.terminalm3.console.widgets.TableConsoleWidget
 import com.example.terminalm3.console.widgets.TwoColumnConsoleWidget
@@ -195,7 +200,133 @@ sealed interface ConsoleWidgetSpec {
         val metaColor: Color,
         val iconName: String? = null
     ) : ConsoleWidgetSpec
+
+    /**
+     * Мини-график тренда внутри одной карточки.
+     * Удобен для температуры, RSSI, напряжения и другой компактной телеметрии.
+     *
+     * Сетевая команда:
+     * `ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" min=18 max=28 color=#36C36B display="25C" points=on`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.Sparkline(label = "Temp", values = listOf(21f, 22f, 25f)))`
+     */
+    data class Sparkline(
+        val label: String? = null,
+        val values: List<Float>,
+        val min: Float? = null,
+        val max: Float? = null,
+        val text: String? = null,
+        val lineColor: Color = Color(0xFF36C36B),
+        val fillColor: Color = Color(0x2236C36B),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val labelColor: Color = Color.White,
+        val valueColor: Color = Color(0xFFBDEFCF),
+        val showDots: Boolean = false
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Группа столбиков для быстрого сравнения нескольких каналов или устройств.
+     *
+     * Сетевая команда:
+     * `ui type=bar-group title="Motors" labels="M1|M2|M3" values="20|45|80" max=100 colors="#36C36B|#4FC3F7|#FFB300"`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.BarGroup(title = "Motors", labels = listOf("M1"), values = listOf(20f)))`
+     */
+    data class BarGroup(
+        val title: String? = null,
+        val labels: List<String>,
+        val values: List<Float>,
+        val max: Float? = null,
+        val barColor: Color = Color(0xFFFFB300),
+        val colors: List<Color> = emptyList(),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val labelColor: Color = Color(0xFFB5C0C8),
+        val valueColor: Color = Color.White
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Полукруглый индикатор одного значения.
+     * Подходит для загрузки, температуры, давления, скорости и других одиночных метрик.
+     *
+     * Сетевая команда:
+     * `ui type=gauge label="CPU" value=72 max=100 unit="%" color=#36C36B`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.Gauge(label = "CPU", value = 72f, unit = "%"))`
+     */
+    data class Gauge(
+        val label: String? = null,
+        val value: Float,
+        val max: Float = 100f,
+        val unit: String? = null,
+        val text: String? = null,
+        val color: Color = Color(0xFF36C36B),
+        val trackColor: Color = Color(0xFF1A242B),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val labelColor: Color = Color.White,
+        val valueColor: Color = Color(0xFFBDEFCF)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Визуальное состояние батареи с уровнем заряда и дополнительной подписью.
+     *
+     * Сетевая команда:
+     * `ui type=battery label="Battery A" value=78 max=100 charging=true voltage=4.08`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.Battery(label = "Battery A", value = 78f, charging = true))`
+     */
+    data class Battery(
+        val label: String? = null,
+        val value: Float,
+        val max: Float = 100f,
+        val text: String? = null,
+        val subtitle: String? = null,
+        val charging: Boolean = false,
+        val fillColor: Color? = null,
+        val trackColor: Color = Color(0xFF1A242B),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val labelColor: Color = Color.White,
+        val valueColor: Color = Color(0xFFBDEFCF),
+        val subtitleColor: Color = Color(0xFFB5C0C8)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Ряд светодиодных индикаторов состояния.
+     * Хорошо подходит для каналов связи, датчиков, режимов и флагов.
+     *
+     * Сетевая команда:
+     * `ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.LedRow(title = "Links", items = listOf(LedRowItem("NET", Color.Green))))`
+     */
+    data class LedRow(
+        val title: String? = null,
+        val items: List<LedRowItem>,
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val labelColor: Color = Color(0xFFE3EEF5),
+        val offColor: Color = Color(0xFF54616C)
+    ) : ConsoleWidgetSpec
 }
+
+/**
+ * Один индикатор внутри [ConsoleWidgetSpec.LedRow].
+ */
+data class LedRowItem(
+    val label: String,
+    val color: Color,
+    val isActive: Boolean = true
+)
 
 /**
  * Уровень важности для [ConsoleWidgetSpec.AlarmCard].
@@ -220,12 +351,18 @@ enum class AlarmSeverity {
  * - `type=table`
  * - `type=switch`
  * - `type=alarm-card`
+ * - `type=sparkline`
+ * - `type=bar-group`
+ * - `type=gauge`
+ * - `type=battery`
+ * - `type=led-row`
  *
  * Значения с пробелами нужно оборачивать в кавычки.
  *
  * Примеры:
  * `ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B`
  * `ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"`
+ * `ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" color=#36C36B`
  */
 object ConsoleWidgetProtocol {
 
@@ -250,6 +387,11 @@ object ConsoleWidgetProtocol {
             "table", "grid" -> parseTableWidget(attributes)
             "switch", "toggle" -> parseSwitchWidget(attributes)
             "alarm-card", "alarm", "alert" -> parseAlarmCardWidget(attributes)
+            "sparkline", "trend" -> parseSparklineWidget(attributes)
+            "bar-group", "bars", "columns" -> parseBarGroupWidget(attributes)
+            "gauge", "dial" -> parseGaugeWidget(attributes)
+            "battery", "cell" -> parseBatteryWidget(attributes)
+            "led-row", "leds", "status-row" -> parseLedRowWidget(attributes)
             else -> error("Unknown widget type: $type")
         }
     }
@@ -420,10 +562,15 @@ object ConsoleWidgetProtocol {
 fun ConsoleWidget(spec: ConsoleWidgetSpec) {
     when (spec) {
         is ConsoleWidgetSpec.Badge -> BadgeConsoleWidget(spec)
+        is ConsoleWidgetSpec.BarGroup -> BarGroupConsoleWidget(spec)
+        is ConsoleWidgetSpec.Battery -> BatteryConsoleWidget(spec)
         is ConsoleWidgetSpec.Dot -> DotConsoleWidget(spec)
+        is ConsoleWidgetSpec.Gauge -> GaugeConsoleWidget(spec)
         is ConsoleWidgetSpec.Image -> ImageConsoleWidget(spec)
+        is ConsoleWidgetSpec.LedRow -> LedRowConsoleWidget(spec)
         is ConsoleWidgetSpec.Panel -> PanelConsoleWidget(spec)
         is ConsoleWidgetSpec.Progress -> ProgressConsoleWidget(spec)
+        is ConsoleWidgetSpec.Sparkline -> SparklineConsoleWidget(spec)
         is ConsoleWidgetSpec.TwoColumn -> TwoColumnConsoleWidget(spec)
         is ConsoleWidgetSpec.Table -> TableConsoleWidget(spec)
         is ConsoleWidgetSpec.Switch -> SwitchConsoleWidget(spec)
