@@ -24,6 +24,9 @@ import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
  * Compose renderer for [ConsoleWidgetSpec.Panel].
+ *
+ * Request that creates this preview:
+ * `ui type=panel title="Motor 1" value=READY subtitle="24.3V 1.8A" accent=#36C36B icon=info`
  */
 @Composable
 fun PanelConsoleWidget(spec: ConsoleWidgetSpec.Panel) {
@@ -81,14 +84,6 @@ fun PanelConsoleWidget(spec: ConsoleWidgetSpec.Panel) {
 @Composable
 private fun PreviewPanelConsoleWidget() {
     WidgetPreviewSurface {
-        PanelConsoleWidget(
-            ConsoleWidgetSpec.Panel(
-                title = "Motor 1",
-                value = "READY",
-                subtitle = "24.3V  1.8A",
-                iconName = "info",
-                accentColor = androidx.compose.ui.graphics.Color(0xFF36C36B)
-            )
-        )
+        PanelConsoleWidget(previewPanelSpec())
     }
 }

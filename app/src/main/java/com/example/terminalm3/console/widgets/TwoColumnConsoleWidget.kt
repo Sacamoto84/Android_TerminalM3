@@ -22,6 +22,9 @@ import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
  * Compose renderer for [ConsoleWidgetSpec.TwoColumn].
+ *
+ * Request that creates this preview:
+ * `ui type=2col left="Voltage" right="24.3V"`
  */
 @Composable
 fun TwoColumnConsoleWidget(spec: ConsoleWidgetSpec.TwoColumn) {
@@ -57,11 +60,6 @@ fun TwoColumnConsoleWidget(spec: ConsoleWidgetSpec.TwoColumn) {
 @Composable
 private fun PreviewTwoColumnConsoleWidget() {
     WidgetPreviewSurface {
-        TwoColumnConsoleWidget(
-            ConsoleWidgetSpec.TwoColumn(
-                left = "Voltage",
-                right = "24.3V"
-            )
-        )
+        TwoColumnConsoleWidget(previewTwoColumnSpec())
     }
 }

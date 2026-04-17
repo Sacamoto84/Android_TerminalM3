@@ -26,6 +26,9 @@ import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
  * Compose renderer for [ConsoleWidgetSpec.Switch].
+ *
+ * Request that creates this preview:
+ * `ui type=switch label="Pump enable" state=on subtitle="Remote mode"`
  */
 @Composable
 fun SwitchConsoleWidget(spec: ConsoleWidgetSpec.Switch) {
@@ -81,12 +84,6 @@ fun SwitchConsoleWidget(spec: ConsoleWidgetSpec.Switch) {
 @Composable
 private fun PreviewSwitchConsoleWidget() {
     WidgetPreviewSurface {
-        SwitchConsoleWidget(
-            ConsoleWidgetSpec.Switch(
-                label = "Pump enable",
-                checked = true,
-                subtitle = "Remote mode"
-            )
-        )
+        SwitchConsoleWidget(previewSwitchSpec())
     }
 }

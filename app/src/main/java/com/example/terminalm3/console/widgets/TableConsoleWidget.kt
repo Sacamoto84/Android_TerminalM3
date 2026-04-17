@@ -23,6 +23,9 @@ import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
  * Compose renderer for [ConsoleWidgetSpec.Table].
+ *
+ * Request that creates this preview:
+ * `ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9;M3|ALARM|91.8"`
  */
 @Composable
 fun TableConsoleWidget(spec: ConsoleWidgetSpec.Table) {
@@ -102,15 +105,6 @@ private fun TableRow(
 @Composable
 private fun PreviewTableConsoleWidget() {
     WidgetPreviewSurface {
-        TableConsoleWidget(
-            ConsoleWidgetSpec.Table(
-                headers = listOf("Name", "State", "Temp"),
-                rows = listOf(
-                    listOf("M1", "READY", "24.3"),
-                    listOf("M2", "WAIT", "22.9"),
-                    listOf("M3", "ALARM", "91.8")
-                )
-            )
-        )
+        TableConsoleWidget(previewTableSpec())
     }
 }

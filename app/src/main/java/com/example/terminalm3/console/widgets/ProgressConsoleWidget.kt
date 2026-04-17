@@ -23,6 +23,9 @@ import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
  * Compose renderer for [ConsoleWidgetSpec.Progress].
+ *
+ * Request that creates this preview:
+ * `ui type=progress label="Battery" value=72 max=100 fill=#36C36B display="72%"`
  */
 @Composable
 fun ProgressConsoleWidget(spec: ConsoleWidgetSpec.Progress) {
@@ -83,14 +86,6 @@ fun ProgressConsoleWidget(spec: ConsoleWidgetSpec.Progress) {
 @Composable
 private fun PreviewProgressConsoleWidget() {
     WidgetPreviewSurface {
-        ProgressConsoleWidget(
-            ConsoleWidgetSpec.Progress(
-                label = "Battery",
-                value = 72f,
-                max = 100f,
-                text = "72%",
-                fillColor = androidx.compose.ui.graphics.Color(0xFF36C36B)
-            )
-        )
+        ProgressConsoleWidget(previewProgressSpec())
     }
 }

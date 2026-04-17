@@ -13,20 +13,20 @@ import com.example.terminalm3.console.widgets.TableConsoleWidget
 import com.example.terminalm3.console.widgets.TwoColumnConsoleWidget
 
 /**
- * Data-only description of a console widget that can be rendered by Compose.
+ * Описание консольного виджета в виде данных, которое потом можно отрисовать через Compose.
  *
- * The microcontroller sends a textual command, the app parses it into one of
- * these specs, and then [ConsoleWidget] delegates rendering to the matching
- * widget implementation from the `console/widgets` package.
+ * Микроконтроллер отправляет текстовую команду, приложение разбирает ее в один
+ * из этих `spec`-объектов, а затем [ConsoleWidget] передает отрисовку
+ * соответствующему Compose-виджету из пакета `console/widgets`.
  */
 sealed interface ConsoleWidgetSpec {
     /**
-     * Compact rounded label for short statuses such as READY / OK / FAIL.
+     * Компактная округлая плашка для коротких статусов, например READY / OK / FAIL.
      *
-     * Network command:
+     * Сетевая команда:
      * `ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14`
      *
-     * Local usage:
+     * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.Badge(text = "READY"))`
      */
     data class Badge(
@@ -37,12 +37,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Circular indicator that can optionally show a label on the right.
+     * Круглый индикатор, который при желании может показывать подпись справа.
      *
-     * Network command:
+     * Сетевая команда:
      * `ui type=dot color=#00FF66 size=16 label="Link active"`
      *
-     * Local usage:
+     * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.Dot(color = Color.Green, label = "Link"))`
      */
     data class Dot(
@@ -53,12 +53,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Drawable resource from `res/drawable`.
+     * Drawable-ресурс из `res/drawable`.
      *
-     * Network command:
+     * Сетевая команда:
      * `ui type=image name=info size=32`
      *
-     * Local usage:
+     * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.Image(drawableName = "info"))`
      */
     data class Image(
@@ -68,12 +68,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Rich status card with title, optional subtitle, value and icon.
+     * Расширенная статусная карточка с заголовком, необязательным подзаголовком,
+     * значением и иконкой.
      *
-     * Network command:
+     * Сетевая команда:
      * `ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B icon=info`
      *
-     * Local usage:
+     * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.Panel(title = "Motor 1", value = "READY"))`
      */
     data class Panel(
@@ -90,12 +91,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Progress bar card for battery, loading, production percent, etc.
+     * Карточка с полосой прогресса для батареи, загрузки, процента выполнения и т.д.
      *
-     * Network command:
+     * Сетевая команда:
      * `ui type=progress label="Battery" value=72 max=100 fill=#36C36B display="72%"`
      *
-     * Local usage:
+     * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.Progress(label = "Battery", value = 72f))`
      */
     data class Progress(
@@ -112,12 +113,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Two-column row for key/value style telemetry.
+     * Двухколоночная строка для телеметрии формата `ключ -> значение`.
      *
-     * Network command:
+     * Сетевая команда:
      * `ui type=2col left="Voltage" right="24.3V"`
      *
-     * Local usage:
+     * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.TwoColumn(left = "Voltage", right = "24.3V"))`
      */
     data class TwoColumn(
@@ -130,12 +131,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Table with optional headers and multiple rows.
+     * Таблица с необязательными заголовками и несколькими строками.
      *
-     * Network command:
+     * Сетевая команда:
      * `ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"`
      *
-     * Local usage:
+     * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.Table(headers = listOf("Name"), rows = listOf(listOf("M1"))))`
      */
     data class Table(
@@ -149,12 +150,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Visual on/off switch. It is display-only and does not handle clicks.
+     * Визуальный переключатель ON/OFF.
+     * Он используется только для отображения и не обрабатывает нажатия.
      *
-     * Network command:
+     * Сетевая команда:
      * `ui type=switch label="Pump enable" state=on subtitle="Remote mode"`
      *
-     * Local usage:
+     * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.Switch(label = "Pump", checked = true))`
      */
     data class Switch(
@@ -171,12 +173,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Alarm / alert card with severity palette and optional timestamp.
+     * Карточка аварии / предупреждения с палитрой по уровню важности
+     * и необязательной отметкой времени.
      *
-     * Network command:
+     * Сетевая команда:
      * `ui type=alarm-card title="Overheat" message="Motor 1: 92C" severity=critical time="12:41:03"`
      *
-     * Local usage:
+     * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.AlarmCard(...))`
      */
     data class AlarmCard(
@@ -195,7 +198,7 @@ sealed interface ConsoleWidgetSpec {
 }
 
 /**
- * Severity level for [ConsoleWidgetSpec.AlarmCard].
+ * Уровень важности для [ConsoleWidgetSpec.AlarmCard].
  */
 enum class AlarmSeverity {
     Info,
@@ -205,9 +208,9 @@ enum class AlarmSeverity {
 }
 
 /**
- * Parses key=value command arguments into a [ConsoleWidgetSpec].
+ * Разбирает аргументы команды формата `key=value` в [ConsoleWidgetSpec].
  *
- * Supported types:
+ * Поддерживаемые типы:
  * - `type=badge`
  * - `type=dot`
  * - `type=image`
@@ -218,19 +221,19 @@ enum class AlarmSeverity {
  * - `type=switch`
  * - `type=alarm-card`
  *
- * Values with spaces should be wrapped in quotes.
+ * Значения с пробелами нужно оборачивать в кавычки.
  *
- * Examples:
+ * Примеры:
  * `ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B`
  * `ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"`
  */
 object ConsoleWidgetProtocol {
 
     /**
-     * Parses `key=value` command arguments received from
+     * Разбирает аргументы `key=value`, полученные из
      * [com.example.terminalm3.network.NetCommandDecoder].
      *
-     * Example:
+     * Пример:
      * `ConsoleWidgetProtocol.parse(listOf("type=badge", "text=READY", "bg=#1F7A1F"))`
      */
     fun parse(args: List<String>): Result<ConsoleWidgetSpec> = runCatching {
@@ -408,9 +411,9 @@ object ConsoleWidgetProtocol {
 }
 
 /**
- * Renders a parsed widget specification as a real Compose element.
+ * Отрисовывает разобранное описание виджета как реальный Compose-элемент.
  *
- * Example:
+ * Пример:
  * `ConsoleWidget(ConsoleWidgetSpec.Badge(text = "READY"))`
  */
 @Composable
@@ -429,9 +432,9 @@ fun ConsoleWidget(spec: ConsoleWidgetSpec) {
 }
 
 /**
- * Adds a data-driven widget to the end of the console.
+ * Добавляет виджет, описанный данными, в конец консоли.
  *
- * Example:
+ * Пример:
  * `console.printWidget(ConsoleWidgetSpec.Progress(label = "Battery", value = 72f))`
  */
 fun Console.printWidget(spec: ConsoleWidgetSpec) {
@@ -441,9 +444,9 @@ fun Console.printWidget(spec: ConsoleWidgetSpec) {
 }
 
 /**
- * Adds a data-driven widget after a specific remote line.
+ * Добавляет виджет после указанной удаленной строки консоли.
  *
- * Example:
+ * Пример:
  * `console.printWidgetAfterRemoteLine(lineId, ConsoleWidgetSpec.Dot(label = "Link"))`
  */
 fun Console.printWidgetAfterRemoteLine(remoteLineId: Long, spec: ConsoleWidgetSpec) {

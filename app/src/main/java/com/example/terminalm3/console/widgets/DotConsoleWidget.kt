@@ -19,6 +19,9 @@ import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
  * Compose renderer for [ConsoleWidgetSpec.Dot].
+ *
+ * Request that creates this preview:
+ * `ui type=dot color=#00E676 size=16 label="Link active"`
  */
 @Composable
 fun DotConsoleWidget(spec: ConsoleWidgetSpec.Dot) {
@@ -46,12 +49,6 @@ fun DotConsoleWidget(spec: ConsoleWidgetSpec.Dot) {
 @Composable
 private fun PreviewDotConsoleWidget() {
     WidgetPreviewSurface {
-        DotConsoleWidget(
-            ConsoleWidgetSpec.Dot(
-                color = androidx.compose.ui.graphics.Color(0xFF00E676),
-                sizeDp = 16,
-                label = "Link active"
-            )
-        )
+        DotConsoleWidget(previewDotSpec())
     }
 }

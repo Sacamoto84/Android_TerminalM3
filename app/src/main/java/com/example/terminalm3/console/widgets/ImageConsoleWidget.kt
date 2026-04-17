@@ -11,6 +11,9 @@ import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
  * Compose renderer for [ConsoleWidgetSpec.Image].
+ *
+ * Request that creates this preview:
+ * `ui type=image name=info size=40 desc="Info icon"`
  */
 @Composable
 fun ImageConsoleWidget(spec: ConsoleWidgetSpec.Image) {
@@ -32,12 +35,6 @@ fun ImageConsoleWidget(spec: ConsoleWidgetSpec.Image) {
 @Composable
 private fun PreviewImageConsoleWidget() {
     WidgetPreviewSurface {
-        ImageConsoleWidget(
-            ConsoleWidgetSpec.Image(
-                drawableName = "info",
-                sizeDp = 40,
-                description = "Info icon"
-            )
-        )
+        ImageConsoleWidget(previewImageSpec())
     }
 }

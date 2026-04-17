@@ -26,6 +26,9 @@ import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
  * Compose renderer for [ConsoleWidgetSpec.AlarmCard].
+ *
+ * Request that creates this preview:
+ * `ui type=alarm-card title="Overheat" message="Motor 1 temperature reached 92C" severity=critical time="12:41:03" icon=warn2`
  */
 @Composable
 fun AlarmCardConsoleWidget(spec: ConsoleWidgetSpec.AlarmCard) {
@@ -92,20 +95,6 @@ fun AlarmCardConsoleWidget(spec: ConsoleWidgetSpec.AlarmCard) {
 @Composable
 private fun PreviewAlarmCardConsoleWidget() {
     WidgetPreviewSurface {
-        AlarmCardConsoleWidget(
-            ConsoleWidgetSpec.AlarmCard(
-                title = "Overheat",
-                message = "Motor 1 temperature reached 92C",
-                severity = AlarmSeverity.Critical,
-                timestamp = "12:41:03",
-                accentColor = androidx.compose.ui.graphics.Color(0xFFFF1744),
-                backgroundColor = androidx.compose.ui.graphics.Color(0xFF280812),
-                borderColor = androidx.compose.ui.graphics.Color(0xFF7B1730),
-                titleColor = androidx.compose.ui.graphics.Color.White,
-                messageColor = androidx.compose.ui.graphics.Color(0xFFFFD8E1),
-                metaColor = androidx.compose.ui.graphics.Color(0xFFFF9AB0),
-                iconName = "warn2"
-            )
-        )
+        AlarmCardConsoleWidget(previewAlarmCardSpec())
     }
 }
