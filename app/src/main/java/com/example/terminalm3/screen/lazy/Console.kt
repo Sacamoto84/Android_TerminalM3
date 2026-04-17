@@ -44,13 +44,22 @@ import libs.modifier.scrollbar
 import kotlin.math.max
 import kotlin.random.Random
 
+/**
+ * Compose content block that can be inserted into the console list.
+ */
 typealias ConsoleComposableContent = @Composable () -> Unit
 
+/**
+ * Base type for any console item.
+ */
 sealed interface ConsoleItem {
     val id: Long
     val remoteLineId: Long?
 }
 
+/**
+ * Text item stored in the console list.
+ */
 @Stable
 class ConsoleTextItem(
     text: String,
@@ -66,14 +75,23 @@ class ConsoleTextItem(
     var isPlaceholder by mutableStateOf(isPlaceholder)
 }
 
+/**
+ * Arbitrary Compose item stored in the console list.
+ */
 data class ConsoleComposableItem(
     val content: ConsoleComposableContent,
     override val id: Long = Random.nextLong(),
     override val remoteLineId: Long? = null
 ) : ConsoleItem
 
+/**
+ * Backward-compatible alias for text items.
+ */
 typealias LineTextAndColor = ConsoleTextItem
 
+/**
+ * One styled text fragment inside a text line.
+ */
 data class PairTextAndColor(
     val text: String,
     val colorText: Color,
@@ -84,20 +102,17 @@ data class PairTextAndColor(
     val flash: Boolean = false
 )
 
-class ConsoleMessage {
-    val messages = mutableStateListOf<ConsoleItem>()
-
-    fun add(item: ConsoleItem) {
-        messages.add(item)
-    }
-
-    fun clear() {
-        messages.clear()
-    }
-}
-
+/**
+ * Main console storage and renderer.
+ *
+ * It stores text items, arbitrary Compose items, streaming remote lines,
+ * and the UI state needed for auto-follow and blinking text.
+ */
 class Console {
 
+    /**
+     * Delayed local item that should appear after a specific remote line finishes.
+     */
     private data class PendingLocalItem(
         val remoteLineId: Long,
         val item: ConsoleItem
@@ -120,7 +135,13 @@ class Console {
 
     private val lineHeight get() = (fontSize.value * 1.25f).sp
 
-    val messages = ConsoleMessage()
+    /**
+     * Observable list of all console items.
+     *
+     * This is intentionally exposed directly on `Console` so callers can work with
+     * the list without going through an extra wrapper class.
+     */
+    val messages = mutableStateListOf<ConsoleItem>()
 
     private val recompose = MutableStateFlow(0)
     private var fontFamily = FontFamily(Font(R.font.jetbrains, FontWeight.Normal))
@@ -130,15 +151,24 @@ class Console {
     private val remoteTextItems = mutableMapOf<Long, ConsoleTextItem>()
     private var lastCompletedRemoteLineId = 0L
 
+    /**
+     * Forces list recomposition without changing list size.
+     */
     fun recompose() {
         recompose.value++
     }
 
+    /**
+     * Re-enables auto-follow and requests scroll to the last item.
+     */
     fun requestScrollToEnd() {
         tracking = true
         scrollToEndRequest++
     }
 
+    /**
+     * Clears the console and resets temporary state.
+     */
     fun clear() {
         messages.clear()
         pendingLocalItems.clear()
@@ -146,10 +176,18 @@ class Console {
         lastCompletedRemoteLineId = 0L
     }
 
+    /**
+     * Adds any item to the end of the console.
+     */
     fun addItem(item: ConsoleItem) {
         messages.add(item)
     }
 
+    /**
+     * Inserts an item after a specific remote line.
+     *
+     * If that line has not finished yet, the item is queued.
+     */
     fun addItemAfterRemoteLine(remoteLineId: Long, item: ConsoleItem) {
         if (remoteLineId <= lastCompletedRemoteLineId) {
             insertBeforeTrailingPlaceholder(item)
@@ -158,6 +196,9 @@ class Console {
         }
     }
 
+    /**
+     * Adds a plain text line to the end of the console.
+     */
     fun print(
         text: String,
         color: Color = Color.Green,
@@ -167,10 +208,60 @@ class Console {
         addItem(buildTextItem(text, color, bgColor, flash))
     }
 
+    /**
+     * Appends text to the last non-placeholder text line.
+     *
+     * If there is no suitable text line yet, it falls back to `print(...)`.
+     * By default the appended fragment inherits styling from the last fragment
+     * of the target line.
+     */
+    fun appendToLastTextLine(
+        text: String,
+        color: Color? = null,
+        bgColor: Color? = null,
+        flash: Boolean? = null
+    ) {
+        val target = messages
+            .asReversed()
+            .firstOrNull { item ->
+                item is ConsoleTextItem && !item.isPlaceholder
+            } as? ConsoleTextItem
+
+        if (target == null) {
+            print(
+                text = text,
+                color = color ?: Color.Green,
+                bgColor = bgColor ?: Color.Black,
+                flash = flash ?: false
+            )
+            return
+        }
+
+        val lastPart = target.pairList.lastOrNull()
+        val appendedPart = PairTextAndColor(
+            text = text,
+            colorText = color ?: lastPart?.colorText ?: Color.Green,
+            colorBg = bgColor ?: lastPart?.colorBg ?: Color.Black,
+            bold = lastPart?.bold ?: false,
+            italic = lastPart?.italic ?: false,
+            underline = lastPart?.underline ?: false,
+            flash = flash ?: lastPart?.flash ?: false
+        )
+
+        target.text += text
+        target.pairList = target.pairList + appendedPart
+    }
+
+    /**
+     * Adds arbitrary Compose content to the end of the console.
+     */
     fun printComposable(content: ConsoleComposableContent) {
         addItem(ConsoleComposableItem(content = content))
     }
 
+    /**
+     * Adds a local text line after the specified remote line.
+     */
     fun printLocalAfterRemoteLine(
         remoteLineId: Long,
         text: String,
@@ -184,6 +275,9 @@ class Console {
         )
     }
 
+    /**
+     * Adds arbitrary Compose content after the specified remote line.
+     */
     fun printComposableAfterRemoteLine(
         remoteLineId: Long,
         content: ConsoleComposableContent
@@ -194,6 +288,11 @@ class Console {
         )
     }
 
+    /**
+     * Updates text of a streamed remote line by `remoteLineId`.
+     *
+     * If the line does not exist yet, it is created.
+     */
     fun updateRemoteLine(
         remoteLineId: Long,
         text: String,
@@ -216,14 +315,24 @@ class Console {
         messages.add(newItem)
     }
 
+    /**
+     * Marks a remote line as complete, creates a placeholder for the next one,
+     * and flushes delayed local items.
+     */
     fun completeRemoteLine(remoteLineId: Long, nextRemoteLineId: Long) {
         lastCompletedRemoteLineId = max(lastCompletedRemoteLineId, remoteLineId)
         ensureRemotePlaceholder(nextRemoteLineId)
         flushPendingLocalItems(remoteLineId)
     }
 
-    fun getList(): List<ConsoleItem> = messages.messages
+    /**
+     * Returns the current console content in render order.
+     */
+    fun getList(): List<ConsoleItem> = messages
 
+    /**
+     * Renders the console as a LazyColumn.
+     */
     @Composable
     fun lazy(modifier: Modifier = Modifier) {
         recompose.collectAsStateWithLifecycle().value
@@ -290,14 +399,23 @@ class Console {
         }
     }
 
+    /**
+     * Sets font family for text lines.
+     */
     fun setFontFamily(fontFamily: GenericFontFamily) {
         this.fontFamily = fontFamily
     }
 
+    /**
+     * Sets font size for text lines.
+     */
     fun setFontSize(size: Int) {
         fontSize = size.sp
     }
 
+    /**
+     * Draws one text item.
+     */
     @Composable
     private fun drawTextItem(
         item: ConsoleTextItem,
@@ -332,6 +450,9 @@ class Console {
         )
     }
 
+    /**
+     * Draws one arbitrary Compose item.
+     */
     @Composable
     private fun drawComposableItem(
         item: ConsoleComposableItem,
@@ -359,6 +480,9 @@ class Console {
         }
     }
 
+    /**
+     * Builds AnnotatedString from styled text fragments.
+     */
     private fun buildAnnotatedText(
         item: ConsoleTextItem,
         index: Int,
@@ -400,6 +524,9 @@ class Console {
         }
     }
 
+    /**
+     * Creates a text item from plain text and style.
+     */
     private fun buildTextItem(
         text: String,
         color: Color,
@@ -421,6 +548,9 @@ class Console {
         )
     }
 
+    /**
+     * Ensures there is a placeholder for the next remote text line.
+     */
     private fun ensureRemotePlaceholder(remoteLineId: Long) {
         if (remoteTextItems.containsKey(remoteLineId)) return
 
@@ -442,6 +572,9 @@ class Console {
         messages.add(placeholder)
     }
 
+    /**
+     * Flushes delayed local items for a completed remote line.
+     */
     private fun flushPendingLocalItems(remoteLineId: Long) {
         val iterator = pendingLocalItems.iterator()
         while (iterator.hasNext()) {
@@ -453,10 +586,13 @@ class Console {
         }
     }
 
+    /**
+     * Inserts local item before the trailing placeholder if it exists.
+     */
     private fun insertBeforeTrailingPlaceholder(item: ConsoleItem) {
-        val lastItem = messages.messages.lastOrNull()
+        val lastItem = messages.lastOrNull()
         if (lastItem is ConsoleTextItem && lastItem.isPlaceholder) {
-            messages.messages.add(messages.messages.lastIndex, item)
+            messages.add(messages.lastIndex, item)
         } else {
             messages.add(item)
         }
