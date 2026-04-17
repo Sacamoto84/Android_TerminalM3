@@ -7,6 +7,7 @@ import com.example.terminalm3.console.widgets.BadgeConsoleWidget
 import com.example.terminalm3.console.widgets.BarGroupConsoleWidget
 import com.example.terminalm3.console.widgets.BatteryConsoleWidget
 import com.example.terminalm3.console.widgets.BitFieldConsoleWidget
+import com.example.terminalm3.console.widgets.CanFrameConsoleWidget
 import com.example.terminalm3.console.widgets.DotConsoleWidget
 import com.example.terminalm3.console.widgets.GaugeConsoleWidget
 import com.example.terminalm3.console.widgets.HexDumpConsoleWidget
@@ -15,6 +16,7 @@ import com.example.terminalm3.console.widgets.KeyValueGridConsoleWidget
 import com.example.terminalm3.console.widgets.LedRowConsoleWidget
 import com.example.terminalm3.console.widgets.LineChartConsoleWidget
 import com.example.terminalm3.console.widgets.ModbusFrameConsoleWidget
+import com.example.terminalm3.console.widgets.PacketFrameConsoleWidget
 import com.example.terminalm3.console.widgets.PanelConsoleWidget
 import com.example.terminalm3.console.widgets.PinBankConsoleWidget
 import com.example.terminalm3.console.widgets.ProgressConsoleWidget
@@ -509,7 +511,7 @@ sealed interface ConsoleWidgetSpec {
      * Разбор Modbus-кадра по байтам и полям протокола.
      *
      * Сетевая команда:
-     * `ui type=modbus-frame title="Read Holding Registers" direction=request data="01 03 00 10 00 02 C5 CE" fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"`
+     * `ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"`
      *
      * Локальное использование:
      * `console.printWidget(ConsoleWidgetSpec.ModbusFrame(bytes = listOf(0x01, 0x03), fields = listOf(ModbusFieldRow("0", "Addr", "01"))))`
@@ -524,6 +526,67 @@ sealed interface ConsoleWidgetSpec {
         val titleColor: Color = Color.White,
         val accentColor: Color,
         val byteColor: Color = Color(0xFFE3EEF5),
+        val fieldNameColor: Color = Color.White,
+        val fieldMetaColor: Color = Color(0xFF8FA1AD),
+        val fieldDescriptionColor: Color = Color(0xFFB5C0C8)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * CAN-кадр с ID, флагами и полезной нагрузкой.
+     *
+     * Сетевая команда:
+     * `ui type=can-frame title="Motor CAN" direction=rx id=0x18FF50E5 ext=true data="11 22 33 44 55 66 77 88" channel=can0`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.CanFrame(frameId = 0x18FF50E5, bytes = listOf(0x11, 0x22)))`
+     */
+    data class CanFrame(
+        val title: String? = null,
+        val direction: FrameDirection = FrameDirection.Rx,
+        val frameId: Int,
+        val bytes: List<Int> = emptyList(),
+        val dlc: Int = bytes.size,
+        val channel: String? = null,
+        val extended: Boolean = false,
+        val remote: Boolean = false,
+        val fd: Boolean = false,
+        val bitrateSwitch: Boolean = false,
+        val fields: List<PacketFieldRow> = emptyList(),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val accentColor: Color,
+        val byteColor: Color = Color(0xFFE3EEF5),
+        val metaColor: Color = Color(0xFF8FA1AD),
+        val fieldNameColor: Color = Color.White,
+        val fieldMetaColor: Color = Color(0xFF8FA1AD),
+        val fieldDescriptionColor: Color = Color(0xFFB5C0C8)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Универсальный бинарный пакет для UART и других произвольных протоколов.
+     *
+     * Сетевая команда:
+     * `ui type=uart-frame title="UART RX" direction=rx channel=UART1 baud=115200 data="AA 55 10 02 01 02 34" fields="0-1|Sync|AA55|Preamble;2|Cmd|10|Command;3|Len|02|Payload length;4-5|Payload|0102|Data;6|CRC|34|Checksum"`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.PacketFrame(protocol = "UART", bytes = listOf(0xAA, 0x55)))`
+     */
+    data class PacketFrame(
+        val title: String? = null,
+        val protocol: String? = null,
+        val direction: FrameDirection = FrameDirection.Rx,
+        val bytes: List<Int>,
+        val channel: String? = null,
+        val baud: String? = null,
+        val fields: List<PacketFieldRow> = emptyList(),
+        val showAscii: Boolean = true,
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val accentColor: Color,
+        val byteColor: Color = Color(0xFFE3EEF5),
+        val metaColor: Color = Color(0xFF8FA1AD),
         val fieldNameColor: Color = Color.White,
         val fieldMetaColor: Color = Color(0xFF8FA1AD),
         val fieldDescriptionColor: Color = Color(0xFFB5C0C8)
@@ -587,6 +650,25 @@ data class ModbusFieldRow(
 )
 
 /**
+ * Универсальное поле бинарного кадра.
+ */
+data class PacketFieldRow(
+    val range: String,
+    val name: String,
+    val value: String? = null,
+    val description: String? = null
+)
+
+/**
+ * Направление транспортного кадра.
+ */
+enum class FrameDirection {
+    Tx,
+    Rx,
+    Error
+}
+
+/**
  * Направление Modbus-кадра.
  */
 enum class ModbusDirection {
@@ -632,6 +714,9 @@ enum class AlarmSeverity {
  * - `type=hex-dump`
  * - `type=register-table`
  * - `type=modbus-frame`
+ * - `type=can-frame`
+ * - `type=uart-frame`
+ * - `type=packet-frame`
  *
  * Значения с пробелами нужно оборачивать в кавычки.
  *
@@ -642,6 +727,7 @@ enum class AlarmSeverity {
  * `ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12"`
  * `ui type=bitfield label="STATUS" value=0xA5 bits=8`
  * `ui type=register-table title="Holding Registers" rows="0000|0x1234|Status"`
+ * `ui type=can-frame id=0x18FF50E5 data="11 22 33 44"`
  */
 object ConsoleWidgetProtocol {
 
@@ -680,6 +766,9 @@ object ConsoleWidgetProtocol {
             "hex-dump", "hexdump", "dump" -> parseHexDumpWidget(attributes)
             "register-table", "registers", "reg-table" -> parseRegisterTableWidget(attributes)
             "modbus-frame", "modbus", "frame" -> parseModbusFrameWidget(attributes)
+            "can-frame", "can" -> parseCanFrameWidget(attributes)
+            "uart-frame", "uart" -> parsePacketFrameWidget(attributes, defaultProtocol = "UART")
+            "packet-frame", "packet" -> parsePacketFrameWidget(attributes)
             else -> error("Unknown widget type: $type")
         }
     }
@@ -853,6 +942,7 @@ fun ConsoleWidget(spec: ConsoleWidgetSpec) {
         is ConsoleWidgetSpec.BarGroup -> BarGroupConsoleWidget(spec)
         is ConsoleWidgetSpec.Battery -> BatteryConsoleWidget(spec)
         is ConsoleWidgetSpec.BitField -> BitFieldConsoleWidget(spec)
+        is ConsoleWidgetSpec.CanFrame -> CanFrameConsoleWidget(spec)
         is ConsoleWidgetSpec.Dot -> DotConsoleWidget(spec)
         is ConsoleWidgetSpec.Gauge -> GaugeConsoleWidget(spec)
         is ConsoleWidgetSpec.HexDump -> HexDumpConsoleWidget(spec)
@@ -861,6 +951,7 @@ fun ConsoleWidget(spec: ConsoleWidgetSpec) {
         is ConsoleWidgetSpec.LedRow -> LedRowConsoleWidget(spec)
         is ConsoleWidgetSpec.LineChart -> LineChartConsoleWidget(spec)
         is ConsoleWidgetSpec.ModbusFrame -> ModbusFrameConsoleWidget(spec)
+        is ConsoleWidgetSpec.PacketFrame -> PacketFrameConsoleWidget(spec)
         is ConsoleWidgetSpec.Panel -> PanelConsoleWidget(spec)
         is ConsoleWidgetSpec.PinBank -> PinBankConsoleWidget(spec)
         is ConsoleWidgetSpec.Progress -> ProgressConsoleWidget(spec)

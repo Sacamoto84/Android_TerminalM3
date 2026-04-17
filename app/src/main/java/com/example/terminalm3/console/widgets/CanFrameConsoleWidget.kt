@@ -5,21 +5,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
- * Compose renderer for [ConsoleWidgetSpec.ModbusFrame].
+ * Compose renderer for [ConsoleWidgetSpec.CanFrame].
  *
  * Request that creates this preview:
- * `ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"`
+ * `ui type=can-frame title="Motor CAN" direction=rx id=0x18FF50E5 ext=true data="11 22 33 44 55 66 77 88" channel=can0 fields="0|Cmd|11|Message type;1-2|RPM|2233|Motor speed;3-4|Temp|4455|Motor temp"`
  */
 @Composable
-fun ModbusFrameConsoleWidget(spec: ConsoleWidgetSpec.ModbusFrame) {
+fun CanFrameConsoleWidget(spec: ConsoleWidgetSpec.CanFrame) {
     val meta = buildList {
-        spec.bytes.getOrNull(0)?.let { address ->
-            add("Addr ${address.toString(16).uppercase().padStart(2, '0')}")
-        }
-        spec.bytes.getOrNull(1)?.let { function ->
-            add("Func ${function.toString(16).uppercase().padStart(2, '0')}")
-        }
-        add("${spec.bytes.size} bytes")
+        add("ID ${formatCanFrameId(spec.frameId, spec.extended)}")
+        add(if (spec.extended) "EXT" else "STD")
+        add("DLC ${spec.dlc}")
+        if (spec.remote) add("RTR")
+        if (spec.fd) add("CAN FD")
+        if (spec.bitrateSwitch) add("BRS")
+        spec.channel?.takeIf { it.isNotBlank() }?.let(::add)
     }.joinToString(" • ")
 
     FrameCard(
@@ -30,18 +30,19 @@ fun ModbusFrameConsoleWidget(spec: ConsoleWidgetSpec.ModbusFrame) {
             title = spec.title,
             titleColor = spec.titleColor,
             accentColor = spec.accentColor,
-            chipText = modbusDirectionLabel(spec.direction)
+            chipText = frameDirectionLabel(spec.direction)
         )
 
         FrameMetaLine(
             text = meta,
-            color = spec.fieldMetaColor
+            color = spec.metaColor
         )
 
         FrameByteGrid(
             bytes = spec.bytes,
             accentColor = spec.accentColor,
-            textColor = spec.byteColor
+            textColor = spec.byteColor,
+            emptyText = if (spec.remote) "Remote frame without payload" else "No payload"
         )
 
         if (spec.fields.isNotEmpty()) {
@@ -65,10 +66,15 @@ fun ModbusFrameConsoleWidget(spec: ConsoleWidgetSpec.ModbusFrame) {
     }
 }
 
-@Preview(name = "Modbus Frame", showBackground = true, backgroundColor = CONSOLE_WIDGET_PREVIEW_BG, widthDp = 420)
+private fun formatCanFrameId(frameId: Int, extended: Boolean): String {
+    val width = if (extended) 8 else 3
+    return "0x${frameId.toUInt().toString(16).uppercase().padStart(width, '0')}"
+}
+
+@Preview(name = "CAN Frame", showBackground = true, backgroundColor = CONSOLE_WIDGET_PREVIEW_BG, widthDp = 420)
 @Composable
-private fun PreviewModbusFrameConsoleWidget() {
+private fun PreviewCanFrameConsoleWidget() {
     WidgetPreviewSurface {
-        ModbusFrameConsoleWidget(previewModbusFrameSpec())
+        CanFrameConsoleWidget(previewCanFrameSpec())
     }
 }

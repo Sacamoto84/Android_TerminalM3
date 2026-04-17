@@ -22,10 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.console.AlarmSeverity
 import com.example.terminalm3.console.ConsoleWidgetSpec
+import com.example.terminalm3.console.FrameDirection
 import com.example.terminalm3.console.KeyValueGridItem
 import com.example.terminalm3.console.LedRowItem
 import com.example.terminalm3.console.ModbusDirection
 import com.example.terminalm3.console.ModbusFieldRow
+import com.example.terminalm3.console.PacketFieldRow
 import com.example.terminalm3.console.PinBankItem
 import com.example.terminalm3.console.RegisterTableRow
 import com.example.terminalm3.console.TimelineItem
@@ -119,14 +121,17 @@ internal fun severityLabel(severity: AlarmSeverity): String {
  * `ui type=bitfield label="STATUS" value=0xB38F bits=16`
  * `ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width=8 addr=0x1000 ascii=on`
  * `ui type=register-table title="Holding Registers" rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"`
- * `ui type=modbus-frame title="Read Holding Registers" direction=request data="01 03 00 10 00 02 C5 CE" fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"`
+ * `ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"`
+ * `ui type=can-frame title="Motor CAN" direction=rx id=0x18FF50E5 ext=true data="11 22 33 44 55 66 77 88" channel=can0`
+ * `ui type=uart-frame title="UART RX" direction=rx channel=UART1 baud=115200 data="AA 55 10 02 01 02 34" fields="0-1|Sync|AA55|Preamble;2|Cmd|10|Command;3|Len|02|Payload length;4-5|Payload|0102|Data;6|CRC|34|Checksum"`
+ * `ui type=packet-frame title="Binary Packet" protocol=CUSTOM direction=tx data="7E A1 02 10 FF 55" ascii=on`
  */
 @Preview(
     name = "Widget Gallery",
     showBackground = true,
     backgroundColor = CONSOLE_WIDGET_PREVIEW_BG,
     widthDp = 420,
-    heightDp = 4700
+    heightDp = 5600
 )
 @Composable
 internal fun PreviewConsoleWidgetGallery() {
@@ -155,6 +160,8 @@ internal fun PreviewConsoleWidgetGallery() {
             HexDumpConsoleWidget(previewHexDumpSpec())
             RegisterTableConsoleWidget(previewRegisterTableSpec())
             ModbusFrameConsoleWidget(previewModbusFrameSpec())
+            CanFrameConsoleWidget(previewCanFrameSpec())
+            PacketFrameConsoleWidget(previewPacketFrameSpec())
         }
     }
 }
@@ -355,7 +362,7 @@ internal fun previewRegisterTableSpec() = ConsoleWidgetSpec.RegisterTable(
 )
 
 internal fun previewModbusFrameSpec() = ConsoleWidgetSpec.ModbusFrame(
-    title = "Read Holding Registers",
+    title = "Read Holding Registers Request",
     direction = ModbusDirection.Request,
     bytes = listOf(0x01, 0x03, 0x00, 0x10, 0x00, 0x02, 0xC5, 0xCE),
     fields = listOf(
@@ -365,5 +372,40 @@ internal fun previewModbusFrameSpec() = ConsoleWidgetSpec.ModbusFrame(
         ModbusFieldRow("4-5", "Count", "0002", "Registers"),
         ModbusFieldRow("6-7", "CRC", "C5CE", "CRC16")
     ),
+    accentColor = Color(0xFF4FC3F7)
+)
+
+internal fun previewCanFrameSpec() = ConsoleWidgetSpec.CanFrame(
+    title = "Motor CAN",
+    direction = FrameDirection.Rx,
+    frameId = 0x18FF50E5,
+    bytes = listOf(0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88),
+    dlc = 8,
+    channel = "can0",
+    extended = true,
+    fields = listOf(
+        PacketFieldRow("0", "Cmd", "11", "Message type"),
+        PacketFieldRow("1-2", "RPM", "2233", "Motor speed"),
+        PacketFieldRow("3-4", "Temp", "4455", "Motor temp"),
+        PacketFieldRow("5-7", "CRC", "667788", "Application CRC")
+    ),
+    accentColor = Color(0xFF36C36B)
+)
+
+internal fun previewPacketFrameSpec() = ConsoleWidgetSpec.PacketFrame(
+    title = "UART RX",
+    protocol = "UART",
+    direction = FrameDirection.Rx,
+    bytes = listOf(0xAA, 0x55, 0x10, 0x02, 0x01, 0x02, 0x34),
+    channel = "UART1",
+    baud = "115200",
+    fields = listOf(
+        PacketFieldRow("0-1", "Sync", "AA55", "Preamble"),
+        PacketFieldRow("2", "Cmd", "10", "Command"),
+        PacketFieldRow("3", "Len", "02", "Payload length"),
+        PacketFieldRow("4-5", "Payload", "0102", "Data"),
+        PacketFieldRow("6", "CRC", "34", "Checksum")
+    ),
+    showAscii = true,
     accentColor = Color(0xFF4FC3F7)
 )

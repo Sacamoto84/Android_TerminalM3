@@ -101,7 +101,10 @@ ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|
 ui type=bitfield label="STATUS" value=0xB38F bits=16
 ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width=8 addr=0x1000 ascii=on
 ui type=register-table title="Holding Registers" rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"
-ui type=modbus-frame title="Read Holding Registers" direction=request data="01 03 00 10 00 02 C5 CE" fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"
+ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"
+ui type=can-frame title="Motor CAN" direction=rx id=0x18FF50E5 ext=true data="11 22 33 44 55 66 77 88" channel=can0
+ui type=uart-frame title="UART RX" direction=rx channel=UART1 baud=115200 data="AA 55 10 02 01 02 34" fields="0-1|Sync|AA55|Preamble;2|Cmd|10|Command;3|Len|02|Payload length;4-5|Payload|0102|Data;6|CRC|34|Checksum"
+ui type=packet-frame title="Binary Packet" protocol=CUSTOM direction=tx data="7E A1 02 10 FF 55" ascii=on
 ```
 
 ## Виджеты
@@ -746,7 +749,13 @@ ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|
 ui type=bitfield label="STATUS" value=0xB38F bits=16
 ```
 
-Картинку для этого виджета можно будет добавить позже, когда подготовишь `BitFieldConsoleWidget.png`.
+<p align="center">
+  <img src="./img/BitFieldConsoleWidget.png" alt="BitFieldConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>BitFieldConsoleWidget(spec: ConsoleWidgetSpec.BitField)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=bitfield label="STATUS" value=0xB38F bits=16</code></sub>
+</p>
 
 Параметры:
 
@@ -778,7 +787,13 @@ ui type=bitfield label="STATUS" value=0xB38F bits=16
 ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width=8 addr=0x1000 ascii=on
 ```
 
-Картинку для этого виджета можно будет добавить позже, когда подготовишь `HexDumpConsoleWidget.png`.
+<p align="center">
+  <img src="./img/HexDumpConsoleWidget.png" alt="HexDumpConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>HexDumpConsoleWidget(spec: ConsoleWidgetSpec.HexDump)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width=8 addr=0x1000 ascii=on</code></sub>
+</p>
 
 Параметры:
 
@@ -812,7 +827,13 @@ ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width
 ui type=register-table title="Holding Registers" rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"
 ```
 
-Картинку для этого виджета можно будет добавить позже, когда подготовишь `RegisterTableConsoleWidget.png`.
+<p align="center">
+  <img src="./img/RegisterTableConsoleWidget.png" alt="RegisterTableConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>RegisterTableConsoleWidget(spec: ConsoleWidgetSpec.RegisterTable)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=register-table title="Holding Registers" rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"</code></sub>
+</p>
 
 Параметры:
 
@@ -848,16 +869,23 @@ rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"
 Пример:
 
 ```text
-ui type=modbus-frame title="Read Holding Registers" direction=request data="01 03 00 10 00 02 C5 CE" fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"
+ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"
 ```
 
-Картинку для этого виджета можно будет добавить позже, когда подготовишь `ModbusFrameConsoleWidget.png`.
+<p align="center">
+  <img src="./img/ModbusFrameConsoleWidget.png" alt="ModbusFrameConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>ModbusFrameConsoleWidget(spec: ConsoleWidgetSpec.ModbusFrame)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"</code></sub>
+</p>
 
 Параметры:
 
 - `title` - заголовок блока
 - `direction` - направление кадра: `request`, `response`, `error`
 - `data` или `bytes` - байты кадра в hex-формате
+- `preset` - `rtu` / `auto` для автоматической расшифровки полей по function code
 - `fields` - расшифровка полей кадра
 - `accent` - акцентный цвет
 - `bg` - фон карточки
@@ -878,6 +906,155 @@ ui type=modbus-frame title="Read Holding Registers" direction=request data="01 0
 
 ```text
 fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Count|0002|Registers;6-7|CRC|C5CE|CRC16"
+```
+
+Автоматический preset:
+
+- если передать `preset=rtu`, приложение само построит типовые поля кадра
+- если `fields` не передан вообще, авторазбор тоже включится сам
+- если передать и `preset=rtu`, и `fields=...`, то автополя будут показаны первыми, а твои ручные поля добавятся следом
+
+Примеры:
+
+```text
+ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"
+ui type=modbus-frame direction=response preset=rtu data="01 03 04 00 64 00 65 7B C4"
+ui type=modbus-frame direction=request preset=rtu data="01 10 00 20 00 02 04 12 34 56 78 9A BC" fields="7-10|Payload|12345678|Register data"
+```
+
+---
+
+### `type=can-frame`
+
+Красивый разбор CAN-кадра с ID, флагами, каналом и произвольной расшифровкой payload.
+
+Пример:
+
+```text
+ui type=can-frame title="Motor CAN" direction=rx id=0x18FF50E5 ext=true data="11 22 33 44 55 66 77 88" channel=can0
+```
+
+<p align="center">
+  <img src="./img/CanFrameConsoleWidget.png" alt="CanFrameConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>CanFrameConsoleWidget(spec: ConsoleWidgetSpec.CanFrame)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=can-frame title="Motor CAN" direction=rx id=0x18FF50E5 ext=true data="11 22 33 44 55 66 77 88" channel=can0</code></sub>
+</p>
+
+Параметры:
+
+- `title` - заголовок карточки
+- `direction` - направление: `rx`, `tx`, `error`
+- `id` или `canId` - CAN identifier в `hex` или `dec`
+- `ext` или `extended` - флаг расширенного ID
+- `data` или `bytes` - payload кадра
+- `dlc` - длина кадра, если нужно показать ее отдельно от `data`
+- `channel` / `bus` / `port` - имя шины, например `can0`
+- `rtr` / `remote` - remote frame
+- `fd` - признак CAN FD
+- `brs` - bitrate switch
+- `fields` - ручная расшифровка payload
+- `accent` - акцентный цвет
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `byteColor` - цвет байтов
+- `metaColor` - цвет служебной строки
+- `fieldNameColor` - цвет имени поля
+- `fieldMetaColor` - цвет значения поля
+- `fieldDescriptionColor` - цвет описания поля
+
+Формат `fields`:
+
+- поля разделяются через `;`
+- колонки поля разделяются через `|`
+- формат поля: `RANGE|NAME|VALUE|DESC`
+
+Примеры:
+
+```text
+ui type=can-frame title="Motor CAN" direction=rx id=0x18FF50E5 ext=true data="11 22 33 44 55 66 77 88" channel=can0
+ui type=can-frame direction=tx id=0x321 data="01 02 03 04" fields="0|Cmd|01|Command;1|Node|02|Node address;2-3|Value|0304|Payload"
+ui type=can-frame direction=rx id=0x123 rtr=true dlc=8 channel=can1
+```
+
+---
+
+### `type=uart-frame`
+
+Виджет произвольного бинарного пакета с упором на UART: показывает направление, порт, скорость, байты, ASCII и расшифровку полей.
+
+Пример:
+
+```text
+ui type=uart-frame title="UART RX" direction=rx channel=UART1 baud=115200 data="AA 55 10 02 01 02 34" fields="0-1|Sync|AA55|Preamble;2|Cmd|10|Command;3|Len|02|Payload length;4-5|Payload|0102|Data;6|CRC|34|Checksum"
+```
+
+<p align="center">
+  <img src="./img/PacketFrameConsoleWidget.png" alt="PacketFrameConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>PacketFrameConsoleWidget(spec: ConsoleWidgetSpec.PacketFrame)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=uart-frame title="UART RX" direction=rx channel=UART1 baud=115200 data="AA 55 10 02 01 02 34" fields="0-1|Sync|AA55|Preamble;2|Cmd|10|Command;3|Len|02|Payload length;4-5|Payload|0102|Data;6|CRC|34|Checksum"</code></sub>
+</p>
+
+Параметры:
+
+- все параметры те же, что и у `packet-frame`
+- дополнительно `protocol` можно не указывать, по умолчанию будет `UART`
+
+---
+
+### `type=packet-frame`
+
+Универсальный бинарный пакет для собственных протоколов поверх UART, RS-485, радиоканала или любого другого транспорта.
+
+Пример:
+
+```text
+ui type=packet-frame title="Binary Packet" protocol=CUSTOM direction=tx data="7E A1 02 10 FF 55" ascii=on
+```
+
+<p align="center">
+  <img src="./img/PacketFrameConsoleWidget.png" alt="PacketFrameConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>PacketFrameConsoleWidget(spec: ConsoleWidgetSpec.PacketFrame)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=packet-frame title="Binary Packet" protocol=CUSTOM direction=tx data="7E A1 02 10 FF 55" ascii=on</code></sub>
+</p>
+
+Параметры:
+
+- `title` - заголовок карточки
+- `protocol` - имя протокола, например `UART`, `RS485`, `CUSTOM`
+- `direction` - направление: `rx`, `tx`, `error`
+- `channel` / `port` / `bus` - логический канал или порт
+- `baud` / `speed` - скорость интерфейса
+- `data` / `bytes` / `frame` - байты пакета
+- `ascii` - показывать ASCII-блок (`on/off`)
+- `fields` - ручная расшифровка полей пакета
+- `accent` - акцентный цвет
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `byteColor` - цвет байтов
+- `metaColor` - цвет служебной строки
+- `fieldNameColor` - цвет имени поля
+- `fieldMetaColor` - цвет значения поля
+- `fieldDescriptionColor` - цвет описания поля
+
+Формат `fields`:
+
+- поля разделяются через `;`
+- колонки поля разделяются через `|`
+- формат поля: `RANGE|NAME|VALUE|DESC`
+
+Примеры:
+
+```text
+ui type=packet-frame title="Binary Packet" protocol=CUSTOM direction=tx data="7E A1 02 10 FF 55" ascii=on
+ui type=packet-frame protocol=RS485 direction=rx channel=COM3 speed=9600 data="02 10 01 00 AA 55" fields="0|Node|02|Node address;1|Cmd|10|Command;2-3|Flags|0100|Status flags;4-5|Tail|AA55|Frame end"
 ```
 
 ## Алиасы и заметки
@@ -905,6 +1082,9 @@ fields="0|Addr|01|Slave ID;1|Func|03|Read Holding;2-3|Start|0010|Address;4-5|Cou
 - `hex-dump`, `hexdump`, `dump` - одно и то же
 - `register-table`, `registers`, `reg-table` - одно и то же
 - `modbus-frame`, `modbus`, `frame` - одно и то же
+- `can-frame`, `can` - одно и то же
+- `uart-frame`, `uart` - одно и то же
+- `packet-frame`, `packet` - одно и то же
 
 ## Где смотреть реализацию
 

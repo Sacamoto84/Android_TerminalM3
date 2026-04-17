@@ -5,20 +5,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.terminalm3.console.ConsoleWidgetSpec
 
 /**
- * Compose renderer for [ConsoleWidgetSpec.ModbusFrame].
+ * Compose renderer for [ConsoleWidgetSpec.PacketFrame].
  *
  * Request that creates this preview:
- * `ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"`
+ * `ui type=uart-frame title="UART RX" direction=rx channel=UART1 baud=115200 data="AA 55 10 02 01 02 34" fields="0-1|Sync|AA55|Preamble;2|Cmd|10|Command;3|Len|02|Payload length;4-5|Payload|0102|Data;6|CRC|34|Checksum"`
  */
 @Composable
-fun ModbusFrameConsoleWidget(spec: ConsoleWidgetSpec.ModbusFrame) {
+fun PacketFrameConsoleWidget(spec: ConsoleWidgetSpec.PacketFrame) {
+    val title = spec.title ?: spec.protocol ?: "Packet Frame"
     val meta = buildList {
-        spec.bytes.getOrNull(0)?.let { address ->
-            add("Addr ${address.toString(16).uppercase().padStart(2, '0')}")
-        }
-        spec.bytes.getOrNull(1)?.let { function ->
-            add("Func ${function.toString(16).uppercase().padStart(2, '0')}")
-        }
+        spec.protocol
+            ?.takeIf { it.isNotBlank() && !it.equals(title, ignoreCase = true) }
+            ?.let { protocol -> add(protocol.uppercase()) }
+        spec.channel?.takeIf { it.isNotBlank() }?.let(::add)
+        spec.baud?.takeIf { it.isNotBlank() }?.let { baud -> add("$baud baud") }
         add("${spec.bytes.size} bytes")
     }.joinToString(" • ")
 
@@ -27,15 +27,15 @@ fun ModbusFrameConsoleWidget(spec: ConsoleWidgetSpec.ModbusFrame) {
         borderColor = spec.borderColor
     ) {
         FrameHeader(
-            title = spec.title,
+            title = title,
             titleColor = spec.titleColor,
             accentColor = spec.accentColor,
-            chipText = modbusDirectionLabel(spec.direction)
+            chipText = frameDirectionLabel(spec.direction)
         )
 
         FrameMetaLine(
             text = meta,
-            color = spec.fieldMetaColor
+            color = spec.metaColor
         )
 
         FrameByteGrid(
@@ -43,6 +43,15 @@ fun ModbusFrameConsoleWidget(spec: ConsoleWidgetSpec.ModbusFrame) {
             accentColor = spec.accentColor,
             textColor = spec.byteColor
         )
+
+        if (spec.showAscii) {
+            FrameAsciiBlock(
+                bytes = spec.bytes,
+                accentColor = spec.accentColor,
+                labelColor = spec.metaColor,
+                textColor = spec.byteColor
+            )
+        }
 
         if (spec.fields.isNotEmpty()) {
             FrameFieldList(
@@ -65,10 +74,10 @@ fun ModbusFrameConsoleWidget(spec: ConsoleWidgetSpec.ModbusFrame) {
     }
 }
 
-@Preview(name = "Modbus Frame", showBackground = true, backgroundColor = CONSOLE_WIDGET_PREVIEW_BG, widthDp = 420)
+@Preview(name = "Packet Frame", showBackground = true, backgroundColor = CONSOLE_WIDGET_PREVIEW_BG, widthDp = 420)
 @Composable
-private fun PreviewModbusFrameConsoleWidget() {
+private fun PreviewPacketFrameConsoleWidget() {
     WidgetPreviewSurface {
-        ModbusFrameConsoleWidget(previewModbusFrameSpec())
+        PacketFrameConsoleWidget(previewPacketFrameSpec())
     }
 }
