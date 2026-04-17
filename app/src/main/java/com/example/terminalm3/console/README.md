@@ -125,6 +125,8 @@ ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14
 - `fg` - цвет текста
 - `size` - размер текста
 
+---
+
 ### `type=dot`
 
 Круглый индикатор, можно с подписью справа.
@@ -150,6 +152,8 @@ ui type=dot color=#00E676 size=16 label="Link active"
 - `label` - подпись справа
 - `labelColor` - цвет подписи
 
+---
+
 ### `type=image`
 
 Картинка из `res/drawable`.
@@ -173,6 +177,8 @@ ui type=image name=info size=40 desc="Info icon"
 - `name` - имя drawable без расширения
 - `size` - размер в `dp`
 - `desc` - `contentDescription`
+
+---
 
 ### `type=panel`
 
@@ -205,6 +211,8 @@ ui type=panel title="Motor 1" value=READY subtitle="24.3V 1.8A" accent=#36C36B i
 - `valueColor` - цвет значения
 - `subtitleColor` - цвет второй строки
 
+---
+
 ### `type=progress`
 
 Карточка с полосой прогресса.
@@ -236,6 +244,8 @@ ui type=progress label="Battery" value=72 max=100 fill=#36C36B display="72%"
 - `labelColor` - цвет подписи
 - `valueColor` - цвет текста справа
 
+---
+
 ### `type=2col`
 
 Строка из двух колонок в формате `ключ -> значение`.
@@ -262,6 +272,8 @@ ui type=2col left="Voltage" right="24.3V"
 - `rightColor` - цвет правой части
 - `bg` - фон
 - `border` - цвет рамки
+
+---
 
 ### `type=table`
 
@@ -291,6 +303,8 @@ ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9;M3|ALAR
 - `cellColor` - цвет текста ячеек
 - `bg` - общий фон таблицы
 - `border` - цвет рамки
+
+---
 
 ### `type=switch`
 
@@ -323,6 +337,8 @@ ui type=switch label="Pump enable" state=on subtitle="Remote mode"
 - `labelColor` - цвет заголовка
 - `subtitleColor` - цвет второй строки
 
+---
+
 ### `type=alarm-card`
 
 Карточка аварии / предупреждения.
@@ -354,6 +370,8 @@ ui type=alarm-card title="Overheat" message="Motor 1 temperature reached 92C" se
 - `titleColor` - цвет заголовка
 - `messageColor` - цвет описания
 - `metaColor` - цвет времени
+
+---
 
 ### `type=sparkline`
 
@@ -388,6 +406,8 @@ ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" min=18 max=28 color
 - `labelColor` - цвет подписи
 - `valueColor` - цвет значения
 
+---
+
 ### `type=bar-group`
 
 Группа столбиков для сравнения нескольких каналов или устройств.
@@ -420,6 +440,8 @@ ui type=bar-group title="Motors" labels="M1|M2|M3" values="20|45|80" max=100 col
 - `labelColor` - цвет подписей под столбиками
 - `valueColor` - цвет чисел над столбиками
 
+---
+
 ### `type=gauge`
 
 Полукруглый индикатор одного значения.
@@ -451,6 +473,8 @@ ui type=gauge label="CPU" value=72 max=100 unit="%" color=#36C36B
 - `border` - цвет рамки
 - `labelColor` - цвет подписи
 - `valueColor` - цвет центрального текста
+
+---
 
 ### `type=battery`
 
@@ -486,6 +510,8 @@ ui type=battery label="Battery A" value=78 max=100 charging=true voltage=4.08
 - `labelColor` - цвет подписи
 - `valueColor` - цвет значения
 - `subtitleColor` - цвет второй строки
+
+---
 
 ### `type=led-row`
 
@@ -523,6 +549,8 @@ ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:of
 - `error`, `err`, `alarm`, `critical` - красный индикатор
 - вместо состояния можно сразу передать цвет: `NET:#00E676`
 
+---
+
 ### `type=stats-card`
 
 Компактная карточка одной метрики с большим числом, единицей измерения и дельтой изменения.
@@ -556,6 +584,8 @@ ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12" subtitle="Motor
 - `subtitleColor` - цвет подписи
 - `deltaColor` - цвет дельты
 
+---
+
 ### `type=kv-grid`
 
 Сетка ключ-значение для компактного блока телеметрии.
@@ -584,6 +614,8 @@ ui type=kv-grid title="Motor 1" items="Voltage:24.3V|Current:1.8A|Temp:62C|State
 - `titleColor` - цвет заголовка
 - `keyColor` - цвет ключей
 - `valueColor` - цвет значений
+
+---
 
 ### `type=pin-bank`
 
@@ -626,6 +658,8 @@ ui type=pin-bank title="GPIO" items="D1:on|D2:off|D3:warn|A0:adc|PWM1:pwm"
 - `out`, `output` - цифровой выход
 - вместо состояния можно передать и цвет, например `D1:#00E676`
 
+---
+
 ### `type=timeline`
 
 Лента событий и этапов процесса.
@@ -657,6 +691,8 @@ ui type=timeline title="Boot" items="12:01 Boot|12:03 WiFi connected|12:05 MQTT 
 - `timeColor` - цвет времени
 - `textColor` - цвет основного текста
 - `subtitleColor` - цвет дополнительной строки
+
+---
 
 ### `type=line-chart`
 
@@ -721,3 +757,5 @@ ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|
 - Разбор телеметрических команд: [ConsoleWidgetProtocolTelemetry.kt](./ConsoleWidgetProtocolTelemetry.kt)
 - Разбор диагностических команд: [ConsoleWidgetProtocolDashboard.kt](./ConsoleWidgetProtocolDashboard.kt)
 - Compose-виджеты: [`widgets/`](./widgets)
+
+
