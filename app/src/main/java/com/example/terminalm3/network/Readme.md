@@ -1,44 +1,91 @@
+## NetCommandDecoder
+
+`NetCommandDecoder` принимает куски текста из `channelNetworkIn`, собирает из них строки и дальше разводит поток в две стороны:
+
+1. В UI через `channelLastString`, чтобы консоль могла показывать:
+   - промежуточную строку, пока `\n` еще не пришел;
+   - завершенную строку, когда строка закрылась.
+2. Во внутренний CLI-парсер, чтобы по завершенной строке можно было вызвать `addCmd(...)`.
+
+### Поток данных
+
 ```mermaid
 flowchart TD
-    
-A(UDP) --> |channelNetworkIn| B(NetCommandDecoder)
-C(BT)  --> |channelNetworkIn| B(NetCommandDecoder)
-
-node1(String) --> node2(NetCommand)
-
-B --> |channelLastString| D("receiveUILastString()") -->  node4{console.add} --> node4
-
+    A["UDP / BT / другой источник"] -->|Channel<String>| B["NetCommandDecoder"]
+    B -->|NetCommand(cmd, newString, lineId)| C["channelLastString"]
+    C --> D["VM / Console"]
+    B -->|CommandPacket(raw, lineId)| E["cliDecoder()"]
+    E --> F["parse()"]
+    F --> G["callback команды"]
 ```
+
+### Что считается строкой
+
+- Декодер завершает строку по `\n`.
+- Если устройство присылает `\r\n`, то:
+  - `\r` остается частью сырой команды;
+  - `\n` закрывает строку;
+  - при включенном `Global.isCheckUseCRLF` в UI рисуются маркеры `CR` и `LF`.
+
+### Зачем два буфера
+
+Внутри декодера есть два представления одной и той же строки:
+
+- `rawLineBuilder`:
+  - хранит исходный текст;
+  - используется для `parse()`;
+  - не должен содержать декоративных вставок для UI.
+
+- `displayLineBuilder`:
+  - хранит строку для консоли;
+  - может содержать подсветку `CR` / `LF`;
+  - отправляется в `channelLastString`.
+
+Это сделано для того, чтобы красивое отображение служебных символов не ломало разбор команд.
+
+### Как использовать
 
 ```kotlin
 decoder.run()
-decoder.addCmd("pong") {
+
+decoder.addCmd("beep") { args, lineId ->
+    // args  - аргументы после имени команды
+    // lineId - id сетевой строки, после которой можно вставить локальный ответ в консоль
 }
 ```
 
+### Что делает `lineId`
 
-```mermaid
-flowchart TD
-    run --> decodeScope
-    run --> commandDecoder
-    run --> cliDecoder
+`lineId` связывает:
 
+- входящую строку из сети;
+- callback команды;
+- локальную вставку в консоль, например `printLocalAfterRemoteLine(...)`
+  или `printComposableAfterRemoteLine(...)`.
 
-subgraph decodeScope
-    channelIn -- полная строка --> channelRoute
-    channelIn ==> channelOutNetCommand
-end
+За счет этого локальный ответ появляется рядом именно с той строкой, которая вызвала команду.
 
-subgraph commandDecoder
-    channelRoute --> channelOutCommand
-end
+### Основные методы
 
-subgraph cliDecoder
-    channelOutCommand --> parse --> r("Выполенение команды")
-end
+- `addCmd(name, cb)`
+  - регистрирует команду;
+  - имя нормализуется, поэтому можно передать и `"beep"`, и `"beep\r"`.
 
-   
+- `run()`
+  - запускает декодер;
+  - повторный вызов игнорируется, чтобы не запускать лишние корутины.
 
-    
-```
+- `decodeScope()`
+  - получает куски текста;
+  - собирает их в строки;
+  - отправляет промежуточные и завершенные данные в UI;
+  - завершенные строки передает в CLI-парсер.
 
+- `cliDecoder()`
+  - берет только завершенные строки;
+  - передает их в `parse()`.
+
+- `parse()`
+  - нормализует строку;
+  - первое слово берет как имя команды;
+  - остальные слова передает как аргументы callback.

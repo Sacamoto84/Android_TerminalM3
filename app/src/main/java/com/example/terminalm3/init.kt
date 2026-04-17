@@ -80,7 +80,7 @@ class Initialization(private val context: Context) {
 
         decoder.run()
 
-        decoder.addCmd("beep\r") { _, lineId ->
+        decoder.addCmd("beep") { _, lineId ->
             CoroutineScope(Dispatchers.Main).launch {
                 PhoneBeeper.beep()
                 Timber.i("Команда beep")
