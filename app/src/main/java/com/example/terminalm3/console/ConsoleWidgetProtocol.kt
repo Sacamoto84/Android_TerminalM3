@@ -1,37 +1,23 @@
 package com.example.terminalm3.console
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.terminalm3.console.widgets.AlarmCardConsoleWidget
+import com.example.terminalm3.console.widgets.BadgeConsoleWidget
+import com.example.terminalm3.console.widgets.DotConsoleWidget
+import com.example.terminalm3.console.widgets.ImageConsoleWidget
+import com.example.terminalm3.console.widgets.PanelConsoleWidget
+import com.example.terminalm3.console.widgets.ProgressConsoleWidget
+import com.example.terminalm3.console.widgets.SwitchConsoleWidget
+import com.example.terminalm3.console.widgets.TableConsoleWidget
+import com.example.terminalm3.console.widgets.TwoColumnConsoleWidget
 
 /**
  * Data-only description of a console widget that can be rendered by Compose.
  *
  * The microcontroller sends a textual command, the app parses it into one of
- * these specs, and then [ConsoleWidget] renders the actual UI element.
+ * these specs, and then [ConsoleWidget] delegates rendering to the matching
+ * widget implementation from the `console/widgets` package.
  */
 sealed interface ConsoleWidgetSpec {
     /**
@@ -430,15 +416,15 @@ object ConsoleWidgetProtocol {
 @Composable
 fun ConsoleWidget(spec: ConsoleWidgetSpec) {
     when (spec) {
-        is ConsoleWidgetSpec.Badge -> BadgeWidget(spec)
-        is ConsoleWidgetSpec.Dot -> DotWidget(spec)
-        is ConsoleWidgetSpec.Image -> ImageWidget(spec)
-        is ConsoleWidgetSpec.Panel -> PanelWidget(spec)
-        is ConsoleWidgetSpec.Progress -> ProgressWidget(spec)
-        is ConsoleWidgetSpec.TwoColumn -> TwoColumnWidget(spec)
-        is ConsoleWidgetSpec.Table -> TableWidget(spec)
-        is ConsoleWidgetSpec.Switch -> SwitchWidget(spec)
-        is ConsoleWidgetSpec.AlarmCard -> AlarmCardWidget(spec)
+        is ConsoleWidgetSpec.Badge -> BadgeConsoleWidget(spec)
+        is ConsoleWidgetSpec.Dot -> DotConsoleWidget(spec)
+        is ConsoleWidgetSpec.Image -> ImageConsoleWidget(spec)
+        is ConsoleWidgetSpec.Panel -> PanelConsoleWidget(spec)
+        is ConsoleWidgetSpec.Progress -> ProgressConsoleWidget(spec)
+        is ConsoleWidgetSpec.TwoColumn -> TwoColumnConsoleWidget(spec)
+        is ConsoleWidgetSpec.Table -> TableConsoleWidget(spec)
+        is ConsoleWidgetSpec.Switch -> SwitchConsoleWidget(spec)
+        is ConsoleWidgetSpec.AlarmCard -> AlarmCardConsoleWidget(spec)
     }
 }
 
@@ -465,149 +451,3 @@ fun Console.printWidgetAfterRemoteLine(remoteLineId: Long, spec: ConsoleWidgetSp
         ConsoleWidget(spec)
     }
 }
-
-/**
- * Compose renderer for [ConsoleWidgetSpec.Badge].
- */
-@Composable
-private fun BadgeWidget(spec: ConsoleWidgetSpec.Badge) {
-    Text(
-        text = spec.text,
-        color = spec.textColor,
-        fontSize = spec.fontSizeSp.sp,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier
-            .clip(RoundedCornerShape(999.dp))
-            .background(spec.backgroundColor)
-            .padding(horizontal = 12.dp, vertical = 6.dp)
-    )
-}
-
-/**
- * Compose renderer for [ConsoleWidgetSpec.Dot].
- */
-@Composable
-private fun DotWidget(spec: ConsoleWidgetSpec.Dot) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(spec.sizeDp.dp)
-                .clip(CircleShape)
-                .background(spec.color)
-        )
-
-        spec.label?.takeIf { it.isNotBlank() }?.let { label ->
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = label,
-                color = spec.labelColor,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
-    }
-}
-
-/**
- * Compose renderer for [ConsoleWidgetSpec.Image].
- */
-@Composable
-private fun ImageWidget(spec: ConsoleWidgetSpec.Image) {
-    val context = LocalContext.current
-    val drawableId = remember(spec.drawableName) {
-        context.resources.getIdentifier(spec.drawableName, "drawable", context.packageName)
-    }
-
-    if (drawableId == 0) {
-        Text(
-            text = "Drawable not found: ${spec.drawableName}",
-            color = Color(0xFFFF8A80),
-            fontSize = 13.sp
-        )
-        return
-    }
-
-    Image(
-        painter = painterResource(drawableId),
-        contentDescription = spec.description,
-        modifier = Modifier.size(spec.sizeDp.dp)
-    )
-}
-
-/**
- * Compose renderer for [ConsoleWidgetSpec.Panel].
- */
-@Composable
-private fun PanelWidget(spec: ConsoleWidgetSpec.Panel) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(spec.backgroundColor)
-            .border(
-                width = 1.dp,
-                color = spec.borderColor,
-                shape = RoundedCornerShape(16.dp)
-            )
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .width(5.dp)
-                .height(44.dp)
-                .clip(RoundedCornerShape(999.dp))
-                .background(spec.accentColor)
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        spec.iconName?.takeIf { it.isNotBlank() }?.let { iconName ->
-            val context = LocalContext.current
-            val drawableId = remember(iconName) {
-                context.resources.getIdentifier(iconName, "drawable", context.packageName)
-            }
-
-            if (drawableId != 0) {
-                Image(
-                    painter = painterResource(drawableId),
-                    contentDescription = spec.title,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-            }
-        }
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = spec.title,
-                color = spec.titleColor,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            spec.subtitle?.takeIf { it.isNotBlank() }?.let { subtitle ->
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = subtitle,
-                    color = spec.subtitleColor,
-                    fontSize = 13.sp
-                )
-            }
-        }
-
-        spec.value?.takeIf { it.isNotBlank() }?.let { value ->
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = value,
-                color = spec.valueColor,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
-}
-
-

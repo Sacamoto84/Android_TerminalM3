@@ -1,32 +1,6 @@
 package com.example.terminalm3.console
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 
 /**
@@ -142,325 +116,17 @@ fun parseAlarmCardWidget(attributes: Map<String, String>): ConsoleWidgetSpec.Ala
     )
 }
 
-/**
- * Compose renderer for [ConsoleWidgetSpec.Progress].
- */
-@Composable
-fun ProgressWidget(spec: ConsoleWidgetSpec.Progress) {
-    val fraction = (spec.value / spec.max).coerceIn(0f, 1f)
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(spec.backgroundColor)
-            .border(1.dp, spec.borderColor, RoundedCornerShape(16.dp))
-            .padding(12.dp)
-    ) {
-        if (!spec.label.isNullOrBlank() || !spec.text.isNullOrBlank()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                spec.label?.takeIf { it.isNotBlank() }?.let { label ->
-                    Text(
-                        text = label,
-                        color = spec.labelColor,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.weight(1f)
-                    )
-                } ?: Spacer(modifier = Modifier.weight(1f))
-
-                spec.text?.takeIf { it.isNotBlank() }?.let { valueText ->
-                    Text(
-                        text = valueText,
-                        color = spec.valueColor,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(12.dp)
-                .clip(RoundedCornerShape(999.dp))
-                .background(spec.trackColor)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(fraction)
-                    .height(12.dp)
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(spec.fillColor)
-            )
-        }
-    }
-}
-
-/**
- * Compose renderer for [ConsoleWidgetSpec.TwoColumn].
- */
-@Composable
-fun TwoColumnWidget(spec: ConsoleWidgetSpec.TwoColumn) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(spec.backgroundColor)
-            .border(1.dp, spec.borderColor, RoundedCornerShape(14.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = spec.left,
-            color = spec.leftColor,
-            fontSize = 14.sp,
-            modifier = Modifier.weight(1f)
-        )
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Text(
-            text = spec.right,
-            color = spec.rightColor,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            textAlign = TextAlign.End
-        )
-    }
-}
-
-/**
- * Compose renderer for [ConsoleWidgetSpec.Table].
- */
-@Composable
-fun TableWidget(spec: ConsoleWidgetSpec.Table) {
-    val columnCount = maxOf(
-        spec.headers.size,
-        spec.rows.maxOfOrNull { row -> row.size } ?: 0
-    ).coerceAtLeast(1)
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(spec.backgroundColor)
-            .border(1.dp, spec.borderColor, RoundedCornerShape(16.dp))
-            .padding(8.dp)
-    ) {
-        if (spec.headers.isNotEmpty()) {
-            TableRowWidget(
-                cells = spec.headers.normalizeWidgetRow(columnCount),
-                textColor = spec.headerTextColor,
-                backgroundColor = spec.headerBackgroundColor,
-                isHeader = true
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-        }
-
-        spec.rows.forEachIndexed { index, row ->
-            val rowBackground = if (index % 2 == 0) {
-                spec.backgroundColor.copy(alpha = 0.30f)
-            } else {
-                spec.backgroundColor.copy(alpha = 0.12f)
-            }
-
-            TableRowWidget(
-                cells = row.normalizeWidgetRow(columnCount),
-                textColor = spec.cellTextColor,
-                backgroundColor = rowBackground,
-                isHeader = false
-            )
-
-            if (index != spec.rows.lastIndex) {
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-        }
-    }
-}
-
-/**
- * Compose renderer for [ConsoleWidgetSpec.Switch].
- */
-@Composable
-fun SwitchWidget(spec: ConsoleWidgetSpec.Switch) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(spec.backgroundColor)
-            .border(1.dp, spec.borderColor, RoundedCornerShape(16.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = spec.label,
-                color = spec.labelColor,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            spec.subtitle?.takeIf { it.isNotBlank() }?.let { subtitle ->
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = subtitle,
-                    color = spec.subtitleColor,
-                    fontSize = 13.sp
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Box(
-            modifier = Modifier
-                .width(46.dp)
-                .height(28.dp)
-                .clip(RoundedCornerShape(999.dp))
-                .background(if (spec.checked) spec.onColor else spec.offColor)
-                .padding(3.dp),
-            contentAlignment = if (spec.checked) Alignment.CenterEnd else Alignment.CenterStart
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(22.dp)
-                    .clip(CircleShape)
-                    .background(spec.thumbColor)
-            )
-        }
-    }
-}
-
-/**
- * Compose renderer for [ConsoleWidgetSpec.AlarmCard].
- */
-@Composable
-fun AlarmCardWidget(spec: ConsoleWidgetSpec.AlarmCard) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(spec.backgroundColor)
-            .border(1.dp, spec.borderColor, RoundedCornerShape(18.dp))
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .width(6.dp)
-                .height(54.dp)
-                .clip(RoundedCornerShape(999.dp))
-                .background(spec.accentColor)
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-        WidgetProtocolIcon(spec.iconName, spec.title, 26)
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = severityLabel(spec.severity),
-                color = spec.accentColor,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(2.dp))
-
-            Text(
-                text = spec.title,
-                color = spec.titleColor,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            spec.message?.takeIf { it.isNotBlank() }?.let { message ->
-                Spacer(modifier = Modifier.height(3.dp))
-                Text(
-                    text = message,
-                    color = spec.messageColor,
-                    fontSize = 13.sp
-                )
-            }
-        }
-
-        spec.timestamp?.takeIf { it.isNotBlank() }?.let { timestamp ->
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = timestamp,
-                color = spec.metaColor,
-                fontSize = 12.sp,
-                textAlign = TextAlign.End
-            )
-        }
-    }
-}
-
-@Composable
-private fun TableRowWidget(
-    cells: List<String>,
-    textColor: Color,
-    backgroundColor: Color,
-    isHeader: Boolean
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(backgroundColor)
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        cells.forEachIndexed { index, cell ->
-            Text(
-                text = cell,
-                color = textColor,
-                fontSize = if (isHeader) 13.sp else 12.sp,
-                fontWeight = if (isHeader) FontWeight.Bold else FontWeight.Normal,
-                modifier = Modifier.weight(1f),
-                textAlign = if (index == 0) TextAlign.Start else TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-private fun WidgetProtocolIcon(iconName: String?, contentDescription: String, sizeDp: Int) {
-    iconName?.takeIf { it.isNotBlank() }?.let { safeName ->
-        val drawableId = rememberWidgetDrawableId(safeName)
-        if (drawableId != 0) {
-            Image(
-                painter = painterResource(drawableId),
-                contentDescription = contentDescription,
-                modifier = Modifier.size(sizeDp.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-        }
-    }
-}
-
-@Composable
-private fun rememberWidgetDrawableId(drawableName: String): Int {
-    val context = LocalContext.current
-    return remember(drawableName) {
-        context.resources.getIdentifier(drawableName, "drawable", context.packageName)
-    }
-}
-
-private fun findAttribute(attributes: Map<String, String>, vararg keys: String): String? {
+internal fun findAttribute(attributes: Map<String, String>, vararg keys: String): String? {
     return keys.firstNotNullOfOrNull { key -> attributes[key] }
 }
 
-private fun requiredAttribute(attributes: Map<String, String>, vararg keys: String): String {
+internal fun requiredAttribute(attributes: Map<String, String>, vararg keys: String): String {
     return findAttribute(attributes, *keys)
         ?.takeIf { it.isNotBlank() }
         ?: error("Missing required parameter: ${keys.joinToString(" / ")}")
 }
 
-private fun splitWidgetList(value: String?, delimiter: Char): List<String> {
+internal fun splitWidgetList(value: String?, delimiter: Char): List<String> {
     return value
         ?.split(delimiter)
         ?.map { it.trim() }
@@ -468,14 +134,14 @@ private fun splitWidgetList(value: String?, delimiter: Char): List<String> {
         .orEmpty()
 }
 
-private fun parseWidgetFloat(value: String?, default: Float): Float {
+internal fun parseWidgetFloat(value: String?, default: Float): Float {
     return value
         ?.replace(',', '.')
         ?.toFloatOrNull()
         ?: default
 }
 
-private fun parseWidgetBoolean(value: String?, default: Boolean): Boolean {
+internal fun parseWidgetBoolean(value: String?, default: Boolean): Boolean {
     return when (value?.trim()?.lowercase()) {
         "1", "true", "on", "yes", "checked", "enabled" -> true
         "0", "false", "off", "no", "unchecked", "disabled" -> false
@@ -484,7 +150,7 @@ private fun parseWidgetBoolean(value: String?, default: Boolean): Boolean {
     }
 }
 
-private fun parseWidgetSeverity(value: String?): AlarmSeverity {
+internal fun parseWidgetSeverity(value: String?): AlarmSeverity {
     return when (value?.trim()?.lowercase()) {
         "info", "notice" -> AlarmSeverity.Info
         "warn", "warning" -> AlarmSeverity.Warn
@@ -494,7 +160,7 @@ private fun parseWidgetSeverity(value: String?): AlarmSeverity {
     }
 }
 
-private fun parseWidgetColor(value: String?, default: Color): Color {
+internal fun parseWidgetColor(value: String?, default: Color): Color {
     if (value.isNullOrBlank()) return default
 
     val normalized = value.trim().lowercase()
@@ -509,7 +175,7 @@ private fun parseWidgetColor(value: String?, default: Color): Color {
     }
 }
 
-private fun widgetAlarmPalette(severity: AlarmSeverity): WidgetAlarmPalette {
+internal fun widgetAlarmPalette(severity: AlarmSeverity): WidgetAlarmPalette {
     return when (severity) {
         AlarmSeverity.Info -> WidgetAlarmPalette(
             accentColor = Color(0xFF4FC3F7),
@@ -549,23 +215,6 @@ private fun widgetAlarmPalette(severity: AlarmSeverity): WidgetAlarmPalette {
     }
 }
 
-private fun List<String>.normalizeWidgetRow(columnCount: Int): List<String> {
-    return if (size >= columnCount) {
-        take(columnCount)
-    } else {
-        this + List(columnCount - size) { "" }
-    }
-}
-
-private fun severityLabel(severity: AlarmSeverity): String {
-    return when (severity) {
-        AlarmSeverity.Info -> "INFO"
-        AlarmSeverity.Warn -> "WARN"
-        AlarmSeverity.Error -> "ERROR"
-        AlarmSeverity.Critical -> "CRITICAL"
-    }
-}
-
 private val widgetNamedColors = mapOf(
     "black" to Color.Black,
     "white" to Color.White,
@@ -579,7 +228,7 @@ private val widgetNamedColors = mapOf(
     "orange" to Color(0xFFFF9800)
 )
 
-private data class WidgetAlarmPalette(
+internal data class WidgetAlarmPalette(
     val accentColor: Color,
     val backgroundColor: Color,
     val borderColor: Color,
