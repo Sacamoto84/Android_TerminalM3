@@ -7,6 +7,7 @@
 - `ConsoleWidgetProtocol.kt`
 - `ConsoleWidgetProtocolExtras.kt`
 - `ConsoleWidgetProtocolTelemetry.kt`
+- `ConsoleWidgetProtocolDashboard.kt`
 - `widgets/*.kt`
 - `img/*.png`
 
@@ -90,6 +91,11 @@ ui type=bar-group title="Motors" labels="M1|M2|M3" values="20|45|80" max=100 col
 ui type=gauge label="CPU" value=72 max=100 unit="%" color=#36C36B
 ui type=battery label="Battery A" value=78 max=100 charging=true voltage=4.08
 ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"
+ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12" subtitle="Motor 1" accent=#36C36B
+ui type=kv-grid title="Motor 1" items="Voltage:24.3V|Current:1.8A|Temp:62C|State:READY" columns=2
+ui type=pin-bank title="GPIO" items="D1:on|D2:off|D3:warn|A0:adc|PWM1:pwm"
+ui type=timeline title="Boot" items="12:01 Boot|12:03 WiFi connected|12:05 MQTT online"
+ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|T2|T3|T4|T5" min=23 max=25 color=#4FC3F7
 ```
 
 ## Виджеты
@@ -517,6 +523,175 @@ ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:of
 - `error`, `err`, `alarm`, `critical` - красный индикатор
 - вместо состояния можно сразу передать цвет: `NET:#00E676`
 
+### `type=stats-card`
+
+Компактная карточка одной метрики с большим числом, единицей измерения и дельтой изменения.
+
+Пример:
+
+```text
+ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12" subtitle="Motor 1" accent=#36C36B
+```
+
+<p align="center">
+  <img src="./img/StatsCardConsoleWidget.png" alt="StatsCardConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>StatsCardConsoleWidget(spec: ConsoleWidgetSpec.StatsCard)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12" subtitle="Motor 1" accent=#36C36B</code></sub>
+</p>
+
+Параметры:
+
+- `title` - заголовок карточки
+- `value` - основное большое значение
+- `unit` - единица измерения, например `rpm` или `%`
+- `delta` - изменение или тренд, например `+12`
+- `subtitle` - дополнительная строка под значением
+- `accent` - акцентный цвет карточки
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `valueColor` - цвет большого значения
+- `subtitleColor` - цвет подписи
+- `deltaColor` - цвет дельты
+
+### `type=kv-grid`
+
+Сетка ключ-значение для компактного блока телеметрии.
+
+Пример:
+
+```text
+ui type=kv-grid title="Motor 1" items="Voltage:24.3V|Current:1.8A|Temp:62C|State:READY" columns=2
+```
+
+<p align="center">
+  <img src="./img/KeyValueGridConsoleWidget.png" alt="KeyValueGridConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>KeyValueGridConsoleWidget(spec: ConsoleWidgetSpec.KeyValueGrid)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=kv-grid title="Motor 1" items="Voltage:24.3V|Current:1.8A|Temp:62C|State:READY" columns=2</code></sub>
+</p>
+
+Параметры:
+
+- `title` - заголовок блока
+- `items` - список пар в формате `KEY:VALUE` через `|`
+- `columns` - число колонок в сетке, сейчас от `1` до `3`
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `keyColor` - цвет ключей
+- `valueColor` - цвет значений
+
+### `type=pin-bank`
+
+Банк пинов и каналов с быстрым визуальным статусом.
+
+Пример:
+
+```text
+ui type=pin-bank title="GPIO" items="D1:on|D2:off|D3:warn|A0:adc|PWM1:pwm"
+```
+
+<p align="center">
+  <img src="./img/PinBankConsoleWidget.png" alt="PinBankConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>PinBankConsoleWidget(spec: ConsoleWidgetSpec.PinBank)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=pin-bank title="GPIO" items="D1:on|D2:off|D3:warn|A0:adc|PWM1:pwm"</code></sub>
+</p>
+
+Параметры:
+
+- `title` - заголовок блока
+- `items` - список элементов в формате `PIN:STATE` через `|`
+- `columns` - число колонок в сетке, сейчас от `1` до `4`
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `pinColor` - цвет имени пина
+- `stateColor` - базовый цвет текста состояния
+
+Поддерживаемые состояния в `items`:
+
+- `on`, `1`, `high`, `enabled` - активный зеленый
+- `off`, `0`, `low`, `disabled` - выключенный серый
+- `warn`, `warning` - предупреждение
+- `error`, `err`, `alarm`, `critical` - ошибка
+- `adc`, `analog` - аналоговый вход
+- `pwm` - PWM-канал
+- `in`, `input` - цифровой вход
+- `out`, `output` - цифровой выход
+- вместо состояния можно передать и цвет, например `D1:#00E676`
+
+### `type=timeline`
+
+Лента событий и этапов процесса.
+
+Пример:
+
+```text
+ui type=timeline title="Boot" items="12:01 Boot|12:03 WiFi connected|12:05 MQTT online"
+```
+
+<p align="center">
+  <img src="./img/TimelineConsoleWidget.png" alt="TimelineConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>TimelineConsoleWidget(spec: ConsoleWidgetSpec.Timeline)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=timeline title="Boot" items="12:01 Boot|12:03 WiFi connected|12:05 MQTT online"</code></sub>
+</p>
+
+Параметры:
+
+- `title` - заголовок блока
+- `items` - события через `|`
+- формат события по умолчанию: `TIME TEXT`
+- расширенный формат: `TIME~TEXT~SUBTITLE~COLOR`
+- `line` или `color` - цвет линии и точек
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `timeColor` - цвет времени
+- `textColor` - цвет основного текста
+- `subtitleColor` - цвет дополнительной строки
+
+### `type=line-chart`
+
+Расширенный линейный график с подписями и шкалой. В отличие от `sparkline`, он больше и лучше подходит для отдельного аналитического блока.
+
+Пример:
+
+```text
+ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|T2|T3|T4|T5" min=23 max=25 color=#4FC3F7
+```
+
+<p align="center">
+  <img src="./img/LineChartConsoleWidget.png" alt="LineChartConsoleWidget" width="420" />
+  <br />
+  <sub>Compose: <code>LineChartConsoleWidget(spec: ConsoleWidgetSpec.LineChart)</code></sub>
+  <br />
+  <sub>Команда: <code>ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|T2|T3|T4|T5" min=23 max=25 color=#4FC3F7</code></sub>
+</p>
+
+Параметры:
+
+- `values` - список чисел через `,`, `|` или `;`
+- `labels` - подписи по оси X через `|`
+- `title` - заголовок графика
+- `min` - нижняя граница шкалы
+- `max` - верхняя граница шкалы
+- `color` - цвет линии
+- `fill` - цвет подложки под линией
+- `points` - показывать точки (`on/off`)
+- `bg` - фон карточки
+- `border` - цвет рамки
+- `titleColor` - цвет заголовка
+- `labelColor` - цвет подписей
+- `axisColor` - цвет линий сетки
+
 ## Алиасы и заметки
 
 - `widget` полностью эквивалентен `ui`
@@ -533,10 +708,16 @@ ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:of
 - `gauge`, `dial` - одно и то же
 - `battery`, `cell` - одно и то же
 - `led-row`, `leds`, `status-row` - одно и то же
+- `stats-card`, `stat`, `metric-card` - одно и то же
+- `kv-grid`, `kv`, `facts` - одно и то же
+- `pin-bank`, `pins`, `gpio` - одно и то же
+- `timeline`, `events`, `log` - одно и то же
+- `line-chart`, `chart`, `plot` - одно и то же
 
 ## Где смотреть реализацию
 
 - Протокол и `spec`: [ConsoleWidgetProtocol.kt](./ConsoleWidgetProtocol.kt)
 - Базовый разбор команд: [ConsoleWidgetProtocolExtras.kt](./ConsoleWidgetProtocolExtras.kt)
 - Разбор телеметрических команд: [ConsoleWidgetProtocolTelemetry.kt](./ConsoleWidgetProtocolTelemetry.kt)
+- Разбор диагностических команд: [ConsoleWidgetProtocolDashboard.kt](./ConsoleWidgetProtocolDashboard.kt)
 - Compose-виджеты: [`widgets/`](./widgets)

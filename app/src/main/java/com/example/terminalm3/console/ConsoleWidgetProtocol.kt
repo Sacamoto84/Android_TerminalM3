@@ -9,12 +9,17 @@ import com.example.terminalm3.console.widgets.BatteryConsoleWidget
 import com.example.terminalm3.console.widgets.DotConsoleWidget
 import com.example.terminalm3.console.widgets.GaugeConsoleWidget
 import com.example.terminalm3.console.widgets.ImageConsoleWidget
+import com.example.terminalm3.console.widgets.KeyValueGridConsoleWidget
 import com.example.terminalm3.console.widgets.LedRowConsoleWidget
+import com.example.terminalm3.console.widgets.LineChartConsoleWidget
 import com.example.terminalm3.console.widgets.PanelConsoleWidget
+import com.example.terminalm3.console.widgets.PinBankConsoleWidget
 import com.example.terminalm3.console.widgets.ProgressConsoleWidget
 import com.example.terminalm3.console.widgets.SparklineConsoleWidget
+import com.example.terminalm3.console.widgets.StatsCardConsoleWidget
 import com.example.terminalm3.console.widgets.SwitchConsoleWidget
 import com.example.terminalm3.console.widgets.TableConsoleWidget
+import com.example.terminalm3.console.widgets.TimelineConsoleWidget
 import com.example.terminalm3.console.widgets.TwoColumnConsoleWidget
 
 /**
@@ -317,6 +322,116 @@ sealed interface ConsoleWidgetSpec {
         val labelColor: Color = Color(0xFFE3EEF5),
         val offColor: Color = Color(0xFF54616C)
     ) : ConsoleWidgetSpec
+
+    /**
+     * Компактная карточка одной метрики с большим числом, единицей измерения и дельтой.
+     *
+     * Сетевая команда:
+     * `ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12" subtitle="Motor 1" accent=#36C36B`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.StatsCard(title = "RPM", value = "1450", unit = "rpm"))`
+     */
+    data class StatsCard(
+        val title: String,
+        val value: String,
+        val unit: String? = null,
+        val subtitle: String? = null,
+        val delta: String? = null,
+        val accentColor: Color = Color(0xFF36C36B),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color(0xFFB5C0C8),
+        val valueColor: Color = Color.White,
+        val subtitleColor: Color = Color(0xFF8FA1AD),
+        val deltaColor: Color = Color(0xFF36C36B)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Сетка ключ-значение для компактного блока телеметрии.
+     *
+     * Сетевая команда:
+     * `ui type=kv-grid title="Motor 1" items="Voltage:24.3V|Current:1.8A|Temp:62C|State:READY" columns=2`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.KeyValueGrid(items = listOf(KeyValueGridItem("Voltage", "24.3V"))))`
+     */
+    data class KeyValueGrid(
+        val title: String? = null,
+        val items: List<KeyValueGridItem>,
+        val columns: Int = 2,
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val keyColor: Color = Color(0xFF8FA1AD),
+        val valueColor: Color = Color.White
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Банк пинов и каналов с быстрым визуальным статусом.
+     *
+     * Сетевая команда:
+     * `ui type=pin-bank title="GPIO" items="D1:on|D2:off|D3:warn|A0:adc|PWM1:pwm"`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.PinBank(items = listOf(PinBankItem("D1", "ON", Color.Green))))`
+     */
+    data class PinBank(
+        val title: String? = null,
+        val items: List<PinBankItem>,
+        val columns: Int = 3,
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val pinColor: Color = Color.White,
+        val stateColor: Color = Color(0xFFB5C0C8)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Лента событий и этапов процесса.
+     *
+     * Сетевая команда:
+     * `ui type=timeline title="Boot" items="12:01 Boot|12:03 WiFi connected|12:05 MQTT online"`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.Timeline(items = listOf(TimelineItem("12:01", "Boot"))))`
+     */
+    data class Timeline(
+        val title: String? = null,
+        val items: List<TimelineItem>,
+        val lineColor: Color = Color(0xFF36C36B),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val timeColor: Color = Color(0xFF8FA1AD),
+        val textColor: Color = Color.White,
+        val subtitleColor: Color = Color(0xFFB5C0C8)
+    ) : ConsoleWidgetSpec
+
+    /**
+     * Расширенный линейный график с подписями и шкалой.
+     *
+     * Сетевая команда:
+     * `ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|T2|T3|T4|T5" min=23 max=25 color=#4FC3F7`
+     *
+     * Локальное использование:
+     * `console.printWidget(ConsoleWidgetSpec.LineChart(title = "Voltage", values = listOf(24.1f, 24.2f)))`
+     */
+    data class LineChart(
+        val title: String? = null,
+        val values: List<Float>,
+        val labels: List<String> = emptyList(),
+        val min: Float? = null,
+        val max: Float? = null,
+        val color: Color = Color(0xFF4FC3F7),
+        val fillColor: Color = Color(0x224FC3F7),
+        val backgroundColor: Color = Color(0xFF11171C),
+        val borderColor: Color = Color(0xFF23303A),
+        val titleColor: Color = Color.White,
+        val labelColor: Color = Color(0xFF8FA1AD),
+        val axisColor: Color = Color(0xFF30404C),
+        val showDots: Boolean = true
+    ) : ConsoleWidgetSpec
 }
 
 /**
@@ -326,6 +441,34 @@ data class LedRowItem(
     val label: String,
     val color: Color,
     val isActive: Boolean = true
+)
+
+/**
+ * Элемент сетки [ConsoleWidgetSpec.KeyValueGrid].
+ */
+data class KeyValueGridItem(
+    val key: String,
+    val value: String
+)
+
+/**
+ * Один пин / канал внутри [ConsoleWidgetSpec.PinBank].
+ */
+data class PinBankItem(
+    val pin: String,
+    val state: String,
+    val color: Color,
+    val isActive: Boolean = true
+)
+
+/**
+ * Одно событие во временной ленте [ConsoleWidgetSpec.Timeline].
+ */
+data class TimelineItem(
+    val time: String? = null,
+    val text: String,
+    val subtitle: String? = null,
+    val color: Color? = null
 )
 
 /**
@@ -356,6 +499,11 @@ enum class AlarmSeverity {
  * - `type=gauge`
  * - `type=battery`
  * - `type=led-row`
+ * - `type=stats-card`
+ * - `type=kv-grid`
+ * - `type=pin-bank`
+ * - `type=timeline`
+ * - `type=line-chart`
  *
  * Значения с пробелами нужно оборачивать в кавычки.
  *
@@ -363,6 +511,7 @@ enum class AlarmSeverity {
  * `ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B`
  * `ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"`
  * `ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" color=#36C36B`
+ * `ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12"`
  */
 object ConsoleWidgetProtocol {
 
@@ -392,6 +541,11 @@ object ConsoleWidgetProtocol {
             "gauge", "dial" -> parseGaugeWidget(attributes)
             "battery", "cell" -> parseBatteryWidget(attributes)
             "led-row", "leds", "status-row" -> parseLedRowWidget(attributes)
+            "stats-card", "stat", "metric-card" -> parseStatsCardWidget(attributes)
+            "kv-grid", "kv", "facts" -> parseKeyValueGridWidget(attributes)
+            "pin-bank", "pins", "gpio" -> parsePinBankWidget(attributes)
+            "timeline", "events", "log" -> parseTimelineWidget(attributes)
+            "line-chart", "chart", "plot" -> parseLineChartWidget(attributes)
             else -> error("Unknown widget type: $type")
         }
     }
@@ -567,14 +721,19 @@ fun ConsoleWidget(spec: ConsoleWidgetSpec) {
         is ConsoleWidgetSpec.Dot -> DotConsoleWidget(spec)
         is ConsoleWidgetSpec.Gauge -> GaugeConsoleWidget(spec)
         is ConsoleWidgetSpec.Image -> ImageConsoleWidget(spec)
+        is ConsoleWidgetSpec.KeyValueGrid -> KeyValueGridConsoleWidget(spec)
         is ConsoleWidgetSpec.LedRow -> LedRowConsoleWidget(spec)
+        is ConsoleWidgetSpec.LineChart -> LineChartConsoleWidget(spec)
         is ConsoleWidgetSpec.Panel -> PanelConsoleWidget(spec)
+        is ConsoleWidgetSpec.PinBank -> PinBankConsoleWidget(spec)
         is ConsoleWidgetSpec.Progress -> ProgressConsoleWidget(spec)
         is ConsoleWidgetSpec.Sparkline -> SparklineConsoleWidget(spec)
+        is ConsoleWidgetSpec.StatsCard -> StatsCardConsoleWidget(spec)
         is ConsoleWidgetSpec.TwoColumn -> TwoColumnConsoleWidget(spec)
         is ConsoleWidgetSpec.Table -> TableConsoleWidget(spec)
         is ConsoleWidgetSpec.Switch -> SwitchConsoleWidget(spec)
         is ConsoleWidgetSpec.AlarmCard -> AlarmCardConsoleWidget(spec)
+        is ConsoleWidgetSpec.Timeline -> TimelineConsoleWidget(spec)
     }
 }
 

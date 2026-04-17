@@ -22,6 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.terminalm3.console.AlarmSeverity
 import com.example.terminalm3.console.ConsoleWidgetSpec
+import com.example.terminalm3.console.KeyValueGridItem
+import com.example.terminalm3.console.LedRowItem
+import com.example.terminalm3.console.PinBankItem
+import com.example.terminalm3.console.TimelineItem
 
 internal const val CONSOLE_WIDGET_PREVIEW_BG = 0xFF090909
 
@@ -104,13 +108,18 @@ internal fun severityLabel(severity: AlarmSeverity): String {
  * `ui type=gauge label="CPU" value=72 max=100 unit="%" color=#36C36B`
  * `ui type=battery label="Battery A" value=78 max=100 charging=true voltage=4.08`
  * `ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"`
+ * `ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12" subtitle="Motor 1" accent=#36C36B`
+ * `ui type=kv-grid title="Motor 1" items="Voltage:24.3V|Current:1.8A|Temp:62C|State:READY" columns=2`
+ * `ui type=pin-bank title="GPIO" items="D1:on|D2:off|D3:warn|A0:adc|PWM1:pwm"`
+ * `ui type=timeline title="Boot" items="12:01 Boot|12:03 WiFi connected|12:05 MQTT online"`
+ * `ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|T2|T3|T4|T5" min=23 max=25 color=#4FC3F7`
  */
 @Preview(
     name = "Widget Gallery",
     showBackground = true,
     backgroundColor = CONSOLE_WIDGET_PREVIEW_BG,
     widthDp = 420,
-    heightDp = 2200
+    heightDp = 3200
 )
 @Composable
 internal fun PreviewConsoleWidgetGallery() {
@@ -130,6 +139,11 @@ internal fun PreviewConsoleWidgetGallery() {
             GaugeConsoleWidget(previewGaugeSpec())
             BatteryConsoleWidget(previewBatterySpec())
             LedRowConsoleWidget(previewLedRowSpec())
+            StatsCardConsoleWidget(previewStatsCardSpec())
+            KeyValueGridConsoleWidget(previewKeyValueGridSpec())
+            PinBankConsoleWidget(previewPinBankSpec())
+            TimelineConsoleWidget(previewTimelineSpec())
+            LineChartConsoleWidget(previewLineChartSpec())
         }
     }
 }
@@ -245,9 +259,60 @@ internal fun previewBatterySpec() = ConsoleWidgetSpec.Battery(
 internal fun previewLedRowSpec() = ConsoleWidgetSpec.LedRow(
     title = "Links",
     items = listOf(
-        com.example.terminalm3.console.LedRowItem("NET", Color(0xFF00E676), true),
-        com.example.terminalm3.console.LedRowItem("MQTT", Color(0xFF00E676), true),
-        com.example.terminalm3.console.LedRowItem("ERR", Color(0xFFFF5252), true),
-        com.example.terminalm3.console.LedRowItem("GPS", Color(0xFF54616C), false)
+        LedRowItem("NET", Color(0xFF00E676), true),
+        LedRowItem("MQTT", Color(0xFF00E676), true),
+        LedRowItem("ERR", Color(0xFFFF5252), true),
+        LedRowItem("GPS", Color(0xFF54616C), false)
     )
+)
+
+internal fun previewStatsCardSpec() = ConsoleWidgetSpec.StatsCard(
+    title = "RPM",
+    value = "1450",
+    unit = "rpm",
+    subtitle = "Motor 1",
+    delta = "+12",
+    accentColor = Color(0xFF36C36B)
+)
+
+internal fun previewKeyValueGridSpec() = ConsoleWidgetSpec.KeyValueGrid(
+    title = "Motor 1",
+    items = listOf(
+        KeyValueGridItem("Voltage", "24.3V"),
+        KeyValueGridItem("Current", "1.8A"),
+        KeyValueGridItem("Temp", "62C"),
+        KeyValueGridItem("State", "READY")
+    ),
+    columns = 2
+)
+
+internal fun previewPinBankSpec() = ConsoleWidgetSpec.PinBank(
+    title = "GPIO",
+    items = listOf(
+        PinBankItem("D1", "ON", Color(0xFF36C36B), true),
+        PinBankItem("D2", "OFF", Color(0xFF54616C), false),
+        PinBankItem("D3", "WARN", Color(0xFFFFC107), true),
+        PinBankItem("A0", "ADC", Color(0xFF4FC3F7), true),
+        PinBankItem("PWM1", "PWM", Color(0xFFFFB300), true)
+    ),
+    columns = 3
+)
+
+internal fun previewTimelineSpec() = ConsoleWidgetSpec.Timeline(
+    title = "Boot",
+    items = listOf(
+        TimelineItem("12:01", "Power applied"),
+        TimelineItem("12:03", "WiFi connected"),
+        TimelineItem("12:05", "MQTT online")
+    )
+)
+
+internal fun previewLineChartSpec() = ConsoleWidgetSpec.LineChart(
+    title = "Voltage",
+    values = listOf(24.1f, 24.2f, 24.0f, 24.3f, 24.4f),
+    labels = listOf("T1", "T2", "T3", "T4", "T5"),
+    min = 23f,
+    max = 25f,
+    color = Color(0xFF4FC3F7),
+    fillColor = Color(0x224FC3F7)
 )
