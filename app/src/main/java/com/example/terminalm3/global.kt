@@ -3,9 +3,7 @@ package com.example.terminalm3
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.MutableLiveData
-import com.example.terminalm3.screen.lazy.Console
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.terminalm3.console.Console
 
 // ╔═══════════════════════╗
 // ║ Глобальные переменные ║
