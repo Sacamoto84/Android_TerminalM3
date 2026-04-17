@@ -905,14 +905,7 @@ object ConsoleWidgetProtocol {
 
         val normalized = value.trim().lowercase()
         namedColors[normalized]?.let { return it }
-
-        val hex = normalized.removePrefix("#")
-
-        return when (hex.length) {
-            6 -> Color((0xFF000000 or hex.toLong(16)).toULong())
-            8 -> Color(hex.toLong(16).toULong())
-            else -> default
-        }
+        return parseWidgetHexColorOrNull(normalized) ?: default
     }
 
     private val namedColors = mapOf(

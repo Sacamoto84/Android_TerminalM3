@@ -177,13 +177,7 @@ internal fun parseWidgetColorOrNull(value: String?): Color? {
 
     val normalized = value.trim().lowercase()
     widgetTelemetryNamedColors[normalized]?.let { return it }
-
-    val hex = normalized.removePrefix("#")
-    return when (hex.length) {
-        6 -> Color((0xFF000000 or hex.toLong(16)).toULong())
-        8 -> Color(hex.toLong(16).toULong())
-        else -> null
-    }
+    return parseWidgetHexColorOrNull(normalized)
 }
 
 internal fun formatWidgetNumber(value: Float): String {

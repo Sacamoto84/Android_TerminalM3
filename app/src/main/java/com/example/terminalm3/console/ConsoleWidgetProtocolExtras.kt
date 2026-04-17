@@ -165,14 +165,22 @@ internal fun parseWidgetColor(value: String?, default: Color): Color {
 
     val normalized = value.trim().lowercase()
     widgetNamedColors[normalized]?.let { return it }
+    return parseWidgetHexColorOrNull(normalized) ?: default
+}
 
-    val hex = normalized.removePrefix("#")
+internal fun parseWidgetHexColorOrNull(value: String?): Color? {
+    if (value.isNullOrBlank()) return null
 
-    return when (hex.length) {
-        6 -> Color((0xFF000000 or hex.toLong(16)).toULong())
-        8 -> Color(hex.toLong(16).toULong())
-        else -> default
+    val normalized = value.trim()
+    val colorString = when {
+        normalized.startsWith("#") -> normalized
+        normalized.length == 6 || normalized.length == 8 -> "#$normalized"
+        else -> return null
     }
+
+    return runCatching {
+        Color(android.graphics.Color.parseColor(colorString))
+    }.getOrNull()
 }
 
 internal fun widgetAlarmPalette(severity: AlarmSeverity): WidgetAlarmPalette {

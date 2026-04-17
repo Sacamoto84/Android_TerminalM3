@@ -17,6 +17,7 @@ import com.example.terminalm3.network.decoder
 import com.example.terminalm3.console.LineTextAndColor
 import com.example.terminalm3.console.PairTextAndColor
 import com.example.terminalm3.console.ConsoleWidgetProtocol
+import com.example.terminalm3.console.emitConsoleWidgetNetworkDemo
 import com.example.terminalm3.console.printWidgetAfterRemoteLine
 import com.example.terminalm3.utils.NsdHelper
 import com.example.terminalm3.utils.PhoneBeeper
@@ -122,6 +123,19 @@ class Initialization(private val context: Context) {
 
         decoder.addCmd("ui", widgetCommandHandler)
         decoder.addCmd("widget", widgetCommandHandler)
+        decoder.addCmd("demo-widgets") { _, lineId ->
+            CoroutineScope(Dispatchers.Main).launch {
+                console.printLocalAfterRemoteLine(
+                    remoteLineId = lineId,
+                    text = "Запускаю демо всех виджетов...",
+                    color = Color(0xFF80CBC4)
+                )
+            }
+
+            CoroutineScope(Dispatchers.Main).launch {
+                emitConsoleWidgetNetworkDemo(channelNetworkIn)
+            }
+        }
 
         val version = 301 //BuildConfig.VERSION_NAME
 
