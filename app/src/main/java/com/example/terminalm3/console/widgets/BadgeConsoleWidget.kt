@@ -17,7 +17,7 @@ import com.example.terminalm3.console.ConsoleWidgetSpec
  * Compose renderer for [ConsoleWidgetSpec.Badge].
  *
  * Request that creates this preview:
- * `ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14`
+ * `ui type=badge text="READY" st=ok`
  */
 @Composable
 fun BadgeConsoleWidget(spec: ConsoleWidgetSpec.Badge) {

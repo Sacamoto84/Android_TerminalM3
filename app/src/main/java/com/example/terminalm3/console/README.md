@@ -1,4 +1,4 @@
-﻿# Команды консольных виджетов
+# Команды консольных виджетов
 
 Гайд по командам, которые понимает консольный декодер и через которые можно создавать Compose-виджеты прямо из сообщений микроконтроллера.
 
@@ -61,7 +61,7 @@ ui type=<widgetType> key=value key=value ...
 Примеры:
 
 ```text
-ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14
+ui type=badge text="READY" st=ok
 ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B icon=info
 ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"
 ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" color=#36C36B
@@ -89,7 +89,7 @@ ui type=panel title="Motor 1" subtitle="24.3V 1.8A"
 ## Быстрые примеры
 
 ```text
-ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14
+ui type=badge text="READY" st=ok
 ui type=dot color=#00E676 size=16 label="Link active"
 ui type=image name=info size=40 desc="Info icon"
 ui type=panel title="Motor 1" value=READY subtitle="24.3V 1.8A" accent=#36C36B icon=info
@@ -126,7 +126,7 @@ ui type=packet-frame title="Binary Packet" protocol=CUSTOM direction=tx data="7E
 Пример:
 
 ```text
-ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14
+ui type=badge text="READY" st=ok
 ```
 
 <p align="center">
@@ -134,15 +134,35 @@ ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14
   <br />
   <sub>Compose: <code>BadgeConsoleWidget(spec: ConsoleWidgetSpec.Badge)</code></sub>
   <br />
-  <sub>Команда: <code>ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14</code></sub>
+  <sub>Команда: <code>ui type=badge text="READY" st=ok</code></sub>
 </p>
 
 Параметры:
 
 - `text` - текст на плашке
-- `bg` - фон
-- `fg` - цвет текста
-- `size` - размер текста
+- `st` - пресет стиля, который на Android подставляет готовые цвета
+- `bg` - фон, если нужен ручной режим или переопределение пресета
+- `fg` - цвет текста, если нужен ручной режим или переопределение пресета
+- `size` - размер текста, по умолчанию `14`, можно не передавать
+
+Поддерживаемые стили `st`:
+
+- `ok`, `ready`, `success`, `good`, `green`
+- `info`, `blue`
+- `warn`, `warning`, `amber`, `yellow`
+- `error`, `fail`, `danger`, `red`
+- `critical`, `alarm`
+- `neutral`, `default`, `gray`, `grey`
+- `dark`, `muted`
+
+Примеры:
+
+```text
+ui type=badge text="READY" st=ok
+ui type=badge text="WAIT" st=warn
+ui type=badge text="FAIL" st=error
+ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14
+```
 
 ---
 

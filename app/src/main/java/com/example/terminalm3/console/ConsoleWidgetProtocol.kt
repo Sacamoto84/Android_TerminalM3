@@ -29,20 +29,20 @@ import com.example.terminalm3.console.widgets.TimelineConsoleWidget
 import com.example.terminalm3.console.widgets.TwoColumnConsoleWidget
 
 /**
- * Описание консольного виджета в виде данных, которое потом можно отрисовать через Compose.
+ * Р С›Р С—Р С‘РЎРѓР В°Р Р…Р С‘Р Вµ Р С”Р С•Р Р…РЎРѓР С•Р В»РЎРЉР Р…Р С•Р С–Р С• Р Р†Р С‘Р Т‘Р В¶Р ВµРЎвЂљР В° Р Р† Р Р†Р С‘Р Т‘Р Вµ Р Т‘Р В°Р Р…Р Р…РЎвЂ№РЎвЂ¦, Р С”Р С•РЎвЂљР С•РЎР‚Р С•Р Вµ Р С—Р С•РЎвЂљР С•Р С Р СР С•Р В¶Р Р…Р С• Р С•РЎвЂљРЎР‚Р С‘РЎРѓР С•Р Р†Р В°РЎвЂљРЎРЉ РЎвЂЎР ВµРЎР‚Р ВµР В· Compose.
  *
- * Микроконтроллер отправляет текстовую команду, приложение разбирает ее в один
- * из этих `spec`-объектов, а затем [ConsoleWidget] передает отрисовку
- * соответствующему Compose-виджету из пакета `console/widgets`.
+ * Р СљР С‘Р С”РЎР‚Р С•Р С”Р С•Р Р…РЎвЂљРЎР‚Р С•Р В»Р В»Р ВµРЎР‚ Р С•РЎвЂљР С—РЎР‚Р В°Р Р†Р В»РЎРЏР ВµРЎвЂљ РЎвЂљР ВµР С”РЎРѓРЎвЂљР С•Р Р†РЎС“РЎР‹ Р С”Р С•Р СР В°Р Р…Р Т‘РЎС“, Р С—РЎР‚Р С‘Р В»Р С•Р В¶Р ВµР Р…Р С‘Р Вµ РЎР‚Р В°Р В·Р В±Р С‘РЎР‚Р В°Р ВµРЎвЂљ Р ВµР Вµ Р Р† Р С•Р Т‘Р С‘Р Р…
+ * Р С‘Р В· РЎРЊРЎвЂљР С‘РЎвЂ¦ `spec`-Р С•Р В±РЎР‰Р ВµР С”РЎвЂљР С•Р Р†, Р В° Р В·Р В°РЎвЂљР ВµР С [ConsoleWidget] Р С—Р ВµРЎР‚Р ВµР Т‘Р В°Р ВµРЎвЂљ Р С•РЎвЂљРЎР‚Р С‘РЎРѓР С•Р Р†Р С”РЎС“
+ * РЎРѓР С•Р С•РЎвЂљР Р†Р ВµРЎвЂљРЎРѓРЎвЂљР Р†РЎС“РЎР‹РЎвЂ°Р ВµР СРЎС“ Compose-Р Р†Р С‘Р Т‘Р В¶Р ВµРЎвЂљРЎС“ Р С‘Р В· Р С—Р В°Р С”Р ВµРЎвЂљР В° `console/widgets`.
  */
 sealed interface ConsoleWidgetSpec {
     /**
-     * Компактная округлая плашка для коротких статусов, например READY / OK / FAIL.
+     * Р С™Р С•Р СР С—Р В°Р С”РЎвЂљР Р…Р В°РЎРЏ Р С•Р С”РЎР‚РЎС“Р С–Р В»Р В°РЎРЏ Р С—Р В»Р В°РЎв‚¬Р С”Р В° Р Т‘Р В»РЎРЏ Р С”Р С•РЎР‚Р С•РЎвЂљР С”Р С‘РЎвЂ¦ РЎРѓРЎвЂљР В°РЎвЂљРЎС“РЎРѓР С•Р Р†, Р Р…Р В°Р С—РЎР‚Р С‘Р СР ВµРЎР‚ READY / OK / FAIL.
      *
-     * Сетевая команда:
-     * `ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14`
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
+     * `ui type=badge text="READY" st=ok`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Badge(text = "READY"))`
      */
     data class Badge(
@@ -53,12 +53,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Круглый индикатор, который при желании может показывать подпись справа.
+     * Р С™РЎР‚РЎС“Р С–Р В»РЎвЂ№Р в„– Р С‘Р Р…Р Т‘Р С‘Р С”Р В°РЎвЂљР С•РЎР‚, Р С”Р С•РЎвЂљР С•РЎР‚РЎвЂ№Р в„– Р С—РЎР‚Р С‘ Р В¶Р ВµР В»Р В°Р Р…Р С‘Р С‘ Р СР С•Р В¶Р ВµРЎвЂљ Р С—Р С•Р С”Р В°Р В·РЎвЂ№Р Р†Р В°РЎвЂљРЎРЉ Р С—Р С•Р Т‘Р С—Р С‘РЎРѓРЎРЉ РЎРѓР С—РЎР‚Р В°Р Р†Р В°.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=dot color=#00FF66 size=16 label="Link active"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Dot(color = Color.Green, label = "Link"))`
      */
     data class Dot(
@@ -69,12 +69,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Drawable-ресурс из `res/drawable`.
+     * Drawable-РЎР‚Р ВµРЎРѓРЎС“РЎР‚РЎРѓ Р С‘Р В· `res/drawable`.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=image name=info size=32`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Image(drawableName = "info"))`
      */
     data class Image(
@@ -84,13 +84,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Расширенная статусная карточка с заголовком, необязательным подзаголовком,
-     * значением и иконкой.
+     * Р В Р В°РЎРѓРЎв‚¬Р С‘РЎР‚Р ВµР Р…Р Р…Р В°РЎРЏ РЎРѓРЎвЂљР В°РЎвЂљРЎС“РЎРѓР Р…Р В°РЎРЏ Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р В° РЎРѓ Р В·Р В°Р С–Р С•Р В»Р С•Р Р†Р С”Р С•Р С, Р Р…Р ВµР С•Р В±РЎРЏР В·Р В°РЎвЂљР ВµР В»РЎРЉР Р…РЎвЂ№Р С Р С—Р С•Р Т‘Р В·Р В°Р С–Р С•Р В»Р С•Р Р†Р С”Р С•Р С,
+     * Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р ВµР С Р С‘ Р С‘Р С”Р С•Р Р…Р С”Р С•Р в„–.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B icon=info`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Panel(title = "Motor 1", value = "READY"))`
      */
     data class Panel(
@@ -107,12 +107,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Карточка с полосой прогресса для батареи, загрузки, процента выполнения и т.д.
+     * Р С™Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р В° РЎРѓ Р С—Р С•Р В»Р С•РЎРѓР С•Р в„– Р С—РЎР‚Р С•Р С–РЎР‚Р ВµРЎРѓРЎРѓР В° Р Т‘Р В»РЎРЏ Р В±Р В°РЎвЂљР В°РЎР‚Р ВµР С‘, Р В·Р В°Р С–РЎР‚РЎС“Р В·Р С”Р С‘, Р С—РЎР‚Р С•РЎвЂ Р ВµР Р…РЎвЂљР В° Р Р†РЎвЂ№Р С—Р С•Р В»Р Р…Р ВµР Р…Р С‘РЎРЏ Р С‘ РЎвЂљ.Р Т‘.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=progress label="Battery" value=72 max=100 fill=#36C36B display="72%"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Progress(label = "Battery", value = 72f))`
      */
     data class Progress(
@@ -129,12 +129,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Двухколоночная строка для телеметрии формата `ключ -> значение`.
+     * Р вЂќР Р†РЎС“РЎвЂ¦Р С”Р С•Р В»Р С•Р Р…Р С•РЎвЂЎР Р…Р В°РЎРЏ РЎРѓРЎвЂљРЎР‚Р С•Р С”Р В° Р Т‘Р В»РЎРЏ РЎвЂљР ВµР В»Р ВµР СР ВµРЎвЂљРЎР‚Р С‘Р С‘ РЎвЂћР С•РЎР‚Р СР В°РЎвЂљР В° `Р С”Р В»РЎР‹РЎвЂЎ -> Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ`.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=2col left="Voltage" right="24.3V"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.TwoColumn(left = "Voltage", right = "24.3V"))`
      */
     data class TwoColumn(
@@ -147,12 +147,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Таблица с необязательными заголовками и несколькими строками.
+     * Р СћР В°Р В±Р В»Р С‘РЎвЂ Р В° РЎРѓ Р Р…Р ВµР С•Р В±РЎРЏР В·Р В°РЎвЂљР ВµР В»РЎРЉР Р…РЎвЂ№Р СР С‘ Р В·Р В°Р С–Р С•Р В»Р С•Р Р†Р С”Р В°Р СР С‘ Р С‘ Р Р…Р ВµРЎРѓР С”Р С•Р В»РЎРЉР С”Р С‘Р СР С‘ РЎРѓРЎвЂљРЎР‚Р С•Р С”Р В°Р СР С‘.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Table(headers = listOf("Name"), rows = listOf(listOf("M1"))))`
      */
     data class Table(
@@ -166,13 +166,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Визуальный переключатель ON/OFF.
-     * Он используется только для отображения и не обрабатывает нажатия.
+     * Р вЂ™Р С‘Р В·РЎС“Р В°Р В»РЎРЉР Р…РЎвЂ№Р в„– Р С—Р ВµРЎР‚Р ВµР С”Р В»РЎР‹РЎвЂЎР В°РЎвЂљР ВµР В»РЎРЉ ON/OFF.
+     * Р С›Р Р… Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·РЎС“Р ВµРЎвЂљРЎРѓРЎРЏ РЎвЂљР С•Р В»РЎРЉР С”Р С• Р Т‘Р В»РЎРЏ Р С•РЎвЂљР С•Р В±РЎР‚Р В°Р В¶Р ВµР Р…Р С‘РЎРЏ Р С‘ Р Р…Р Вµ Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљ Р Р…Р В°Р В¶Р В°РЎвЂљР С‘РЎРЏ.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=switch label="Pump enable" state=on subtitle="Remote mode"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Switch(label = "Pump", checked = true))`
      */
     data class Switch(
@@ -189,13 +189,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Карточка аварии / предупреждения с палитрой по уровню важности
-     * и необязательной отметкой времени.
+     * Р С™Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р В° Р В°Р Р†Р В°РЎР‚Р С‘Р С‘ / Р С—РЎР‚Р ВµР Т‘РЎС“Р С—РЎР‚Р ВµР В¶Р Т‘Р ВµР Р…Р С‘РЎРЏ РЎРѓ Р С—Р В°Р В»Р С‘РЎвЂљРЎР‚Р С•Р в„– Р С—Р С• РЎС“РЎР‚Р С•Р Р†Р Р…РЎР‹ Р Р†Р В°Р В¶Р Р…Р С•РЎРѓРЎвЂљР С‘
+     * Р С‘ Р Р…Р ВµР С•Р В±РЎРЏР В·Р В°РЎвЂљР ВµР В»РЎРЉР Р…Р С•Р в„– Р С•РЎвЂљР СР ВµРЎвЂљР С”Р С•Р в„– Р Р†РЎР‚Р ВµР СР ВµР Р…Р С‘.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=alarm-card title="Overheat" message="Motor 1: 92C" severity=critical time="12:41:03"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.AlarmCard(...))`
      */
     data class AlarmCard(
@@ -213,13 +213,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Мини-график тренда внутри одной карточки.
-     * Удобен для температуры, RSSI, напряжения и другой компактной телеметрии.
+     * Р СљР С‘Р Р…Р С‘-Р С–РЎР‚Р В°РЎвЂћР С‘Р С” РЎвЂљРЎР‚Р ВµР Р…Р Т‘Р В° Р Р†Р Р…РЎС“РЎвЂљРЎР‚Р С‘ Р С•Р Т‘Р Р…Р С•Р в„– Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р С‘.
+     * Р Р€Р Т‘Р С•Р В±Р ВµР Р… Р Т‘Р В»РЎРЏ РЎвЂљР ВµР СР С—Р ВµРЎР‚Р В°РЎвЂљРЎС“РЎР‚РЎвЂ№, RSSI, Р Р…Р В°Р С—РЎР‚РЎРЏР В¶Р ВµР Р…Р С‘РЎРЏ Р С‘ Р Т‘РЎР‚РЎС“Р С–Р С•Р в„– Р С”Р С•Р СР С—Р В°Р С”РЎвЂљР Р…Р С•Р в„– РЎвЂљР ВµР В»Р ВµР СР ВµРЎвЂљРЎР‚Р С‘Р С‘.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" min=18 max=28 color=#36C36B display="25C" points=on`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Sparkline(label = "Temp", values = listOf(21f, 22f, 25f)))`
      */
     data class Sparkline(
@@ -238,12 +238,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Группа столбиков для быстрого сравнения нескольких каналов или устройств.
+     * Р вЂњРЎР‚РЎС“Р С—Р С—Р В° РЎРѓРЎвЂљР С•Р В»Р В±Р С‘Р С”Р С•Р Р† Р Т‘Р В»РЎРЏ Р В±РЎвЂ№РЎРѓРЎвЂљРЎР‚Р С•Р С–Р С• РЎРѓРЎР‚Р В°Р Р†Р Р…Р ВµР Р…Р С‘РЎРЏ Р Р…Р ВµРЎРѓР С”Р С•Р В»РЎРЉР С”Р С‘РЎвЂ¦ Р С”Р В°Р Р…Р В°Р В»Р С•Р Р† Р С‘Р В»Р С‘ РЎС“РЎРѓРЎвЂљРЎР‚Р С•Р в„–РЎРѓРЎвЂљР Р†.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=bar-group title="Motors" labels="M1|M2|M3" values="20|45|80" max=100 colors="#36C36B|#4FC3F7|#FFB300"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.BarGroup(title = "Motors", labels = listOf("M1"), values = listOf(20f)))`
      */
     data class BarGroup(
@@ -261,13 +261,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Полукруглый индикатор одного значения.
-     * Подходит для загрузки, температуры, давления, скорости и других одиночных метрик.
+     * Р СџР С•Р В»РЎС“Р С”РЎР‚РЎС“Р С–Р В»РЎвЂ№Р в„– Р С‘Р Р…Р Т‘Р С‘Р С”Р В°РЎвЂљР С•РЎР‚ Р С•Р Т‘Р Р…Р С•Р С–Р С• Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘РЎРЏ.
+     * Р СџР С•Р Т‘РЎвЂ¦Р С•Р Т‘Р С‘РЎвЂљ Р Т‘Р В»РЎРЏ Р В·Р В°Р С–РЎР‚РЎС“Р В·Р С”Р С‘, РЎвЂљР ВµР СР С—Р ВµРЎР‚Р В°РЎвЂљРЎС“РЎР‚РЎвЂ№, Р Т‘Р В°Р Р†Р В»Р ВµР Р…Р С‘РЎРЏ, РЎРѓР С”Р С•РЎР‚Р С•РЎРѓРЎвЂљР С‘ Р С‘ Р Т‘РЎР‚РЎС“Р С–Р С‘РЎвЂ¦ Р С•Р Т‘Р С‘Р Р…Р С•РЎвЂЎР Р…РЎвЂ№РЎвЂ¦ Р СР ВµРЎвЂљРЎР‚Р С‘Р С”.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=gauge label="CPU" value=72 max=100 unit="%" color=#36C36B`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Gauge(label = "CPU", value = 72f, unit = "%"))`
      */
     data class Gauge(
@@ -285,12 +285,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Визуальное состояние батареи с уровнем заряда и дополнительной подписью.
+     * Р вЂ™Р С‘Р В·РЎС“Р В°Р В»РЎРЉР Р…Р С•Р Вµ РЎРѓР С•РЎРѓРЎвЂљР С•РЎРЏР Р…Р С‘Р Вµ Р В±Р В°РЎвЂљР В°РЎР‚Р ВµР С‘ РЎРѓ РЎС“РЎР‚Р С•Р Р†Р Р…Р ВµР С Р В·Р В°РЎР‚РЎРЏР Т‘Р В° Р С‘ Р Т‘Р С•Р С—Р С•Р В»Р Р…Р С‘РЎвЂљР ВµР В»РЎРЉР Р…Р С•Р в„– Р С—Р С•Р Т‘Р С—Р С‘РЎРѓРЎРЉРЎР‹.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=battery label="Battery A" value=78 max=100 charging=true voltage=4.08`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Battery(label = "Battery A", value = 78f, charging = true))`
      */
     data class Battery(
@@ -310,13 +310,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Ряд светодиодных индикаторов состояния.
-     * Хорошо подходит для каналов связи, датчиков, режимов и флагов.
+     * Р В РЎРЏР Т‘ РЎРѓР Р†Р ВµРЎвЂљР С•Р Т‘Р С‘Р С•Р Т‘Р Р…РЎвЂ№РЎвЂ¦ Р С‘Р Р…Р Т‘Р С‘Р С”Р В°РЎвЂљР С•РЎР‚Р С•Р Р† РЎРѓР С•РЎРѓРЎвЂљР С•РЎРЏР Р…Р С‘РЎРЏ.
+     * Р ТђР С•РЎР‚Р С•РЎв‚¬Р С• Р С—Р С•Р Т‘РЎвЂ¦Р С•Р Т‘Р С‘РЎвЂљ Р Т‘Р В»РЎРЏ Р С”Р В°Р Р…Р В°Р В»Р С•Р Р† РЎРѓР Р†РЎРЏР В·Р С‘, Р Т‘Р В°РЎвЂљРЎвЂЎР С‘Р С”Р С•Р Р†, РЎР‚Р ВµР В¶Р С‘Р СР С•Р Р† Р С‘ РЎвЂћР В»Р В°Р С–Р С•Р Р†.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.LedRow(title = "Links", items = listOf(LedRowItem("NET", Color.Green))))`
      */
     data class LedRow(
@@ -330,12 +330,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Компактная карточка одной метрики с большим числом, единицей измерения и дельтой.
+     * Р С™Р С•Р СР С—Р В°Р С”РЎвЂљР Р…Р В°РЎРЏ Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р В° Р С•Р Т‘Р Р…Р С•Р в„– Р СР ВµРЎвЂљРЎР‚Р С‘Р С”Р С‘ РЎРѓ Р В±Р С•Р В»РЎРЉРЎв‚¬Р С‘Р С РЎвЂЎР С‘РЎРѓР В»Р С•Р С, Р ВµР Т‘Р С‘Р Р…Р С‘РЎвЂ Р ВµР в„– Р С‘Р В·Р СР ВµРЎР‚Р ВµР Р…Р С‘РЎРЏ Р С‘ Р Т‘Р ВµР В»РЎРЉРЎвЂљР С•Р в„–.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=stats-card title="RPM" value=1450 unit="rpm" delta="+12" subtitle="Motor 1" accent=#36C36B`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.StatsCard(title = "RPM", value = "1450", unit = "rpm"))`
      */
     data class StatsCard(
@@ -354,12 +354,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Сетка ключ-значение для компактного блока телеметрии.
+     * Р РЋР ВµРЎвЂљР С”Р В° Р С”Р В»РЎР‹РЎвЂЎ-Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ Р Т‘Р В»РЎРЏ Р С”Р С•Р СР С—Р В°Р С”РЎвЂљР Р…Р С•Р С–Р С• Р В±Р В»Р С•Р С”Р В° РЎвЂљР ВµР В»Р ВµР СР ВµРЎвЂљРЎР‚Р С‘Р С‘.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=kv-grid title="Motor 1" items="Voltage:24.3V|Current:1.8A|Temp:62C|State:READY" columns=2`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.KeyValueGrid(items = listOf(KeyValueGridItem("Voltage", "24.3V"))))`
      */
     data class KeyValueGrid(
@@ -374,12 +374,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Банк пинов и каналов с быстрым визуальным статусом.
+     * Р вЂР В°Р Р…Р С” Р С—Р С‘Р Р…Р С•Р Р† Р С‘ Р С”Р В°Р Р…Р В°Р В»Р С•Р Р† РЎРѓ Р В±РЎвЂ№РЎРѓРЎвЂљРЎР‚РЎвЂ№Р С Р Р†Р С‘Р В·РЎС“Р В°Р В»РЎРЉР Р…РЎвЂ№Р С РЎРѓРЎвЂљР В°РЎвЂљРЎС“РЎРѓР С•Р С.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=pin-bank title="GPIO" items="D1:on|D2:off|D3:warn|A0:adc|PWM1:pwm"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.PinBank(items = listOf(PinBankItem("D1", "ON", Color.Green))))`
      */
     data class PinBank(
@@ -394,12 +394,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Лента событий и этапов процесса.
+     * Р вЂєР ВµР Р…РЎвЂљР В° РЎРѓР С•Р В±РЎвЂ№РЎвЂљР С‘Р в„– Р С‘ РЎРЊРЎвЂљР В°Р С—Р С•Р Р† Р С—РЎР‚Р С•РЎвЂ Р ВµРЎРѓРЎРѓР В°.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=timeline title="Boot" items="12:01 Boot|12:03 WiFi connected|12:05 MQTT online"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.Timeline(items = listOf(TimelineItem("12:01", "Boot"))))`
      */
     data class Timeline(
@@ -415,12 +415,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Расширенный линейный график с подписями и шкалой.
+     * Р В Р В°РЎРѓРЎв‚¬Р С‘РЎР‚Р ВµР Р…Р Р…РЎвЂ№Р в„– Р В»Р С‘Р Р…Р ВµР в„–Р Р…РЎвЂ№Р в„– Р С–РЎР‚Р В°РЎвЂћР С‘Р С” РЎРѓ Р С—Р С•Р Т‘Р С—Р С‘РЎРѓРЎРЏР СР С‘ Р С‘ РЎв‚¬Р С”Р В°Р В»Р С•Р в„–.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=line-chart title="Voltage" values="24.1,24.2,24.0,24.3,24.4" labels="T1|T2|T3|T4|T5" min=23 max=25 color=#4FC3F7`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.LineChart(title = "Voltage", values = listOf(24.1f, 24.2f)))`
      */
     data class LineChart(
@@ -440,13 +440,13 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Побитовое представление регистра, байта или слова.
-     * По умолчанию удобно подходит для `byte=8`, `short=16`, `word=32`.
+     * Р СџР С•Р В±Р С‘РЎвЂљР С•Р Р†Р С•Р Вµ Р С—РЎР‚Р ВµР Т‘РЎРѓРЎвЂљР В°Р Р†Р В»Р ВµР Р…Р С‘Р Вµ РЎР‚Р ВµР С–Р С‘РЎРѓРЎвЂљРЎР‚Р В°, Р В±Р В°Р в„–РЎвЂљР В° Р С‘Р В»Р С‘ РЎРѓР В»Р С•Р Р†Р В°.
+     * Р СџР С• РЎС“Р СР С•Р В»РЎвЂЎР В°Р Р…Р С‘РЎР‹ РЎС“Р Т‘Р С•Р В±Р Р…Р С• Р С—Р С•Р Т‘РЎвЂ¦Р С•Р Т‘Р С‘РЎвЂљ Р Т‘Р В»РЎРЏ `byte=8`, `short=16`, `word=32`.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=bitfield label="STATUS" value=0xA5 bits=8`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.BitField(label = "STATUS", value = 0xA5u, bitCount = 8))`
      */
     data class BitField(
@@ -463,12 +463,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Табличный дамп байтов в hex-формате с адресами и ASCII-представлением.
+     * Р СћР В°Р В±Р В»Р С‘РЎвЂЎР Р…РЎвЂ№Р в„– Р Т‘Р В°Р СР С— Р В±Р В°Р в„–РЎвЂљР С•Р Р† Р Р† hex-РЎвЂћР С•РЎР‚Р СР В°РЎвЂљР Вµ РЎРѓ Р В°Р Т‘РЎР‚Р ВµРЎРѓР В°Р СР С‘ Р С‘ ASCII-Р С—РЎР‚Р ВµР Т‘РЎРѓРЎвЂљР В°Р Р†Р В»Р ВµР Р…Р С‘Р ВµР С.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=hex-dump title="RX Buffer" data="48 65 6C 6C 6F 20 57 6F 72 6C 64" width=8 addr=0x1000 ascii=on`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.HexDump(title = "RX Buffer", bytes = listOf(0x48, 0x65)))`
      */
     data class HexDump(
@@ -486,12 +486,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Таблица регистров в формате `addr / value / desc`.
+     * Р СћР В°Р В±Р В»Р С‘РЎвЂ Р В° РЎР‚Р ВµР С–Р С‘РЎРѓРЎвЂљРЎР‚Р С•Р Р† Р Р† РЎвЂћР С•РЎР‚Р СР В°РЎвЂљР Вµ `addr / value / desc`.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=register-table title="Holding Registers" rows="0000|0x1234|Status;0001|0x00A5|Flags;0002|0x03E8|Speed"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.RegisterTable(rows = listOf(RegisterTableRow("0000", "0x1234", "Status"))))`
      */
     data class RegisterTable(
@@ -508,12 +508,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Разбор Modbus-кадра по байтам и полям протокола.
+     * Р В Р В°Р В·Р В±Р С•РЎР‚ Modbus-Р С”Р В°Р Т‘РЎР‚Р В° Р С—Р С• Р В±Р В°Р в„–РЎвЂљР В°Р С Р С‘ Р С—Р С•Р В»РЎРЏР С Р С—РЎР‚Р С•РЎвЂљР С•Р С”Р С•Р В»Р В°.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.ModbusFrame(bytes = listOf(0x01, 0x03), fields = listOf(ModbusFieldRow("0", "Addr", "01"))))`
      */
     data class ModbusFrame(
@@ -532,12 +532,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * CAN-кадр с ID, флагами и полезной нагрузкой.
+     * CAN-Р С”Р В°Р Т‘РЎР‚ РЎРѓ ID, РЎвЂћР В»Р В°Р С–Р В°Р СР С‘ Р С‘ Р С—Р С•Р В»Р ВµР В·Р Р…Р С•Р в„– Р Р…Р В°Р С–РЎР‚РЎС“Р В·Р С”Р С•Р в„–.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=can-frame title="Motor CAN" direction=rx id=0x18FF50E5 ext=true data="11 22 33 44 55 66 77 88" channel=can0`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.CanFrame(frameId = 0x18FF50E5, bytes = listOf(0x11, 0x22)))`
      */
     data class CanFrame(
@@ -564,12 +564,12 @@ sealed interface ConsoleWidgetSpec {
     ) : ConsoleWidgetSpec
 
     /**
-     * Универсальный бинарный пакет для UART и других произвольных протоколов.
+     * Р Р€Р Р…Р С‘Р Р†Р ВµРЎР‚РЎРѓР В°Р В»РЎРЉР Р…РЎвЂ№Р в„– Р В±Р С‘Р Р…Р В°РЎР‚Р Р…РЎвЂ№Р в„– Р С—Р В°Р С”Р ВµРЎвЂљ Р Т‘Р В»РЎРЏ UART Р С‘ Р Т‘РЎР‚РЎС“Р С–Р С‘РЎвЂ¦ Р С—РЎР‚Р С•Р С‘Р В·Р Р†Р С•Р В»РЎРЉР Р…РЎвЂ№РЎвЂ¦ Р С—РЎР‚Р С•РЎвЂљР С•Р С”Р С•Р В»Р С•Р Р†.
      *
-     * Сетевая команда:
+     * Р РЋР ВµРЎвЂљР ВµР Р†Р В°РЎРЏ Р С”Р С•Р СР В°Р Р…Р Т‘Р В°:
      * `ui type=uart-frame title="UART RX" direction=rx channel=UART1 baud=115200 data="AA 55 10 02 01 02 34" fields="0-1|Sync|AA55|Preamble;2|Cmd|10|Command;3|Len|02|Payload length;4-5|Payload|0102|Data;6|CRC|34|Checksum"`
      *
-     * Локальное использование:
+     * Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р С‘РЎРѓР С—Р С•Р В»РЎРЉР В·Р С•Р Р†Р В°Р Р…Р С‘Р Вµ:
      * `console.printWidget(ConsoleWidgetSpec.PacketFrame(protocol = "UART", bytes = listOf(0xAA, 0x55)))`
      */
     data class PacketFrame(
@@ -594,7 +594,7 @@ sealed interface ConsoleWidgetSpec {
 }
 
 /**
- * Один индикатор внутри [ConsoleWidgetSpec.LedRow].
+ * Р С›Р Т‘Р С‘Р Р… Р С‘Р Р…Р Т‘Р С‘Р С”Р В°РЎвЂљР С•РЎР‚ Р Р†Р Р…РЎС“РЎвЂљРЎР‚Р С‘ [ConsoleWidgetSpec.LedRow].
  */
 data class LedRowItem(
     val label: String,
@@ -603,7 +603,7 @@ data class LedRowItem(
 )
 
 /**
- * Элемент сетки [ConsoleWidgetSpec.KeyValueGrid].
+ * Р В­Р В»Р ВµР СР ВµР Р…РЎвЂљ РЎРѓР ВµРЎвЂљР С”Р С‘ [ConsoleWidgetSpec.KeyValueGrid].
  */
 data class KeyValueGridItem(
     val key: String,
@@ -611,7 +611,7 @@ data class KeyValueGridItem(
 )
 
 /**
- * Один пин / канал внутри [ConsoleWidgetSpec.PinBank].
+ * Р С›Р Т‘Р С‘Р Р… Р С—Р С‘Р Р… / Р С”Р В°Р Р…Р В°Р В» Р Р†Р Р…РЎС“РЎвЂљРЎР‚Р С‘ [ConsoleWidgetSpec.PinBank].
  */
 data class PinBankItem(
     val pin: String,
@@ -621,7 +621,7 @@ data class PinBankItem(
 )
 
 /**
- * Одно событие во временной ленте [ConsoleWidgetSpec.Timeline].
+ * Р С›Р Т‘Р Р…Р С• РЎРѓР С•Р В±РЎвЂ№РЎвЂљР С‘Р Вµ Р Р†Р С• Р Р†РЎР‚Р ВµР СР ВµР Р…Р Р…Р С•Р в„– Р В»Р ВµР Р…РЎвЂљР Вµ [ConsoleWidgetSpec.Timeline].
  */
 data class TimelineItem(
     val time: String? = null,
@@ -631,7 +631,7 @@ data class TimelineItem(
 )
 
 /**
- * Строка таблицы [ConsoleWidgetSpec.RegisterTable].
+ * Р РЋРЎвЂљРЎР‚Р С•Р С”Р В° РЎвЂљР В°Р В±Р В»Р С‘РЎвЂ РЎвЂ№ [ConsoleWidgetSpec.RegisterTable].
  */
 data class RegisterTableRow(
     val address: String,
@@ -640,7 +640,7 @@ data class RegisterTableRow(
 )
 
 /**
- * Одно поле в [ConsoleWidgetSpec.ModbusFrame].
+ * Р С›Р Т‘Р Р…Р С• Р С—Р С•Р В»Р Вµ Р Р† [ConsoleWidgetSpec.ModbusFrame].
  */
 data class ModbusFieldRow(
     val range: String,
@@ -650,7 +650,7 @@ data class ModbusFieldRow(
 )
 
 /**
- * Универсальное поле бинарного кадра.
+ * Р Р€Р Р…Р С‘Р Р†Р ВµРЎР‚РЎРѓР В°Р В»РЎРЉР Р…Р С•Р Вµ Р С—Р С•Р В»Р Вµ Р В±Р С‘Р Р…Р В°РЎР‚Р Р…Р С•Р С–Р С• Р С”Р В°Р Т‘РЎР‚Р В°.
  */
 data class PacketFieldRow(
     val range: String,
@@ -660,7 +660,7 @@ data class PacketFieldRow(
 )
 
 /**
- * Направление транспортного кадра.
+ * Р СњР В°Р С—РЎР‚Р В°Р Р†Р В»Р ВµР Р…Р С‘Р Вµ РЎвЂљРЎР‚Р В°Р Р…РЎРѓР С—Р С•РЎР‚РЎвЂљР Р…Р С•Р С–Р С• Р С”Р В°Р Т‘РЎР‚Р В°.
  */
 enum class FrameDirection {
     Tx,
@@ -669,7 +669,7 @@ enum class FrameDirection {
 }
 
 /**
- * Направление Modbus-кадра.
+ * Р СњР В°Р С—РЎР‚Р В°Р Р†Р В»Р ВµР Р…Р С‘Р Вµ Modbus-Р С”Р В°Р Т‘РЎР‚Р В°.
  */
 enum class ModbusDirection {
     Request,
@@ -678,7 +678,7 @@ enum class ModbusDirection {
 }
 
 /**
- * Уровень важности для [ConsoleWidgetSpec.AlarmCard].
+ * Р Р€РЎР‚Р С•Р Р†Р ВµР Р…РЎРЉ Р Р†Р В°Р В¶Р Р…Р С•РЎРѓРЎвЂљР С‘ Р Т‘Р В»РЎРЏ [ConsoleWidgetSpec.AlarmCard].
  */
 enum class AlarmSeverity {
     Info,
@@ -688,9 +688,9 @@ enum class AlarmSeverity {
 }
 
 /**
- * Разбирает аргументы команды формата `key=value` в [ConsoleWidgetSpec].
+ * Р В Р В°Р В·Р В±Р С‘РЎР‚Р В°Р ВµРЎвЂљ Р В°РЎР‚Р С–РЎС“Р СР ВµР Р…РЎвЂљРЎвЂ№ Р С”Р С•Р СР В°Р Р…Р Т‘РЎвЂ№ РЎвЂћР С•РЎР‚Р СР В°РЎвЂљР В° `key=value` Р Р† [ConsoleWidgetSpec].
  *
- * Поддерживаемые типы:
+ * Р СџР С•Р Т‘Р Т‘Р ВµРЎР‚Р В¶Р С‘Р Р†Р В°Р ВµР СРЎвЂ№Р Вµ РЎвЂљР С‘Р С—РЎвЂ№:
  * - `type=badge`
  * - `type=dot`
  * - `type=image`
@@ -718,9 +718,9 @@ enum class AlarmSeverity {
  * - `type=uart-frame`
  * - `type=packet-frame`
  *
- * Значения с пробелами нужно оборачивать в кавычки.
+ * Р вЂ”Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘РЎРЏ РЎРѓ Р С—РЎР‚Р С•Р В±Р ВµР В»Р В°Р СР С‘ Р Р…РЎС“Р В¶Р Р…Р С• Р С•Р В±Р С•РЎР‚Р В°РЎвЂЎР С‘Р Р†Р В°РЎвЂљРЎРЉ Р Р† Р С”Р В°Р Р†РЎвЂ№РЎвЂЎР С”Р С‘.
  *
- * Примеры:
+ * Р СџРЎР‚Р С‘Р СР ВµРЎР‚РЎвЂ№:
  * `ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B`
  * `ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"`
  * `ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" color=#36C36B`
@@ -732,11 +732,11 @@ enum class AlarmSeverity {
 object ConsoleWidgetProtocol {
 
     /**
-     * Разбирает аргументы `key=value`, полученные из
+     * Р В Р В°Р В·Р В±Р С‘РЎР‚Р В°Р ВµРЎвЂљ Р В°РЎР‚Р С–РЎС“Р СР ВµР Р…РЎвЂљРЎвЂ№ `key=value`, Р С—Р С•Р В»РЎС“РЎвЂЎР ВµР Р…Р Р…РЎвЂ№Р Вµ Р С‘Р В·
      * [com.example.terminalm3.network.NetCommandDecoder].
      *
-     * Пример:
-     * `ConsoleWidgetProtocol.parse(listOf("type=badge", "text=READY", "bg=#1F7A1F"))`
+     * Р СџРЎР‚Р С‘Р СР ВµРЎР‚:
+     * `ConsoleWidgetProtocol.parse(listOf("type=badge", "text=READY", "st=ok"))`
      */
     fun parse(args: List<String>): Result<ConsoleWidgetSpec> = runCatching {
         val attributes = parseAttributes(args)
@@ -774,15 +774,17 @@ object ConsoleWidgetProtocol {
     }
 
     private fun parseBadge(attributes: Map<String, String>): ConsoleWidgetSpec.Badge {
+        val preset = parseBadgeStyle(find(attributes, "st", "style", "preset"))
+
         return ConsoleWidgetSpec.Badge(
             text = required(attributes, "text", "label", "title"),
             textColor = parseColor(
                 find(attributes, "fg", "textColor", "color"),
-                default = Color.White
+                default = preset?.textColor ?: Color.White
             ),
             backgroundColor = parseColor(
                 find(attributes, "bg", "background", "backgroundColor"),
-                default = Color(0xFF1F7A1F)
+                default = preset?.backgroundColor ?: Color(0xFF1F7A1F)
             ),
             fontSizeSp = parseInt(
                 find(attributes, "size", "font", "fontSize"),
@@ -791,6 +793,49 @@ object ConsoleWidgetProtocol {
                 max = 28
             )
         )
+    }
+
+    private fun parseBadgeStyle(style: String?): BadgeStylePreset? {
+        if (style.isNullOrBlank()) return null
+
+        return when (style.trim().lowercase()) {
+            "ok", "ready", "success", "good", "green" -> BadgeStylePreset(
+                backgroundColor = Color(0xFF1F7A1F),
+                textColor = Color.White
+            )
+
+            "info", "blue" -> BadgeStylePreset(
+                backgroundColor = Color(0xFF174A7A),
+                textColor = Color.White
+            )
+
+            "warn", "warning", "amber", "yellow" -> BadgeStylePreset(
+                backgroundColor = Color(0xFF7A5B12),
+                textColor = Color.White
+            )
+
+            "error", "fail", "danger", "red" -> BadgeStylePreset(
+                backgroundColor = Color(0xFF7A1F1F),
+                textColor = Color.White
+            )
+
+            "critical", "alarm" -> BadgeStylePreset(
+                backgroundColor = Color(0xFF5A1010),
+                textColor = Color(0xFFFFE7E7)
+            )
+
+            "neutral", "default", "gray", "grey" -> BadgeStylePreset(
+                backgroundColor = Color(0xFF33414D),
+                textColor = Color.White
+            )
+
+            "dark", "muted" -> BadgeStylePreset(
+                backgroundColor = Color(0xFF1D252C),
+                textColor = Color(0xFFE3EEF5)
+            )
+
+            else -> null
+        }
     }
 
     private fun parseDot(attributes: Map<String, String>): ConsoleWidgetSpec.Dot {
@@ -828,7 +873,7 @@ object ConsoleWidgetProtocol {
         val value = find(attributes, "value", "status")
 
         require(!title.isNullOrBlank() || !value.isNullOrBlank()) {
-            "Для panel нужен хотя бы title или value"
+            "Р вЂќР В»РЎРЏ panel Р Р…РЎС“Р В¶Р ВµР Р… РЎвЂ¦Р С•РЎвЂљРЎРЏ Р В±РЎвЂ№ title Р С‘Р В»Р С‘ value"
         }
 
         return ConsoleWidgetSpec.Panel(
@@ -861,21 +906,21 @@ object ConsoleWidgetProtocol {
     }
 
     private fun parseAttributes(args: List<String>): Map<String, String> {
-        require(args.isNotEmpty()) { "Команда виджета не содержит аргументов" }
+        require(args.isNotEmpty()) { "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° Р Р†Р С‘Р Т‘Р В¶Р ВµРЎвЂљР В° Р Р…Р Вµ РЎРѓР С•Р Т‘Р ВµРЎР‚Р В¶Р С‘РЎвЂљ Р В°РЎР‚Р С–РЎС“Р СР ВµР Р…РЎвЂљР С•Р Р†" }
 
         val map = linkedMapOf<String, String>()
 
         args.forEach { rawArg ->
             val separatorIndex = rawArg.indexOf('=')
             require(separatorIndex > 0) {
-                "Аргумент '$rawArg' должен быть в формате key=value"
+                "Р С’РЎР‚Р С–РЎС“Р СР ВµР Р…РЎвЂљ '$rawArg' Р Т‘Р С•Р В»Р В¶Р ВµР Р… Р В±РЎвЂ№РЎвЂљРЎРЉ Р Р† РЎвЂћР С•РЎР‚Р СР В°РЎвЂљР Вµ key=value"
             }
 
             val key = rawArg.substring(0, separatorIndex).trim()
             val value = rawArg.substring(separatorIndex + 1).trim()
 
-            require(key.isNotEmpty()) { "Пустое имя параметра в '$rawArg'" }
-            require(value.isNotEmpty()) { "Пустое значение параметра '$key'" }
+            require(key.isNotEmpty()) { "Р СџРЎС“РЎРѓРЎвЂљР С•Р Вµ Р С‘Р СРЎРЏ Р С—Р В°РЎР‚Р В°Р СР ВµРЎвЂљРЎР‚Р В° Р Р† '$rawArg'" }
+            require(value.isNotEmpty()) { "Р СџРЎС“РЎРѓРЎвЂљР С•Р Вµ Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ Р С—Р В°РЎР‚Р В°Р СР ВµРЎвЂљРЎР‚Р В° '$key'" }
 
             map[key] = value
         }
@@ -890,7 +935,7 @@ object ConsoleWidgetProtocol {
     private fun required(attributes: Map<String, String>, vararg keys: String): String {
         return find(attributes, *keys)
             ?.takeIf { it.isNotBlank() }
-            ?: error("Не найден обязательный параметр: ${keys.joinToString(" / ")}")
+            ?: error("Р СњР Вµ Р Р…Р В°Р в„–Р Т‘Р ВµР Р… Р С•Р В±РЎРЏР В·Р В°РЎвЂљР ВµР В»РЎРЉР Р…РЎвЂ№Р в„– Р С—Р В°РЎР‚Р В°Р СР ВµРЎвЂљРЎР‚: ${keys.joinToString(" / ")}")
     }
 
     private fun parseInt(value: String?, default: Int, min: Int, max: Int): Int {
@@ -922,10 +967,15 @@ object ConsoleWidgetProtocol {
     )
 }
 
+private data class BadgeStylePreset(
+    val backgroundColor: Color,
+    val textColor: Color
+)
+
 /**
- * Отрисовывает разобранное описание виджета как реальный Compose-элемент.
+ * Р С›РЎвЂљРЎР‚Р С‘РЎРѓР С•Р Р†РЎвЂ№Р Р†Р В°Р ВµРЎвЂљ РЎР‚Р В°Р В·Р С•Р В±РЎР‚Р В°Р Р…Р Р…Р С•Р Вµ Р С•Р С—Р С‘РЎРѓР В°Р Р…Р С‘Р Вµ Р Р†Р С‘Р Т‘Р В¶Р ВµРЎвЂљР В° Р С”Р В°Р С” РЎР‚Р ВµР В°Р В»РЎРЉР Р…РЎвЂ№Р в„– Compose-РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљ.
  *
- * Пример:
+ * Р СџРЎР‚Р С‘Р СР ВµРЎР‚:
  * `ConsoleWidget(ConsoleWidgetSpec.Badge(text = "READY"))`
  */
 @Composable
@@ -960,9 +1010,9 @@ fun ConsoleWidget(spec: ConsoleWidgetSpec) {
 }
 
 /**
- * Добавляет виджет, описанный данными, в конец консоли.
+ * Р вЂќР С•Р В±Р В°Р Р†Р В»РЎРЏР ВµРЎвЂљ Р Р†Р С‘Р Т‘Р В¶Р ВµРЎвЂљ, Р С•Р С—Р С‘РЎРѓР В°Р Р…Р Р…РЎвЂ№Р в„– Р Т‘Р В°Р Р…Р Р…РЎвЂ№Р СР С‘, Р Р† Р С”Р С•Р Р…Р ВµРЎвЂ  Р С”Р С•Р Р…РЎРѓР С•Р В»Р С‘.
  *
- * Пример:
+ * Р СџРЎР‚Р С‘Р СР ВµРЎР‚:
  * `console.printWidget(ConsoleWidgetSpec.Progress(label = "Battery", value = 72f))`
  */
 fun Console.printWidget(spec: ConsoleWidgetSpec) {
@@ -972,9 +1022,9 @@ fun Console.printWidget(spec: ConsoleWidgetSpec) {
 }
 
 /**
- * Добавляет виджет после указанной удаленной строки консоли.
+ * Р вЂќР С•Р В±Р В°Р Р†Р В»РЎРЏР ВµРЎвЂљ Р Р†Р С‘Р Т‘Р В¶Р ВµРЎвЂљ Р С—Р С•РЎРѓР В»Р Вµ РЎС“Р С”Р В°Р В·Р В°Р Р…Р Р…Р С•Р в„– РЎС“Р Т‘Р В°Р В»Р ВµР Р…Р Р…Р С•Р в„– РЎРѓРЎвЂљРЎР‚Р С•Р С”Р С‘ Р С”Р С•Р Р…РЎРѓР С•Р В»Р С‘.
  *
- * Пример:
+ * Р СџРЎР‚Р С‘Р СР ВµРЎР‚:
  * `console.printWidgetAfterRemoteLine(lineId, ConsoleWidgetSpec.Dot(label = "Link"))`
  */
 fun Console.printWidgetAfterRemoteLine(remoteLineId: Long, spec: ConsoleWidgetSpec) {

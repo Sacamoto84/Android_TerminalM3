@@ -99,7 +99,7 @@ internal fun severityLabel(severity: AlarmSeverity): String {
  * Gallery preview for all console widgets.
  *
  * Requests that recreate these preview samples:
- * `ui type=badge text="READY" bg=#1F7A1F fg=#FFFFFF size=14`
+ * `ui type=badge text="READY" st=ok`
  * `ui type=dot color=#00E676 size=16 label="Link active"`
  * `ui type=image name=info size=40 desc="Info icon"`
  * `ui type=panel title="Motor 1" value=READY subtitle="24.3V 1.8A" accent=#36C36B icon=info`
