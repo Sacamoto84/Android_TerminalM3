@@ -14,10 +14,12 @@ import com.example.terminalm3.lan.ipToBroadCast
 import com.example.terminalm3.lan.readLocalIP
 import com.example.terminalm3.network.channelNetworkIn
 import com.example.terminalm3.network.decoder
+import com.example.terminalm3.console.Console
 import com.example.terminalm3.console.LineTextAndColor
 import com.example.terminalm3.console.PairTextAndColor
 import com.example.terminalm3.console.ConsoleWidgetProtocol
 import com.example.terminalm3.console.emitConsoleWidgetNetworkDemo
+import com.example.terminalm3.console.printWidgetAt
 import com.example.terminalm3.console.printWidgetAfterRemoteLine
 import com.example.terminalm3.utils.NsdHelper
 import com.example.terminalm3.utils.PhoneBeeper
@@ -115,7 +117,13 @@ class Initialization(private val context: Context) {
                 }
 
                 val widgetChannelId = ConsoleWidgetProtocol.parseConsoleChannel(args) ?: lineChannelId
-                console.printWidgetAfterRemoteLine(lineId, spec, widgetChannelId)
+                val widgetSlotIndex = ConsoleWidgetProtocol.parseConsoleSlot(args)
+
+                if (widgetSlotIndex != null) {
+                    console.printWidgetAt(widgetSlotIndex, spec, widgetChannelId)
+                } else {
+                    console.printWidgetAfterRemoteLine(lineId, spec, widgetChannelId)
+                }
             }
         }
 
@@ -138,6 +146,35 @@ class Initialization(private val context: Context) {
                 )
             }
         }
+
+        val clearTerminalHandler: (List<String>, Long, Int) -> Unit = { args, lineId, lineChannelId ->
+            CoroutineScope(Dispatchers.Main).launch {
+                val targetArg = args.firstOrNull()?.trim()
+
+                when {
+                    targetArg.isNullOrEmpty() -> console.clearChannel(lineChannelId)
+                    targetArg.equals("all", ignoreCase = true) || targetArg == "*" -> console.clearAll()
+                    else -> {
+                        val targetChannel = targetArg.toIntOrNull()
+                        if (targetChannel == null || targetChannel !in 0 until Console.CHANNEL_COUNT) {
+                            console.printLocalAfterRemoteLine(
+                                remoteLineId = lineId,
+                                text = "Clear command error: terminal must be 0..3 or all",
+                                color = Color(0xFFFF8A80),
+                                channelId = lineChannelId
+                            )
+                            return@launch
+                        }
+
+                        console.clearChannel(targetChannel)
+                    }
+                }
+            }
+        }
+
+        decoder.addCmd("clear-terminal", clearTerminalHandler)
+        decoder.addCmd("clear-term", clearTerminalHandler)
+        decoder.addCmd("cls", clearTerminalHandler)
 
         val version = 301
 

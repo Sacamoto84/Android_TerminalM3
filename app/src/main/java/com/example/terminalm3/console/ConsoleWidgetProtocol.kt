@@ -796,6 +796,22 @@ object ConsoleWidgetProtocol {
             ?.coerceIn(0, 3)
     }.getOrNull()
 
+    /**
+     * Пытается вытащить slot/index для позиционного виджета в канале.
+     *
+     * Поддерживаемые алиасы:
+     * - `slot=0`
+     * - `index=0`
+     * - `pos=0`
+     * - `position=0`
+     */
+    fun parseConsoleSlot(args: List<String>): Int? = runCatching {
+        val attributes = parseAttributes(args)
+        find(attributes, "slot", "index", "pos", "position")
+            ?.toIntOrNull()
+            ?.coerceAtLeast(0)
+    }.getOrNull()
+
     private fun parseBadge(attributes: Map<String, String>): ConsoleWidgetSpec.Badge {
         val preset = parseBadgeStyle(find(attributes, "st", "style", "preset"))
 
@@ -1042,6 +1058,19 @@ fun Console.printWidget(
     channelId: Int = defaultOutputChannel
 ) {
     printComposable(channelId = channelId) {
+        ConsoleWidget(spec)
+    }
+}
+
+/**
+ * Вставляет или обновляет виджет в стабильном slot/index канала.
+ */
+fun Console.printWidgetAt(
+    slotIndex: Int,
+    spec: ConsoleWidgetSpec,
+    channelId: Int = defaultOutputChannel
+) {
+    printComposableAt(slotIndex = slotIndex, channelId = channelId) {
         ConsoleWidget(spec)
     }
 }

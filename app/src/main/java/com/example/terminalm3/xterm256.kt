@@ -49,10 +49,23 @@ var сurrentColor = CurrentColor()
 var symbolColor = CurrentColor()
 var tempColor = CurrentColor()
 
+data class XtermParseResult(
+    val pairList: List<PairTextAndColor>,
+    val clearChannelId: Int? = null
+)
+
+private class XtermParseContext {
+    var clearChannelId: Int? = null
+}
+
 //Получаем строку
-fun stringcalculate(text: String): List<PairTextAndColor> {
+fun stringcalculate(
+    text: String,
+    channelId: Int = console.defaultOutputChannel
+): XtermParseResult {
     var str = text
     val listPair = mutableListOf<PairTextAndColor>()
+    val context = XtermParseContext()
 
     //Ищем есть ли знак ESC в строке
     val indexESC = str.indexOf('\u001b')
@@ -70,7 +83,7 @@ fun stringcalculate(text: String): List<PairTextAndColor> {
                 flash = сurrentColor.flash
             )
         )
-        return listPair
+        return XtermParseResult(listPair)
     } else { //Начало строки
         if (indexESC == 0) {
 
@@ -92,7 +105,7 @@ fun stringcalculate(text: String): List<PairTextAndColor> {
                 do { // подстрока до первого указанного разделителя
                     val strESC =
                             str.substringBefore('m') // все что до m //Из последовательности обновляем текущие цвета //"38;05;232;48;05;226"
-                    calculateColorInEscString(strESC.substring(2)) //Без первых двух символов
+                    calculateColorInEscString(strESC.substring(2), channelId, context) //Без первых двух символов
                     str = str.removePrefix(strESC + "m") //Удаляем префикс ESC
                     val subsring = str.substringBefore('\u001b')
 
@@ -111,11 +124,15 @@ fun stringcalculate(text: String): List<PairTextAndColor> {
                 } while (str.indexOf('\u001b') != -1)
         }
     }
-    return listPair
+    return XtermParseResult(listPair, clearChannelId = context.clearChannelId)
 }
 
 //Из последовательности обновляем текущие цвета
-fun calculateColorInEscString(str: String) { //"38;05;232;48;05;226"
+private fun calculateColorInEscString(
+    str: String,
+    channelId: Int = console.defaultOutputChannel,
+    context: XtermParseContext? = null
+) { //"38;05;232;48;05;226"
     //println("--->calculateColorInString->str:$str")
     val rederxTextColor = """38;05;([^;]+)""".toRegex()
     val rederxBgColor = """48;05;([^;]+)""".toRegex()
@@ -135,8 +152,7 @@ fun calculateColorInEscString(str: String) { //"38;05;232;48;05;226"
     }
 
     if (str == "1") {
-        console.clearChannel(console.defaultOutputChannel) // removeRange(0, colorline_and_text.lastIndex)
-        console.print(" ")
+        context?.clearChannelId = channelId
         return
     }
 

@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -60,6 +61,7 @@ sealed interface ConsoleItem {
     val id: Long
     val remoteLineId: Long?
     val channelId: Int
+    val slotIndex: Int?
 }
 
 /**
@@ -73,6 +75,7 @@ class ConsoleTextItem(
     override val id: Long = Random.nextLong(),
     override val remoteLineId: Long? = null,
     override val channelId: Int = 0,
+    override val slotIndex: Int? = null,
     isPlaceholder: Boolean = false
 ) : ConsoleItem {
     var text by mutableStateOf(text)
@@ -84,12 +87,16 @@ class ConsoleTextItem(
 /**
  * Произвольный Compose-элемент, который хранится внутри канала консоли.
  */
-data class ConsoleComposableItem(
-    val content: ConsoleComposableContent,
+@Stable
+class ConsoleComposableItem(
+    content: ConsoleComposableContent,
     override val id: Long = Random.nextLong(),
     override val remoteLineId: Long? = null,
-    override val channelId: Int = 0
-) : ConsoleItem
+    override val channelId: Int = 0,
+    override val slotIndex: Int? = null
+) : ConsoleItem {
+    var content by mutableStateOf(content)
+}
 
 /**
  * Обратная совместимость со старым именем текстовой строки консоли.
@@ -139,12 +146,14 @@ class Console {
         val messages = mutableStateListOf<ConsoleItem>()
         val pendingLocalItems = mutableListOf<PendingLocalItem>()
         val remoteTextItems = mutableMapOf<Long, ConsoleTextItem>()
+        val slottedItems = sortedMapOf<Int, ConsoleItem>()
         var lastCompletedRemoteLineId = 0L
 
         fun clear() {
             messages.clear()
             pendingLocalItems.clear()
             remoteTextItems.clear()
+            slottedItems.clear()
             lastCompletedRemoteLineId = 0L
         }
     }
@@ -260,11 +269,16 @@ class Console {
      */
     fun clearChannel(channelId: Int) {
         val normalized = normalizeChannel(channelId)
-        channelBuffer(normalized).clear()
-        allMessages.removeAll { it.channelId == normalized }
-        unreadCounts[normalized].intValue = 0
-        if (activeChannel == normalized) {
-            lastCount = 0
+        Snapshot.withMutableSnapshot {
+            channelBuffer(normalized).clear()
+            rebuildAllMessagesWithoutChannel(normalized)
+            unreadCounts[normalized].intValue = 0
+            if (activeChannel == normalized) {
+                lastCount = 0
+            } else if (activeChannel == ALL_CHANNEL) {
+                lastCount = allMessages.size
+            }
+            unreadAllCount.intValue = unreadAllCount.intValue.coerceAtMost(allMessages.size)
         }
     }
 
@@ -272,20 +286,24 @@ class Console {
      * Очищает все каналы консоли сразу.
      */
     fun clearAll() {
-        channelBuffers.forEach(ChannelBuffer::clear)
-        allMessages.clear()
-        unreadCounts.forEach { it.intValue = 0 }
-        unreadAllCount.intValue = 0
-        lastCount = 0
+        Snapshot.withMutableSnapshot {
+            channelBuffers.forEach(ChannelBuffer::clear)
+            allMessages.clear()
+            unreadCounts.forEach { it.intValue = 0 }
+            unreadAllCount.intValue = 0
+            lastCount = 0
+        }
     }
 
     /**
      * Добавляет любой элемент в конец буфера того канала, которому он принадлежит.
      */
     fun addItem(item: ConsoleItem) {
-        channelBuffer(item.channelId).messages.add(item)
-        allMessages.add(item)
-        recordNewItem(item.channelId)
+        Snapshot.withMutableSnapshot {
+            channelBuffer(item.channelId).messages.add(item)
+            allMessages.add(item)
+            recordNewItem(item.channelId)
+        }
     }
 
     /**
@@ -298,6 +316,11 @@ class Console {
         val buffer = channelBuffer(item.channelId)
         if (remoteLineId <= buffer.lastCompletedRemoteLineId) {
             insertBeforeTrailingPlaceholder(buffer, item)
+            if (item is ConsoleComposableItem) {
+                Snapshot.withMutableSnapshot {
+                    removeTrailingPlaceholder(buffer)
+                }
+            }
         } else {
             buffer.pendingLocalItems.add(PendingLocalItem(remoteLineId, item))
         }
@@ -316,6 +339,30 @@ class Console {
         channelId: Int = defaultOutputChannel
     ) {
         addItem(buildTextItem(text, color, bgColor, flash, channelId = channelId))
+    }
+
+    /**
+     * Создает или обновляет текстовую строку в стабильном slot/index канала.
+     */
+    fun printAt(
+        slotIndex: Int,
+        text: String,
+        color: Color = Color.Green,
+        bgColor: Color = Color.Black,
+        flash: Boolean = false,
+        channelId: Int = defaultOutputChannel
+    ) {
+        setItemAt(
+            slotIndex = slotIndex,
+            item = buildTextItem(
+                text = text,
+                color = color,
+                bgColor = bgColor,
+                flash = flash,
+                channelId = channelId,
+                slotIndex = slotIndex
+            )
+        )
     }
 
     /**
@@ -374,6 +421,24 @@ class Console {
     }
 
     /**
+     * Создает или обновляет произвольный Compose-элемент в стабильном slot/index канала.
+     */
+    fun printComposableAt(
+        slotIndex: Int,
+        channelId: Int = defaultOutputChannel,
+        content: ConsoleComposableContent
+    ) {
+        setItemAt(
+            slotIndex = slotIndex,
+            item = ConsoleComposableItem(
+                content = content,
+                channelId = normalizeChannel(channelId),
+                slotIndex = normalizeSlot(slotIndex)
+            )
+        )
+    }
+
+    /**
      * Добавляет локальную текстовую строку после указанной сетевой строки
      * в заданном канале.
      */
@@ -420,23 +485,25 @@ class Console {
         val normalizedChannel = normalizeChannel(channelId)
         val buffer = channelBuffer(normalizedChannel)
         val item = buffer.remoteTextItems[remoteLineId]
-        if (item != null) {
-            item.text = text
-            item.pairList = pairList
-            item.isPlaceholder = false
-            return
-        }
+        Snapshot.withMutableSnapshot {
+            if (item != null) {
+                item.text = text
+                item.pairList = pairList
+                item.isPlaceholder = false
+                return@withMutableSnapshot
+            }
 
-        val newItem = ConsoleTextItem(
-            text = text,
-            pairList = pairList,
-            remoteLineId = remoteLineId,
-            channelId = normalizedChannel
-        )
-        buffer.remoteTextItems[remoteLineId] = newItem
-        buffer.messages.add(newItem)
-        allMessages.add(newItem)
-        recordNewItem(normalizedChannel)
+            val newItem = ConsoleTextItem(
+                text = text,
+                pairList = pairList,
+                remoteLineId = remoteLineId,
+                channelId = normalizedChannel
+            )
+            buffer.remoteTextItems[remoteLineId] = newItem
+            buffer.messages.add(newItem)
+            allMessages.add(newItem)
+            recordNewItem(normalizedChannel)
+        }
     }
 
     /**
@@ -454,9 +521,11 @@ class Console {
     ) {
         val normalizedChannel = normalizeChannel(channelId)
         val buffer = channelBuffer(normalizedChannel)
-        buffer.lastCompletedRemoteLineId = max(buffer.lastCompletedRemoteLineId, remoteLineId)
-        ensureRemotePlaceholder(buffer, nextRemoteLineId, normalizedChannel)
-        flushPendingLocalItems(buffer, remoteLineId)
+        Snapshot.withMutableSnapshot {
+            buffer.lastCompletedRemoteLineId = max(buffer.lastCompletedRemoteLineId, remoteLineId)
+            ensureRemotePlaceholder(buffer, nextRemoteLineId, normalizedChannel)
+            flushPendingLocalItems(buffer, remoteLineId)
+        }
     }
 
     /**
@@ -690,7 +759,8 @@ class Console {
         bgColor: Color,
         flash: Boolean,
         remoteLineId: Long? = null,
-        channelId: Int = defaultOutputChannel
+        channelId: Int = defaultOutputChannel,
+        slotIndex: Int? = null
     ): ConsoleTextItem {
         return ConsoleTextItem(
             text = text,
@@ -703,7 +773,8 @@ class Console {
                 )
             ),
             remoteLineId = remoteLineId,
-            channelId = normalizeChannel(channelId)
+            channelId = normalizeChannel(channelId),
+            slotIndex = slotIndex?.let(::normalizeSlot)
         )
     }
 
@@ -748,6 +819,9 @@ class Console {
             val pending = iterator.next()
             if (pending.remoteLineId == remoteLineId) {
                 insertBeforeTrailingPlaceholder(buffer, pending.item)
+                if (pending.item is ConsoleComposableItem) {
+                    removeTrailingPlaceholder(buffer)
+                }
                 iterator.remove()
             }
         }
@@ -758,14 +832,89 @@ class Console {
      * если такой placeholder уже существует.
      */
     private fun insertBeforeTrailingPlaceholder(buffer: ChannelBuffer, item: ConsoleItem) {
-        val lastItem = buffer.messages.lastOrNull()
-        if (lastItem is ConsoleTextItem && lastItem.isPlaceholder) {
-            buffer.messages.add(buffer.messages.lastIndex, item)
-        } else {
-            buffer.messages.add(item)
+        Snapshot.withMutableSnapshot {
+            val lastItem = buffer.messages.lastOrNull()
+            if (lastItem is ConsoleTextItem && lastItem.isPlaceholder) {
+                buffer.messages.add(buffer.messages.lastIndex, item)
+            } else {
+                buffer.messages.add(item)
+            }
+            allMessages.add(item)
+            recordNewItem(item.channelId)
         }
-        allMessages.add(item)
-        recordNewItem(item.channelId)
+    }
+
+    private fun removeTrailingPlaceholder(buffer: ChannelBuffer) {
+        val lastItem = buffer.messages.lastOrNull() as? ConsoleTextItem ?: return
+        if (!lastItem.isPlaceholder) return
+
+        buffer.messages.removeAt(buffer.messages.lastIndex)
+        val allIndex = allMessages.indexOfLast { it.id == lastItem.id }
+        if (allIndex >= 0) {
+            allMessages.removeAt(allIndex)
+        }
+        lastItem.remoteLineId?.let { remoteLineId ->
+            val mapped = buffer.remoteTextItems[remoteLineId]
+            if (mapped?.id == lastItem.id) {
+                buffer.remoteTextItems.remove(remoteLineId)
+            }
+        }
+    }
+
+    private fun setItemAt(slotIndex: Int, item: ConsoleItem) {
+        val normalizedSlot = normalizeSlot(slotIndex)
+        val normalizedChannel = normalizeChannel(item.channelId)
+        val buffer = channelBuffer(normalizedChannel)
+        val existing = buffer.slottedItems[normalizedSlot]
+
+        Snapshot.withMutableSnapshot {
+            if (existing == null) {
+                val insertIndex = buffer.slottedItems.keys.count { it < normalizedSlot }
+                    .coerceIn(0, buffer.messages.size)
+
+                buffer.slottedItems[normalizedSlot] = item
+                buffer.messages.add(insertIndex, item)
+                allMessages.add(item)
+                recordNewItem(normalizedChannel)
+                return@withMutableSnapshot
+            }
+
+            buffer.slottedItems[normalizedSlot] = when {
+                existing is ConsoleTextItem && item is ConsoleTextItem -> {
+                    existing.text = item.text
+                    existing.pairList = item.pairList
+                    existing.deleted = item.deleted
+                    existing.isPlaceholder = item.isPlaceholder
+                    existing
+                }
+
+                existing is ConsoleComposableItem && item is ConsoleComposableItem -> {
+                    existing.content = item.content
+                    existing
+                }
+
+                else -> {
+                    replaceItemReferences(buffer, existing, item)
+                    item
+                }
+            }
+        }
+    }
+
+    private fun replaceItemReferences(
+        buffer: ChannelBuffer,
+        oldItem: ConsoleItem,
+        newItem: ConsoleItem
+    ) {
+        val channelIndex = buffer.messages.indexOfFirst { it.id == oldItem.id }
+        if (channelIndex >= 0) {
+            buffer.messages[channelIndex] = newItem
+        }
+
+        val allIndex = allMessages.indexOfFirst { it.id == oldItem.id }
+        if (allIndex >= 0) {
+            allMessages[allIndex] = newItem
+        }
     }
 
     private fun recordNewItem(channelId: Int) {
@@ -778,7 +927,19 @@ class Console {
         }
     }
 
+    private fun rebuildAllMessagesWithoutChannel(channelId: Int) {
+        val filtered = allMessages.filterNot { it.channelId == channelId }
+        if (filtered.size == allMessages.size) return
+
+        Snapshot.withMutableSnapshot {
+            allMessages.clear()
+            allMessages.addAll(filtered)
+        }
+    }
+
     private fun channelBuffer(channelId: Int): ChannelBuffer = channelBuffers[normalizeChannel(channelId)]
+
+    private fun normalizeSlot(slotIndex: Int): Int = slotIndex.coerceAtLeast(0)
 
     private fun normalizeChannel(channelId: Int): Int = channelId.coerceIn(0, CHANNEL_COUNT - 1)
 
