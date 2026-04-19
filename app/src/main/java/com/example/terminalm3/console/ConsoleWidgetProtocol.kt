@@ -773,6 +773,29 @@ object ConsoleWidgetProtocol {
         }
     }
 
+    /**
+     * Пытается вытащить номер канала консоли из аргументов `ui` / `widget`.
+     *
+     * Поддерживаемые алиасы:
+     * - `channel=5`
+     * - `terminal=5`
+     * - `term=5`
+     * - `ch=5`
+     *
+     * Возвращает только числовой канал в диапазоне `0..3`.
+     * Если значение не похоже на номер канала, вернет `null`.
+     *
+     * Важно: у frame-виджетов поле `channel` может означать имя шины или порта,
+     * например `can0` или `UART1`. Для таких случаев безопаснее использовать
+     * `terminal`, `term`, `ch` или transport-prefix `@N ` на уровне всей строки.
+     */
+    fun parseConsoleChannel(args: List<String>): Int? = runCatching {
+        val attributes = parseAttributes(args)
+        find(attributes, "channel", "terminal", "term", "ch")
+            ?.toIntOrNull()
+            ?.coerceIn(0, 3)
+    }.getOrNull()
+
     private fun parseBadge(attributes: Map<String, String>): ConsoleWidgetSpec.Badge {
         val preset = parseBadgeStyle(find(attributes, "st", "style", "preset"))
 
@@ -973,10 +996,10 @@ private data class BadgeStylePreset(
 )
 
 /**
- * Р С›РЎвЂљРЎР‚Р С‘РЎРѓР С•Р Р†РЎвЂ№Р Р†Р В°Р ВµРЎвЂљ РЎР‚Р В°Р В·Р С•Р В±РЎР‚Р В°Р Р…Р Р…Р С•Р Вµ Р С•Р С—Р С‘РЎРѓР В°Р Р…Р С‘Р Вµ Р Р†Р С‘Р Т‘Р В¶Р ВµРЎвЂљР В° Р С”Р В°Р С” РЎР‚Р ВµР В°Р В»РЎРЉР Р…РЎвЂ№Р в„– Compose-РЎРЊР В»Р ВµР СР ВµР Р…РЎвЂљ.
+ * Отрисовывает один уже разобранный [ConsoleWidgetSpec] как реальный Compose-элемент.
  *
- * Р СџРЎР‚Р С‘Р СР ВµРЎР‚:
- * `ConsoleWidget(ConsoleWidgetSpec.Badge(text = "READY"))`
+ * Это единая точка роутинга: по типу spec выбирается нужный `...ConsoleWidget(...)`
+ * из папки `console/widgets`.
  */
 @Composable
 fun ConsoleWidget(spec: ConsoleWidgetSpec) {
@@ -1010,25 +1033,32 @@ fun ConsoleWidget(spec: ConsoleWidgetSpec) {
 }
 
 /**
- * Р вЂќР С•Р В±Р В°Р Р†Р В»РЎРЏР ВµРЎвЂљ Р Р†Р С‘Р Т‘Р В¶Р ВµРЎвЂљ, Р С•Р С—Р С‘РЎРѓР В°Р Р…Р Р…РЎвЂ№Р в„– Р Т‘Р В°Р Р…Р Р…РЎвЂ№Р СР С‘, Р Р† Р С”Р С•Р Р…Р ВµРЎвЂ  Р С”Р С•Р Р…РЎРѓР С•Р В»Р С‘.
+ * Добавляет виджет в конец указанного канала консоли.
  *
- * Р СџРЎР‚Р С‘Р СР ВµРЎР‚:
- * `console.printWidget(ConsoleWidgetSpec.Progress(label = "Battery", value = 72f))`
+ * Если [channelId] не передан, используется текущий [Console.defaultOutputChannel].
  */
-fun Console.printWidget(spec: ConsoleWidgetSpec) {
-    printComposable {
+fun Console.printWidget(
+    spec: ConsoleWidgetSpec,
+    channelId: Int = defaultOutputChannel
+) {
+    printComposable(channelId = channelId) {
         ConsoleWidget(spec)
     }
 }
 
 /**
- * Р вЂќР С•Р В±Р В°Р Р†Р В»РЎРЏР ВµРЎвЂљ Р Р†Р С‘Р Т‘Р В¶Р ВµРЎвЂљ Р С—Р С•РЎРѓР В»Р Вµ РЎС“Р С”Р В°Р В·Р В°Р Р…Р Р…Р С•Р в„– РЎС“Р Т‘Р В°Р В»Р ВµР Р…Р Р…Р С•Р в„– РЎРѓРЎвЂљРЎР‚Р С•Р С”Р С‘ Р С”Р С•Р Р…РЎРѓР С•Р В»Р С‘.
+ * Вставляет виджет после конкретной входящей сетевой строки.
  *
- * Р СџРЎР‚Р С‘Р СР ВµРЎР‚:
- * `console.printWidgetAfterRemoteLine(lineId, ConsoleWidgetSpec.Dot(label = "Link"))`
+ * Используется, когда команда пришла из сети и виджет должен визуально стоять
+ * сразу под строкой, которая эту команду породила. Если строка еще не завершена,
+ * вставка будет отложена до [Console.completeRemoteLine].
  */
-fun Console.printWidgetAfterRemoteLine(remoteLineId: Long, spec: ConsoleWidgetSpec) {
-    printComposableAfterRemoteLine(remoteLineId) {
+fun Console.printWidgetAfterRemoteLine(
+    remoteLineId: Long,
+    spec: ConsoleWidgetSpec,
+    channelId: Int = defaultOutputChannel
+) {
+    printComposableAfterRemoteLine(remoteLineId, channelId = channelId) {
         ConsoleWidget(spec)
     }
 }

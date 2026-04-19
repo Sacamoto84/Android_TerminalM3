@@ -71,6 +71,19 @@ class NetCommandDecoder(
     private var currentLineId: Long = 1L
 
     /**
+     * Канал текущей собираемой строки.
+     *
+     * По умолчанию весь вход идет в канал 0. Если строка начинается с transport-prefix
+     * вида `@3 `, она будет сразу маршрутизирована в указанный канал.
+     */
+    private var currentLineChannelId: Int = DEFAULT_CONSOLE_CHANNEL
+
+    /**
+     * Признак того, что routing-prefix текущей строки уже разобран.
+     */
+    private var currentLineRoutingResolved = false
+
+    /**
      * Защита от повторного запуска `run()`.
      */
     @Volatile
@@ -84,9 +97,10 @@ class NetCommandDecoder(
      *
      * [cb] получает:
      * - список аргументов после имени команды;
-     * - [lineId] той сетевой строки, из которой команда пришла.
+     * - [lineId] той сетевой строки, из которой команда пришла;
+     * - номер логического канала консоли, к которому была привязана строка.
      */
-    fun addCmd(name: String, cb: (List<String>, Long) -> Unit = { _, _ -> }) {
+    fun addCmd(name: String, cb: (List<String>, Long, Int) -> Unit = { _, _, _ -> }) {
         val normalizedName = normalizeCommandText(name)
 
         if (normalizedName.isEmpty()) {
@@ -147,6 +161,10 @@ class NetCommandDecoder(
             displayChunkBuffer.append(buildDisplayChunk(rawChunk))
 
             while (true) {
+                if (!resolveCurrentLineRouting(rawChunkBuffer, displayChunkBuffer)) {
+                    break
+                }
+
                 val rawNewLineIndex = rawChunkBuffer.indexOf('\n')
 
                 if (rawNewLineIndex == -1) {
@@ -171,7 +189,8 @@ class NetCommandDecoder(
      */
     data class CommandPacket(
         val raw: String,
-        val lineId: Long
+        val lineId: Long,
+        val channelId: Int
     )
 
     /**
@@ -179,7 +198,7 @@ class NetCommandDecoder(
      */
     data class CliCommand(
         val name: String,
-        val cb: (List<String>, Long) -> Unit
+        val cb: (List<String>, Long, Int) -> Unit
     )
 
     /**
@@ -222,10 +241,78 @@ class NetCommandDecoder(
         }
 
         try {
-            command.cb.invoke(arg, packet.lineId)
+            command.cb.invoke(arg, packet.lineId, packet.channelId)
         } catch (e: Exception) {
             Timber.e(e, "Ошибка выполнения CLI-команды: $name")
         }
+    }
+
+    /**
+     * Разбирает transport-prefix в начале текущей строки, если он есть.
+     *
+     * Поддерживаемый формат:
+     * - `@0 some text`
+     * - `@3 ui type=badge text="READY" st=ok`
+     *
+     * Сам префикс вырезается и из CLI-представления, и из UI-представления строки,
+     * поэтому дальше консоль и парсер видят только полезную нагрузку, а маршрут
+     * остается в метаданных строки через [currentLineChannelId].
+     *
+     * Возвращает `true`, когда маршрут уже понятен и строку можно обрабатывать дальше.
+     * Возвращает `false`, когда байтов еще недостаточно и нужно дождаться продолжения.
+     */
+    private fun resolveCurrentLineRouting(
+        rawChunkBuffer: StringBuilder,
+        displayChunkBuffer: StringBuilder
+    ): Boolean {
+        if (currentLineRoutingResolved) return true
+
+        if (rawLineBuilder.isNotEmpty() || displayLineBuilder.isNotEmpty()) {
+            currentLineChannelId = DEFAULT_CONSOLE_CHANNEL
+            currentLineRoutingResolved = true
+            return true
+        }
+
+        if (rawChunkBuffer.isEmpty()) return false
+
+        if (rawChunkBuffer.first() != CHANNEL_PREFIX_MARKER) {
+            currentLineChannelId = DEFAULT_CONSOLE_CHANNEL
+            currentLineRoutingResolved = true
+            return true
+        }
+
+        var index = 1
+        while (index < rawChunkBuffer.length && rawChunkBuffer[index].isDigit()) {
+            index++
+        }
+
+        if (index == 1) {
+            currentLineChannelId = DEFAULT_CONSOLE_CHANNEL
+            currentLineRoutingResolved = true
+            return true
+        }
+
+        if (index >= rawChunkBuffer.length) {
+            return false
+        }
+
+        val delimiter = rawChunkBuffer[index]
+        if (delimiter != ' ') {
+            currentLineChannelId = DEFAULT_CONSOLE_CHANNEL
+            currentLineRoutingResolved = true
+            return true
+        }
+
+        val parsedChannel = rawChunkBuffer.substring(1, index)
+            .toIntOrNull()
+            ?.coerceIn(0, MAX_CONSOLE_CHANNEL)
+            ?: DEFAULT_CONSOLE_CHANNEL
+
+        rawChunkBuffer.delete(0, index + 1)
+        displayChunkBuffer.delete(0, index + 1)
+        currentLineChannelId = parsedChannel
+        currentLineRoutingResolved = true
+        return true
     }
 
     /**
@@ -253,7 +340,8 @@ class NetCommandDecoder(
                 NetCommand(
                     cmd = displayLineBuilder.toString(),
                     newString = false,
-                    lineId = currentLineId
+                    lineId = currentLineId,
+                    channelId = currentLineChannelId
                 )
             )
         }
@@ -279,6 +367,8 @@ class NetCommandDecoder(
             displayChunkBuffer.clear()
             rawLineBuilder.clear()
             displayLineBuilder.clear()
+            currentLineChannelId = DEFAULT_CONSOLE_CHANNEL
+            currentLineRoutingResolved = false
             return
         }
 
@@ -297,7 +387,8 @@ class NetCommandDecoder(
         channelOutCommand.send(
             CommandPacket(
                 raw = rawLineBuilder.toString(),
-                lineId = lineId
+                lineId = lineId,
+                channelId = currentLineChannelId
             )
         )
 
@@ -305,12 +396,15 @@ class NetCommandDecoder(
             NetCommand(
                 cmd = displayLineBuilder.toString(),
                 newString = true,
-                lineId = lineId
+                lineId = lineId,
+                channelId = currentLineChannelId
             )
         )
 
         rawLineBuilder.clear()
         displayLineBuilder.clear()
+        currentLineChannelId = DEFAULT_CONSOLE_CHANNEL
+        currentLineRoutingResolved = false
         currentLineId++
     }
 
@@ -403,6 +497,21 @@ class NetCommandDecoder(
          * Так прием сетевых данных не упирается в парсер слишком рано.
          */
         private const val COMMAND_CHANNEL_CAPACITY = 1_000_000
+
+        /**
+         * Канал консоли по умолчанию, если transport-prefix не указан.
+         */
+        private const val DEFAULT_CONSOLE_CHANNEL = 0
+
+        /**
+         * Максимальный номер логического канала консоли.
+         */
+        private const val MAX_CONSOLE_CHANNEL = 3
+
+        /**
+         * Символ, которым начинается transport-prefix, например `@3 ui type=badge ...`.
+         */
+        private const val CHANNEL_PREFIX_MARKER = '@'
 
         /**
          * Визуальная метка символа `CR` для консоли.

@@ -35,14 +35,12 @@ class Initialization(private val context: Context) {
 
     init {
 
-        // Declare NsdHelper object for service discovery
+        // Объект для DNS-SD discovery сервисов в локальной сети.
         nsdHelper = object : NsdHelper(context) {
-            override fun onNsdServiceResolved(service: NsdServiceInfo) { // A new network service is available
-                // Put your custom logic here!!!
+            override fun onNsdServiceResolved(service: NsdServiceInfo) {
             }
 
-            override fun onNsdServiceLost(service: NsdServiceInfo) { // A network service is no longer available
-                // Put your custom logic here!!!
+            override fun onNsdServiceLost(service: NsdServiceInfo) {
             }
         }
 
@@ -60,18 +58,17 @@ class Initialization(private val context: Context) {
         shared = context.getSharedPreferences("size", Context.MODE_PRIVATE)
         console.fontSize = (shared.getString("size", "12")?.toInt() ?: 12).sp
 
-        //MARK: Вывод символа энтер
+        // Показывать в консоли визуальные метки CR/LF.
         Global.isCheckUseCRLF = shared.getBoolean("enter", false)
 
-        //MARK: Вывод номера строки
+        // Показывать номера строк слева в консоли.
         console.lineVisible = shared.getBoolean("lineVisible", true)
 
         console.fontSize = shared.getInt("fontSize", 18).sp
 
-        // Initialize DNS-SD service discovery
+        // Инициализация и запуск поиска сетевых сервисов.
         nsdHelper?.initializeNsd()
 
-        // Start looking for available audio channels in the network
         nsdHelper?.discoverServices()
 
         ipAddress = readLocalIP(context)
@@ -82,13 +79,12 @@ class Initialization(private val context: Context) {
 
         decoder.run()
 
-        decoder.addCmd("beep") { _, lineId ->
+        decoder.addCmd("beep") { _, lineId, channelId ->
             CoroutineScope(Dispatchers.Main).launch {
                 PhoneBeeper.beep()
                 Timber.i("Команда beep")
-                //console.printLocalAfterRemoteLine(lineId, "!!!", flash = true)
 
-                console.printComposableAfterRemoteLine(lineId) {
+                console.printComposableAfterRemoteLine(lineId, channelId = channelId) {
                     Image(
                         painter = painterResource(R.drawable.info),
                         contentDescription = null
@@ -105,41 +101,47 @@ class Initialization(private val context: Context) {
 
         }
 
-        val widgetCommandHandler: (List<String>, Long) -> Unit = { args, lineId ->
+        val widgetCommandHandler: (List<String>, Long, Int) -> Unit = { args, lineId, lineChannelId ->
             CoroutineScope(Dispatchers.Main).launch {
                 val spec = ConsoleWidgetProtocol.parse(args).getOrElse { error ->
                     Timber.w(error, "Не удалось распарсить команду UI")
                     console.printLocalAfterRemoteLine(
                         remoteLineId = lineId,
                         text = "UI command error: ${error.message}",
-                        color = Color(0xFFFF8A80)
+                        color = Color(0xFFFF8A80),
+                        channelId = lineChannelId
                     )
                     return@launch
                 }
 
-                console.printWidgetAfterRemoteLine(lineId, spec)
+                val widgetChannelId = ConsoleWidgetProtocol.parseConsoleChannel(args) ?: lineChannelId
+                console.printWidgetAfterRemoteLine(lineId, spec, widgetChannelId)
             }
         }
 
         decoder.addCmd("ui", widgetCommandHandler)
         decoder.addCmd("widget", widgetCommandHandler)
-        decoder.addCmd("demo-widgets") { _, lineId ->
+        decoder.addCmd("demo-widgets") { _, lineId, channelId ->
             CoroutineScope(Dispatchers.Main).launch {
                 console.printLocalAfterRemoteLine(
                     remoteLineId = lineId,
                     text = "Запускаю демо всех виджетов...",
-                    color = Color(0xFF80CBC4)
+                    color = Color(0xFF80CBC4),
+                    channelId = channelId
                 )
             }
 
             CoroutineScope(Dispatchers.Main).launch {
-                emitConsoleWidgetNetworkDemo(channelNetworkIn)
+                emitConsoleWidgetNetworkDemo(
+                    channel = channelNetworkIn,
+                    consoleChannelId = channelId
+                )
             }
         }
 
-        val version = 301 //BuildConfig.VERSION_NAME
+        val version = 301
 
-        //Нужно добавить ее в список лази как текущую
+        // Стартовая служебная строка с названием приложения и версией.
         val pairList = listOf(
             PairTextAndColor(
                 text = " RTT ",
@@ -167,10 +169,11 @@ class Initialization(private val context: Context) {
             )
         )
 
-        console.messages.add(
+        console.addItem(
             LineTextAndColor(
                 text = "Первый нах",
-                pairList = pairList
+                pairList = pairList,
+                channelId = console.defaultOutputChannel
             )
         )
 
@@ -189,3 +192,4 @@ class Initialization(private val context: Context) {
     }
 
 }
+

@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -45,20 +46,24 @@ import kotlin.math.max
 import kotlin.random.Random
 
 /**
- * Compose content block that can be inserted into the console list.
+ * Compose-блок, который можно вставить в список консоли как отдельный элемент.
  */
 typealias ConsoleComposableContent = @Composable () -> Unit
 
 /**
- * Base type for any console item.
+ * Базовый тип любого элемента консоли.
+ *
+ * [remoteLineId] связывает локальные элементы с конкретной входящей сетевой строкой,
+ * а [channelId] определяет, в каком логическом канале элемент хранится и отображается.
  */
 sealed interface ConsoleItem {
     val id: Long
     val remoteLineId: Long?
+    val channelId: Int
 }
 
 /**
- * Text item stored in the console list.
+ * Текстовый элемент, который хранится внутри канала консоли.
  */
 @Stable
 class ConsoleTextItem(
@@ -67,6 +72,7 @@ class ConsoleTextItem(
     deleted: Boolean = false,
     override val id: Long = Random.nextLong(),
     override val remoteLineId: Long? = null,
+    override val channelId: Int = 0,
     isPlaceholder: Boolean = false
 ) : ConsoleItem {
     var text by mutableStateOf(text)
@@ -76,21 +82,22 @@ class ConsoleTextItem(
 }
 
 /**
- * Arbitrary Compose item stored in the console list.
+ * Произвольный Compose-элемент, который хранится внутри канала консоли.
  */
 data class ConsoleComposableItem(
     val content: ConsoleComposableContent,
     override val id: Long = Random.nextLong(),
-    override val remoteLineId: Long? = null
+    override val remoteLineId: Long? = null,
+    override val channelId: Int = 0
 ) : ConsoleItem
 
 /**
- * Backward-compatible alias for text items.
+ * Обратная совместимость со старым именем текстовой строки консоли.
  */
 typealias LineTextAndColor = ConsoleTextItem
 
 /**
- * One styled text fragment inside a text line.
+ * Один стилизованный фрагмент внутри текстовой строки.
  */
 data class PairTextAndColor(
     val text: String,
@@ -103,20 +110,44 @@ data class PairTextAndColor(
 )
 
 /**
- * Main console storage and renderer.
+ * Основное хранилище и renderer консоли.
  *
- * It stores text items, arbitrary Compose items, streaming remote lines,
- * and the UI state needed for auto-follow and blinking text.
+ * Внутри один экземпляр [Console] держит `4` независимых буфера каналов и одну
+ * общую агрегированную ленту `ALL`, поэтому
+ * внешнему коду не нужно управлять несколькими Console. UI просто переключает
+ * [activeChannel], а методы `print(...)`, `updateRemoteLine(...)` и вставка виджетов
+ * работают поверх нужного канала.
  */
 class Console {
 
     /**
-     * Delayed local item that should appear after a specific remote line finishes.
+     * Отложенный локальный элемент, который должен появиться после завершения
+     * конкретной входящей сетевой строки.
      */
     private data class PendingLocalItem(
         val remoteLineId: Long,
         val item: ConsoleItem
     )
+
+    /**
+     * Внутренний буфер одного логического канала консоли.
+     *
+     * Хранит историю элементов, временные placeholder-строки для потокового вывода
+     * и локальные элементы, которые ждут завершения сетевой строки.
+     */
+    private class ChannelBuffer {
+        val messages = mutableStateListOf<ConsoleItem>()
+        val pendingLocalItems = mutableListOf<PendingLocalItem>()
+        val remoteTextItems = mutableMapOf<Long, ConsoleTextItem>()
+        var lastCompletedRemoteLineId = 0L
+
+        fun clear() {
+            messages.clear()
+            pendingLocalItems.clear()
+            remoteTextItems.clear()
+            lastCompletedRemoteLineId = 0L
+        }
+    }
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
@@ -132,34 +163,81 @@ class Console {
     var tracking by mutableStateOf(true)
     var lastCount by mutableIntStateOf(0)
     var fontSize by mutableStateOf(12.sp)
+    var activeChannel by mutableIntStateOf(ALL_CHANNEL)
+        private set
+    var defaultOutputChannel by mutableIntStateOf(DEFAULT_CHANNEL)
+        private set
 
     private val lineHeight get() = (fontSize.value * 1.25f).sp
-
-    /**
-     * Observable list of all console items.
-     *
-     * This is intentionally exposed directly on `Console` so callers can work with
-     * the list without going through an extra wrapper class.
-     */
-    val messages = mutableStateListOf<ConsoleItem>()
-
+    private val channelBuffers = List(CHANNEL_COUNT) { ChannelBuffer() }
+    private val allMessages = mutableStateListOf<ConsoleItem>()
     private val recompose = MutableStateFlow(0)
+    private val unreadCounts = List(CHANNEL_COUNT) { mutableIntStateOf(0) }
+    private val unreadAllCount = mutableIntStateOf(0)
     private var fontFamily = FontFamily(Font(R.font.jetbrains, FontWeight.Normal))
     private val consoleBackground = Color(0xFF090909)
     private var scrollToEndRequest by mutableIntStateOf(0)
-    private val pendingLocalItems = mutableListOf<PendingLocalItem>()
-    private val remoteTextItems = mutableMapOf<Long, ConsoleTextItem>()
-    private var lastCompletedRemoteLineId = 0L
 
     /**
-     * Forces list recomposition without changing list size.
+     * Обратная совместимость со старым прямым доступом к `messages`.
+     *
+     * Возвращает список элементов активного канала.
+     *
+     * Если пользователь находится на вкладке `ALL`, прямые операции через `messages`
+     * направляются в [defaultOutputChannel], потому что `ALL` не является реальным
+     * буфером для записи.
+     */
+    val messages
+        get() = channelBuffer(
+            if (activeChannel == ALL_CHANNEL) defaultOutputChannel else activeChannel
+        ).messages
+
+    /**
+     * Принудительно дергает рекомпозицию списка, не меняя его размер.
      */
     fun recompose() {
         recompose.value++
     }
 
     /**
-     * Re-enables auto-follow and requests scroll to the last item.
+     * Переключает канал, который сейчас отображается на экране.
+     *
+     * История других каналов при этом не теряется, меняется только активное представление.
+     * После старта консоль открывается на вкладке [ALL_CHANNEL], чтобы сразу видеть
+     * весь входящий поток.
+     */
+    fun selectChannel(channelId: Int) {
+        if (channelId == ALL_CHANNEL) {
+            unreadAllCount.intValue = 0
+            if (activeChannel == ALL_CHANNEL) return
+
+            activeChannel = ALL_CHANNEL
+            lastCount = allMessages.size
+            tracking = true
+            scrollToEndRequest++
+            return
+        }
+
+        val normalized = normalizeChannel(channelId)
+        unreadCounts[normalized].intValue = 0
+        if (activeChannel == normalized) return
+
+        activeChannel = normalized
+        lastCount = channelBuffer(normalized).messages.size
+        tracking = true
+        scrollToEndRequest++
+    }
+
+    /**
+     * Меняет канал по умолчанию для локальных вызовов `print(...)`,
+     * `printComposable(...)` и других методов, где канал явно не указан.
+     */
+    fun selectDefaultOutputChannel(channelId: Int) {
+        defaultOutputChannel = normalizeChannel(channelId)
+    }
+
+    /**
+     * Снова включает автослежение и запрашивает прокрутку к концу активного канала.
      */
     fun requestScrollToEnd() {
         tracking = true
@@ -167,61 +245,93 @@ class Console {
     }
 
     /**
-     * Clears the console and resets temporary state.
+     * Очищает только активный канал.
      */
     fun clear() {
-        messages.clear()
-        pendingLocalItems.clear()
-        remoteTextItems.clear()
-        lastCompletedRemoteLineId = 0L
-    }
-
-    /**
-     * Adds any item to the end of the console.
-     */
-    fun addItem(item: ConsoleItem) {
-        messages.add(item)
-    }
-
-    /**
-     * Inserts an item after a specific remote line.
-     *
-     * If that line has not finished yet, the item is queued.
-     */
-    fun addItemAfterRemoteLine(remoteLineId: Long, item: ConsoleItem) {
-        if (remoteLineId <= lastCompletedRemoteLineId) {
-            insertBeforeTrailingPlaceholder(item)
+        if (activeChannel == ALL_CHANNEL) {
+            clearAll()
         } else {
-            pendingLocalItems.add(PendingLocalItem(remoteLineId, item))
+            clearChannel(activeChannel)
         }
     }
 
     /**
-     * Adds a plain text line to the end of the console.
+     * Очищает конкретный канал по номеру.
+     */
+    fun clearChannel(channelId: Int) {
+        val normalized = normalizeChannel(channelId)
+        channelBuffer(normalized).clear()
+        allMessages.removeAll { it.channelId == normalized }
+        unreadCounts[normalized].intValue = 0
+        if (activeChannel == normalized) {
+            lastCount = 0
+        }
+    }
+
+    /**
+     * Очищает все каналы консоли сразу.
+     */
+    fun clearAll() {
+        channelBuffers.forEach(ChannelBuffer::clear)
+        allMessages.clear()
+        unreadCounts.forEach { it.intValue = 0 }
+        unreadAllCount.intValue = 0
+        lastCount = 0
+    }
+
+    /**
+     * Добавляет любой элемент в конец буфера того канала, которому он принадлежит.
+     */
+    fun addItem(item: ConsoleItem) {
+        channelBuffer(item.channelId).messages.add(item)
+        allMessages.add(item)
+        recordNewItem(item.channelId)
+    }
+
+    /**
+     * Вставляет элемент после конкретной сетевой строки в рамках его канала.
+     *
+     * Если входящая строка еще не завершена, элемент не вставляется сразу, а кладется
+     * в отложенную очередь этого же канала и появится после [completeRemoteLine].
+     */
+    fun addItemAfterRemoteLine(remoteLineId: Long, item: ConsoleItem) {
+        val buffer = channelBuffer(item.channelId)
+        if (remoteLineId <= buffer.lastCompletedRemoteLineId) {
+            insertBeforeTrailingPlaceholder(buffer, item)
+        } else {
+            buffer.pendingLocalItems.add(PendingLocalItem(remoteLineId, item))
+        }
+    }
+
+    /**
+     * Добавляет новую текстовую строку в указанный канал.
+     *
+     * Если [channelId] не передан, используется [defaultOutputChannel].
      */
     fun print(
         text: String,
         color: Color = Color.Green,
         bgColor: Color = Color.Black,
-        flash: Boolean = false
+        flash: Boolean = false,
+        channelId: Int = defaultOutputChannel
     ) {
-        addItem(buildTextItem(text, color, bgColor, flash))
+        addItem(buildTextItem(text, color, bgColor, flash, channelId = channelId))
     }
 
     /**
-     * Appends text to the last non-placeholder text line.
+     * Дописывает текст в последнюю обычную текстовую строку указанного канала.
      *
-     * If there is no suitable text line yet, it falls back to `print(...)`.
-     * By default the appended fragment inherits styling from the last fragment
-     * of the target line.
+     * Если подходящей строки нет, метод сам создаст новую через [print].
      */
     fun appendToLastTextLine(
         text: String,
         color: Color? = null,
         bgColor: Color? = null,
-        flash: Boolean? = null
+        flash: Boolean? = null,
+        channelId: Int = defaultOutputChannel
     ) {
-        val target = messages
+        val buffer = channelBuffer(channelId)
+        val target = buffer.messages
             .asReversed()
             .firstOrNull { item ->
                 item is ConsoleTextItem && !item.isPlaceholder
@@ -232,7 +342,8 @@ class Console {
                 text = text,
                 color = color ?: Color.Green,
                 bgColor = bgColor ?: Color.Black,
-                flash = flash ?: false
+                flash = flash ?: false,
+                channelId = channelId
             )
             return
         }
@@ -253,52 +364,62 @@ class Console {
     }
 
     /**
-     * Adds arbitrary Compose content to the end of the console.
+     * Добавляет произвольный Compose-элемент в конец указанного канала.
      */
-    fun printComposable(content: ConsoleComposableContent) {
-        addItem(ConsoleComposableItem(content = content))
+    fun printComposable(
+        channelId: Int = defaultOutputChannel,
+        content: ConsoleComposableContent
+    ) {
+        addItem(ConsoleComposableItem(content = content, channelId = normalizeChannel(channelId)))
     }
 
     /**
-     * Adds a local text line after the specified remote line.
+     * Добавляет локальную текстовую строку после указанной сетевой строки
+     * в заданном канале.
      */
     fun printLocalAfterRemoteLine(
         remoteLineId: Long,
         text: String,
         color: Color = Color.Green,
         bgColor: Color = Color.Black,
-        flash: Boolean = false
+        flash: Boolean = false,
+        channelId: Int = defaultOutputChannel
     ) {
         addItemAfterRemoteLine(
             remoteLineId = remoteLineId,
-            item = buildTextItem(text, color, bgColor, flash)
+            item = buildTextItem(text, color, bgColor, flash, channelId = channelId)
         )
     }
 
     /**
-     * Adds arbitrary Compose content after the specified remote line.
+     * Добавляет Compose-элемент после указанной сетевой строки в заданном канале.
      */
     fun printComposableAfterRemoteLine(
         remoteLineId: Long,
+        channelId: Int = defaultOutputChannel,
         content: ConsoleComposableContent
     ) {
         addItemAfterRemoteLine(
             remoteLineId = remoteLineId,
-            item = ConsoleComposableItem(content = content)
+            item = ConsoleComposableItem(content = content, channelId = normalizeChannel(channelId))
         )
     }
 
     /**
-     * Updates text of a streamed remote line by `remoteLineId`.
+     * Обновляет потоковую входящую строку внутри ее канала.
      *
-     * If the line does not exist yet, it is created.
+     * Если строка уже существует, меняется ее текст и стили. Если строки еще нет,
+     * создается новая запись, которая будет дальше обновляться тем же `remoteLineId`.
      */
     fun updateRemoteLine(
         remoteLineId: Long,
         text: String,
-        pairList: List<PairTextAndColor>
+        pairList: List<PairTextAndColor>,
+        channelId: Int = DEFAULT_CHANNEL
     ) {
-        val item = remoteTextItems[remoteLineId]
+        val normalizedChannel = normalizeChannel(channelId)
+        val buffer = channelBuffer(normalizedChannel)
+        val item = buffer.remoteTextItems[remoteLineId]
         if (item != null) {
             item.text = text
             item.pairList = pairList
@@ -309,36 +430,72 @@ class Console {
         val newItem = ConsoleTextItem(
             text = text,
             pairList = pairList,
-            remoteLineId = remoteLineId
+            remoteLineId = remoteLineId,
+            channelId = normalizedChannel
         )
-        remoteTextItems[remoteLineId] = newItem
-        messages.add(newItem)
+        buffer.remoteTextItems[remoteLineId] = newItem
+        buffer.messages.add(newItem)
+        allMessages.add(newItem)
+        recordNewItem(normalizedChannel)
     }
 
     /**
-     * Marks a remote line as complete, creates a placeholder for the next one,
-     * and flushes delayed local items.
+     * Завершает входящую сетевую строку в указанном канале.
+     *
+     * После этого:
+     * - канал помнит, что [remoteLineId] уже завершен;
+     * - создается placeholder для следующей потоковой строки [nextRemoteLineId];
+     * - выгружаются локальные элементы, которые ждали завершения этой строки.
      */
-    fun completeRemoteLine(remoteLineId: Long, nextRemoteLineId: Long) {
-        lastCompletedRemoteLineId = max(lastCompletedRemoteLineId, remoteLineId)
-        ensureRemotePlaceholder(nextRemoteLineId)
-        flushPendingLocalItems(remoteLineId)
+    fun completeRemoteLine(
+        remoteLineId: Long,
+        nextRemoteLineId: Long,
+        channelId: Int = DEFAULT_CHANNEL
+    ) {
+        val normalizedChannel = normalizeChannel(channelId)
+        val buffer = channelBuffer(normalizedChannel)
+        buffer.lastCompletedRemoteLineId = max(buffer.lastCompletedRemoteLineId, remoteLineId)
+        ensureRemotePlaceholder(buffer, nextRemoteLineId, normalizedChannel)
+        flushPendingLocalItems(buffer, remoteLineId)
     }
 
     /**
-     * Returns the current console content in render order.
+     * Возвращает содержимое одного канала в порядке отрисовки.
+     *
+     * По умолчанию берется активный канал. Для [ALL_CHANNEL] возвращается
+     * агрегированная лента всех сообщений из всех каналов.
      */
-    fun getList(): List<ConsoleItem> = messages
+    fun getList(channelId: Int = activeChannel): List<ConsoleItem> =
+        if (channelId == ALL_CHANNEL) allMessages else channelBuffer(channelId).messages
 
     /**
-     * Renders the console as a LazyColumn.
+     * Возвращает количество элементов, которые сейчас хранятся в одном канале.
+     * Для [ALL_CHANNEL] это размер общей агрегированной ленты.
+     */
+    fun getChannelItemCount(channelId: Int): Int =
+        if (channelId == ALL_CHANNEL) allMessages.size else channelBuffer(channelId).messages.size
+
+    /**
+     * Возвращает количество новых элементов, пришедших в канал с момента,
+     * когда пользователь последний раз его открывал.
+     *
+     * Для [ALL_CHANNEL] возвращается число новых элементов по общей ленте.
+     */
+    fun getUnreadCount(channelId: Int): Int =
+        if (channelId == ALL_CHANNEL) unreadAllCount.intValue
+        else unreadCounts[normalizeChannel(channelId)].intValue
+
+    /**
+     * Отрисовывает активный канал как `LazyColumn`.
+     *
+     * Внутри следит за автопрокруткой, пользовательским скроллом и переключением каналов.
      */
     @Composable
     fun lazy(modifier: Modifier = Modifier) {
         recompose.collectAsStateWithLifecycle().value
-        val list = getList()
+        val list = getList(activeChannel)
         val lazyListState = rememberLazyListState()
-        val isAtEnd by remember(lazyListState, list) {
+        val isAtEnd by remember(lazyListState, list, activeChannel) {
             derivedStateOf {
                 val lastIndex = list.lastIndex
                 if (lastIndex <= 0) {
@@ -354,7 +511,7 @@ class Console {
             }
         }
 
-        LaunchedEffect(list.size) {
+        LaunchedEffect(list.size, activeChannel) {
             lastCount = list.size
         }
 
@@ -366,7 +523,7 @@ class Console {
             }
         }
 
-        LaunchedEffect(list.size, tracking, scrollToEndRequest) {
+        LaunchedEffect(list.size, tracking, scrollToEndRequest, activeChannel) {
             val lastIndex = list.lastIndex
             if (lastIndex >= 0 && tracking && !isAtEnd) {
                 lazyListState.scrollToItem(index = lastIndex, scrollOffset = 0)
@@ -400,21 +557,21 @@ class Console {
     }
 
     /**
-     * Sets font family for text lines.
+     * Меняет шрифт текстовых строк консоли.
      */
     fun setFontFamily(fontFamily: GenericFontFamily) {
         this.fontFamily = fontFamily
     }
 
     /**
-     * Sets font size for text lines.
+     * Меняет размер шрифта текстовых строк консоли.
      */
     fun setFontSize(size: Int) {
         fontSize = size.sp
     }
 
     /**
-     * Draws one text item.
+     * Рисует одну текстовую строку.
      */
     @Composable
     private fun drawTextItem(
@@ -451,7 +608,7 @@ class Console {
     }
 
     /**
-     * Draws one arbitrary Compose item.
+     * Рисует один произвольный Compose-элемент внутри списка консоли.
      */
     @Composable
     private fun drawComposableItem(
@@ -481,7 +638,7 @@ class Console {
     }
 
     /**
-     * Builds AnnotatedString from styled text fragments.
+     * Собирает `AnnotatedString` из сегментов с цветами и стилями.
      */
     private fun buildAnnotatedText(
         item: ConsoleTextItem,
@@ -525,14 +682,15 @@ class Console {
     }
 
     /**
-     * Creates a text item from plain text and style.
+     * Создает текстовый элемент консоли из строки и набора базовых стилей.
      */
     private fun buildTextItem(
         text: String,
         color: Color,
         bgColor: Color,
         flash: Boolean,
-        remoteLineId: Long? = null
+        remoteLineId: Long? = null,
+        channelId: Int = defaultOutputChannel
     ): ConsoleTextItem {
         return ConsoleTextItem(
             text = text,
@@ -544,15 +702,21 @@ class Console {
                     flash = flash
                 )
             ),
-            remoteLineId = remoteLineId
+            remoteLineId = remoteLineId,
+            channelId = normalizeChannel(channelId)
         )
     }
 
     /**
-     * Ensures there is a placeholder for the next remote text line.
+     * Гарантирует наличие placeholder-строки для следующей входящей сетевой строки
+     * внутри одного канала.
      */
-    private fun ensureRemotePlaceholder(remoteLineId: Long) {
-        if (remoteTextItems.containsKey(remoteLineId)) return
+    private fun ensureRemotePlaceholder(
+        buffer: ChannelBuffer,
+        remoteLineId: Long,
+        channelId: Int
+    ) {
+        if (buffer.remoteTextItems.containsKey(remoteLineId)) return
 
         val placeholder = ConsoleTextItem(
             text = " ",
@@ -565,36 +729,62 @@ class Console {
                 )
             ),
             remoteLineId = remoteLineId,
+            channelId = channelId,
             isPlaceholder = true
         )
 
-        remoteTextItems[remoteLineId] = placeholder
-        messages.add(placeholder)
+        buffer.remoteTextItems[remoteLineId] = placeholder
+        buffer.messages.add(placeholder)
+        allMessages.add(placeholder)
     }
 
     /**
-     * Flushes delayed local items for a completed remote line.
+     * Вставляет отложенные локальные элементы, которые ждали завершения
+     * конкретной сетевой строки в этом канале.
      */
-    private fun flushPendingLocalItems(remoteLineId: Long) {
-        val iterator = pendingLocalItems.iterator()
+    private fun flushPendingLocalItems(buffer: ChannelBuffer, remoteLineId: Long) {
+        val iterator = buffer.pendingLocalItems.iterator()
         while (iterator.hasNext()) {
             val pending = iterator.next()
             if (pending.remoteLineId == remoteLineId) {
-                insertBeforeTrailingPlaceholder(pending.item)
+                insertBeforeTrailingPlaceholder(buffer, pending.item)
                 iterator.remove()
             }
         }
     }
 
     /**
-     * Inserts local item before the trailing placeholder if it exists.
+     * Вставляет локальный элемент перед хвостовым placeholder того же канала,
+     * если такой placeholder уже существует.
      */
-    private fun insertBeforeTrailingPlaceholder(item: ConsoleItem) {
-        val lastItem = messages.lastOrNull()
+    private fun insertBeforeTrailingPlaceholder(buffer: ChannelBuffer, item: ConsoleItem) {
+        val lastItem = buffer.messages.lastOrNull()
         if (lastItem is ConsoleTextItem && lastItem.isPlaceholder) {
-            messages.add(messages.lastIndex, item)
+            buffer.messages.add(buffer.messages.lastIndex, item)
         } else {
-            messages.add(item)
+            buffer.messages.add(item)
         }
+        allMessages.add(item)
+        recordNewItem(item.channelId)
+    }
+
+    private fun recordNewItem(channelId: Int) {
+        val normalized = normalizeChannel(channelId)
+        if (normalized != activeChannel) {
+            unreadCounts[normalized].intValue++
+        }
+        if (activeChannel != ALL_CHANNEL) {
+            unreadAllCount.intValue++
+        }
+    }
+
+    private fun channelBuffer(channelId: Int): ChannelBuffer = channelBuffers[normalizeChannel(channelId)]
+
+    private fun normalizeChannel(channelId: Int): Int = channelId.coerceIn(0, CHANNEL_COUNT - 1)
+
+    companion object {
+        const val ALL_CHANNEL = -1
+        const val CHANNEL_COUNT = 4
+        const val DEFAULT_CHANNEL = 0
     }
 }

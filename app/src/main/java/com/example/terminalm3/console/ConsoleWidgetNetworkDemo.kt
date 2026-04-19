@@ -42,14 +42,21 @@ val consoleWidgetDemoNetworkCommands: List<String> = listOf(
  * Отправляет весь демо-набор виджетов в сетевой канал так,
  * как будто команды пришли с внешнего устройства.
  *
+ * [consoleChannelId] позволяет прогнать весь набор в конкретный логический канал консоли.
+ * Если он равен `0`, префикс маршрутизации не добавляется.
+ *
  * [delayMs] нужен только для более "живого" появления карточек в консоли.
  */
 suspend fun emitConsoleWidgetNetworkDemo(
     channel: SendChannel<String>,
+    consoleChannelId: Int = 0,
     delayMs: Long = 40L
 ) {
+    val normalizedChannelId = consoleChannelId.coerceIn(0, 3)
+    val transportPrefix = if (normalizedChannelId == 0) "" else "@$normalizedChannelId "
+
     consoleWidgetDemoNetworkCommands.forEachIndexed { index, command ->
-        channel.send("$command\n")
+        channel.send("$transportPrefix$command\n")
 
         if (delayMs > 0L && index != consoleWidgetDemoNetworkCommands.lastIndex) {
             delay(delayMs)

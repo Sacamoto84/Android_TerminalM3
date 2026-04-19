@@ -5,7 +5,8 @@ import kotlinx.coroutines.channels.Channel
 data class NetCommand(
     var cmd: String,
     var newString: Boolean = false,
-    var lineId: Long = 0L
+    var lineId: Long = 0L,
+    var channelId: Int = 0
 )
 
 //Канал передачи

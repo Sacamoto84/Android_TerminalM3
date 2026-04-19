@@ -44,13 +44,48 @@ widget type=badge text="READY"
 
 ### `demo-widgets`
 
-Локальная служебная команда для телефона. Не создает новый тип виджета, а последовательно отправляет весь демо-набор `ui type=...` в тот же сетевой канал, чтобы быстро посмотреть, как все карточки выглядят на реальном экране устройства.
+Локальная служебная команда для телефона. Не создает новый тип виджета, а последовательно отправляет весь демо-набор `ui type=...` в тот же логический канал консоли, из которого пришла команда, чтобы быстро посмотреть, как все карточки выглядят на реальном экране устройства.
 
 Пример:
 
 ```text
 demo-widgets
 ```
+
+## Каналы консоли
+
+Приложение теперь работает не с одним общим потоком, а с `4` логическими каналами консоли: от `0` до `3`.
+
+- если номер канала не указан, строка попадает в канал `0`
+- в UI над консолью есть плашка из `4` кнопок, которая переключает отображаемый канал
+- на кнопке канала показывается badge с числом новых сообщений, пришедших с момента последнего открытия этого канала
+- у локальных вызовов `console.print(...)` есть свой канал по умолчанию
+- для сетевых строк рекомендуемый способ маршрутизации - transport-prefix в начале строки
+
+Рекомендуемый формат маршрутизации всей строки:
+
+```text
+@3 ui type=badge text="READY" st=ok
+@1 Boot completed
+@2 ui type=panel title="Motor 1" value=READY subtitle="24.3V"
+```
+
+Что происходит:
+
+- префикс `@N ` считывается декодером сети и не попадает в текст команды
+- и сама входящая строка, и созданный по ней виджет оказываются в одном и том же канале
+- если префикса нет, используется канал `0`
+
+Дополнительно для `ui` / `widget` распознаются алиасы канала внутри аргументов:
+
+```text
+ui type=badge text="READY" terminal=3
+ui type=badge text="READY" channel=3
+ui type=badge text="READY" term=3
+ui type=badge text="READY" ch=3
+```
+
+Но для реального сетевого транспорта лучше использовать именно `@N ` в начале строки. Это самый понятный и устойчивый способ, потому что тогда и команда, и итоговый виджет остаются в одном канале.
 
 ## Общий формат
 
@@ -66,6 +101,14 @@ ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B icon=i
 ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"
 ui type=sparkline label="Temp" values="21,22,22,23,24,23,25" color=#36C36B
 ui type=led-row title="Links" items="NET:#00E676|MQTT:#00E676|ERR:#FF5252|GPS:off"
+```
+
+С маршрутизацией по каналам:
+
+```text
+@0 ui type=badge text="READY" st=ok
+@3 ui type=panel title="Motor 1" value=READY subtitle="24.3V" accent=#36C36B icon=info
+@2 ui type=table headers="Name|State|Temp" rows="M1|READY|24.3;M2|WAIT|22.9"
 ```
 
 ## Правила синтаксиса
@@ -85,11 +128,20 @@ ui type=panel title="Motor 1" subtitle="24.3V 1.8A"
 7. Цвета можно передавать как:
    `#RRGGBB`, `#AARRGGBB`, либо именами `black`, `white`, `red`, `green`, `blue`, `yellow`, `cyan`, `magenta`, `gray`, `orange`.
 8. Для списков значений используются разделители `|`, `,` или `;` в зависимости от типа виджета.
+9. Для маршрутизации строки в конкретный канал можно добавить prefix в начале:
+
+```text
+@3 ui type=badge text="READY" st=ok
+```
+
+10. Если нужно выбрать канал именно у `ui` / `widget` через аргумент, поддерживаются ключи `channel`, `terminal`, `term`, `ch` с числовым значением от `0` до `3`.
+11. У frame-виджетов (`can-frame`, `uart-frame`, `packet-frame`) параметр `channel` часто означает уже имя шины или порта, например `can0`, `UART1`, `COM3`. Это не канал консоли. Для выбора канала консоли в таких случаях используй prefix `@N ` или ключи `terminal` / `term` / `ch`.
 
 ## Быстрые примеры
 
 ```text
 ui type=badge text="READY" st=ok
+@3 ui type=badge text="READY" st=ok
 ui type=dot color=#00E676 size=16 label="Link active"
 ui type=image name=info size=40 desc="Info icon"
 ui type=panel title="Motor 1" value=READY subtitle="24.3V 1.8A" accent=#36C36B icon=info
@@ -115,6 +167,7 @@ ui type=modbus-frame direction=request preset=rtu data="01 03 00 10 00 02 C5 CE"
 ui type=can-frame title="Motor CAN" direction=rx id=0x18FF50E5 ext=true data="11 22 33 44 55 66 77 88" channel=can0
 ui type=uart-frame title="UART RX" direction=rx channel=UART1 baud=115200 data="AA 55 10 02 01 02 34" fields="0-1|Sync|AA55|Preamble;2|Cmd|10|Command;3|Len|02|Payload length;4-5|Payload|0102|Data;6|CRC|34|Checksum"
 ui type=packet-frame title="Binary Packet" protocol=CUSTOM direction=tx data="7E A1 02 10 FF 55" ascii=on
+@3 ui type=packet-frame title="Binary Packet" protocol=CUSTOM direction=tx data="7E A1 02 10 FF 55" ascii=on
 ```
 
 ## Виджеты
@@ -1090,6 +1143,13 @@ ui type=packet-frame protocol=RS485 direction=rx channel=COM3 speed=9600 data="0
 ## Алиасы и заметки
 
 - `widget` полностью эквивалентен `ui`
+- каналы консоли: `0..3`, по умолчанию исходящие локальные сообщения идут в `0`
+- первая кнопка `ALL` показывает общую агрегированную ленту всех входящих данных из каналов `0..3`
+- после запуска экран открывается на `ALL`, чтобы сразу видеть весь входящий поток
+- badge на кнопке `ALL` показывает, сколько новых элементов пришло во всю общую ленту с момента последнего открытия `ALL`
+- badge на кнопках `0..3` показывает, сколько новых элементов пришло именно в этот канал с момента последнего открытия канала
+- рекомендуемый способ маршрутизации по каналам: prefix `@N ` в начале строки
+- `demo-widgets` проигрывает весь демо-набор в тот же логический канал, из которого пришла команда
 - `dot`, `circle` - одно и то же
 - `image`, `icon` - одно и то же
 - `panel`, `card` - одно и то же

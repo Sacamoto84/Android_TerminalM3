@@ -135,7 +135,7 @@ fun calculateColorInEscString(str: String) { //"38;05;232;48;05;226"
     }
 
     if (str == "1") {
-        console.messages.clear() // removeRange(0, colorline_and_text.lastIndex)
+        console.clearChannel(console.defaultOutputChannel) // removeRange(0, colorline_and_text.lastIndex)
         console.print(" ")
         return
     }
@@ -230,3 +230,4 @@ fun calculateColorInEscString(str: String) { //"38;05;232;48;05;226"
 
 
 }
+

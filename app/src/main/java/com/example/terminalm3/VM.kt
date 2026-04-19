@@ -58,9 +58,9 @@ class VM : ViewModel() {
             val pair = text_to_paitList(s.cmd, mod)
 
             withContext(Dispatchers.Main.immediate) {
-                console.updateRemoteLine(s.lineId, s.cmd, pair)
+                console.updateRemoteLine(s.lineId, s.cmd, pair, s.channelId)
                 if (s.newString) {
-                    console.completeRemoteLine(s.lineId, s.lineId + 1)
+                    console.completeRemoteLine(s.lineId, s.lineId + 1, s.channelId)
                 }
             }
         }
