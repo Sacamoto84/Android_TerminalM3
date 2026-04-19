@@ -33,7 +33,8 @@ class UDP {
                         0,
                         packet.length
                     )
-                ) //println("!UDPRoutine! packet RAW=[$string")
+                ) //
+                println("!UDPRoutine! packet RAW=[$string")
                 channel.send(string)
             }
         }

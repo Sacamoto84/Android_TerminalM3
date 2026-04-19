@@ -1,6 +1,5 @@
 package com.example.terminalm3
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.terminalm3.network.channelLastString
@@ -29,8 +28,7 @@ class VM : ViewModel() {
 
     private fun text_to_paitList(
         txt: String,
-        channelId: Int,
-        mod: PairTextAndColor? = null
+        channelId: Int
     ): ParsedUiText {
         val pair = mutableListOf<PairTextAndColor>()
         var clearChannelId: Int? = null
@@ -46,10 +44,6 @@ class VM : ViewModel() {
             if (clearChannelId == null) {
                 clearChannelId = parsed.clearChannelId
             }
-
-            if (mod != null) {
-                pair.add(mod)
-            }
         }
 
         return ParsedUiText(pairList = pair, clearChannelId = clearChannelId)
@@ -58,14 +52,7 @@ class VM : ViewModel() {
     private suspend fun receiveUILastString() {
         for (s in channelLastString) {
             if (s.cmd.isEmpty()) continue
-
-            val mod = if (Global.isCheckUseCRLF && !s.newString) {
-                PairTextAndColor("_", Color.Green, Color.Black, true, flash = true)
-            } else {
-                null
-            }
-
-            val parsed = text_to_paitList(s.cmd, s.channelId, mod)
+            val parsed = text_to_paitList(s.cmd, s.channelId)
 
             withContext(Dispatchers.Main.immediate) {
                 parsed.clearChannelId?.let { console.clearChannel(it) }

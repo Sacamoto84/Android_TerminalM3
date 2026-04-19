@@ -316,11 +316,6 @@ class Console {
         val buffer = channelBuffer(item.channelId)
         if (remoteLineId <= buffer.lastCompletedRemoteLineId) {
             insertBeforeTrailingPlaceholder(buffer, item)
-            if (item is ConsoleComposableItem) {
-                Snapshot.withMutableSnapshot {
-                    removeTrailingPlaceholder(buffer)
-                }
-            }
         } else {
             buffer.pendingLocalItems.add(PendingLocalItem(remoteLineId, item))
         }
@@ -487,9 +482,15 @@ class Console {
         val item = buffer.remoteTextItems[remoteLineId]
         Snapshot.withMutableSnapshot {
             if (item != null) {
+                val shouldBecomeVisible = item.isPlaceholder && buffer.messages.none { it.id == item.id }
                 item.text = text
                 item.pairList = pairList
                 item.isPlaceholder = false
+                if (shouldBecomeVisible) {
+                    buffer.messages.add(item)
+                    allMessages.add(item)
+                    recordNewItem(normalizedChannel)
+                }
                 return@withMutableSnapshot
             }
 
@@ -790,23 +791,14 @@ class Console {
         if (buffer.remoteTextItems.containsKey(remoteLineId)) return
 
         val placeholder = ConsoleTextItem(
-            text = " ",
-            pairList = listOf(
-                PairTextAndColor(
-                    text = "\u2581",
-                    colorText = Color.Green,
-                    colorBg = Color.Black,
-                    flash = true
-                )
-            ),
+            text = "",
+            pairList = emptyList(),
             remoteLineId = remoteLineId,
             channelId = channelId,
             isPlaceholder = true
         )
 
         buffer.remoteTextItems[remoteLineId] = placeholder
-        buffer.messages.add(placeholder)
-        allMessages.add(placeholder)
     }
 
     /**
@@ -819,9 +811,6 @@ class Console {
             val pending = iterator.next()
             if (pending.remoteLineId == remoteLineId) {
                 insertBeforeTrailingPlaceholder(buffer, pending.item)
-                if (pending.item is ConsoleComposableItem) {
-                    removeTrailingPlaceholder(buffer)
-                }
                 iterator.remove()
             }
         }
@@ -841,23 +830,6 @@ class Console {
             }
             allMessages.add(item)
             recordNewItem(item.channelId)
-        }
-    }
-
-    private fun removeTrailingPlaceholder(buffer: ChannelBuffer) {
-        val lastItem = buffer.messages.lastOrNull() as? ConsoleTextItem ?: return
-        if (!lastItem.isPlaceholder) return
-
-        buffer.messages.removeAt(buffer.messages.lastIndex)
-        val allIndex = allMessages.indexOfLast { it.id == lastItem.id }
-        if (allIndex >= 0) {
-            allMessages.removeAt(allIndex)
-        }
-        lastItem.remoteLineId?.let { remoteLineId ->
-            val mapped = buffer.remoteTextItems[remoteLineId]
-            if (mapped?.id == lastItem.id) {
-                buffer.remoteTextItems.remove(remoteLineId)
-            }
         }
     }
 
