@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.example.terminalm3.screen.common.buttons.ButtonPortal
 import com.example.terminalm3.screen.lazy.ui.CardFontSize
 import com.example.terminalm3.screen.lazy.ui.CardIpAddress
+import com.example.terminalm3.screen.lazy.ui.CardServerConnection
 import com.example.terminalm3.screen.lazy.ui.CheckVisibleCRLF
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.terminalm3.theme.RTTClientM3Theme
@@ -58,6 +59,7 @@ fun ModalBottomSheetContentInternal(
         CheckVisibleLineNumber()
         CheckVisibleCRLF()
         CardIpAddress()
+        CardServerConnection()
         ButtonPortal(onClick = onNavigateToWeb)
         CardFontSize()
     }

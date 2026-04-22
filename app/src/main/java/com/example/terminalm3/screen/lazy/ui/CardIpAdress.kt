@@ -22,25 +22,29 @@ private fun Preview() {
 
 @Composable
 fun CardIpAddress(ip: String = ipAddress) {
+    val portalHost = Global.normalizedEspHost().ifBlank { "не найден" }
+    val serverHost = Global.resolvedServerHost() ?: "не выбран"
 
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 10.dp, start = 8.dp, end = 8.dp),
         colors = CardDefaults.outlinedCardColors(containerColor = MaterialColor.GREY_900)
-    )
-    {
+    ) {
         Text(
-            text = "IP адрес телефона $ip",
+            text = "IP адрес телефона   $ip",
             color = Color.White,
             modifier = Modifier.padding(start = 20.dp, top = 5.dp)
         )
-        val str = if (Global.ipESP[0] == '/') Global.ipESP.removePrefix("/") else Global.ipESP
         Text(
-            text = "IP адрес esp.local   $str",
+            text = "IP адрес esp.local   $portalHost",
             color = Color.White,
-            modifier = Modifier.padding(start = 20.dp, bottom = 5.dp)
+            modifier = Modifier.padding(start = 20.dp, top = 2.dp)
+        )
+        Text(
+            text = "TCP сервер          $serverHost:${Global.tcpServerPort}",
+            color = Color.White,
+            modifier = Modifier.padding(start = 20.dp, top = 2.dp, bottom = 5.dp)
         )
     }
-
 }

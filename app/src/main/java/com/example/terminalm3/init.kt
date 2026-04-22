@@ -9,7 +9,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
 import com.example.terminalm3.lan.UDP
+import com.example.terminalm3.lan.TcpBridgeClient
 import com.example.terminalm3.lan.ipToBroadCast
 import com.example.terminalm3.lan.readLocalIP
 import com.example.terminalm3.network.channelNetworkIn
@@ -40,9 +42,15 @@ class Initialization(private val context: Context) {
         // Объект для DNS-SD discovery сервисов в локальной сети.
         nsdHelper = object : NsdHelper(context) {
             override fun onNsdServiceResolved(service: NsdServiceInfo) {
+                if (Global.isServerIpAuto) {
+                    TcpBridgeClient.requestReconnect("mDNS resolved ${service.host}")
+                }
             }
 
             override fun onNsdServiceLost(service: NsdServiceInfo) {
+                if (Global.isServerIpAuto) {
+                    TcpBridgeClient.requestReconnect("mDNS lost ${service.serviceName}")
+                }
             }
         }
 
@@ -65,6 +73,8 @@ class Initialization(private val context: Context) {
 
         // Показывать номера строк слева в консоли.
         console.lineVisible = shared.getBoolean("lineVisible", true)
+        Global.isServerIpAuto = shared.getBoolean("serverAutoIp", true)
+        Global.manualServerIp = shared.getString("serverManualIp", "") ?: ""
 
         console.fontSize = shared.getInt("fontSize", 18).sp
 
@@ -78,6 +88,7 @@ class Initialization(private val context: Context) {
 
         val udp = UDP()
         GlobalScope.launch(Dispatchers.IO) { udp.receiveScope(8888, channelNetworkIn) }
+        TcpBridgeClient.start(channelNetworkIn)
 
         decoder.run()
 

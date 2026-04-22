@@ -37,6 +37,7 @@ import com.example.terminalm3.screen.common.buttons.ButtonSetting
 import com.example.terminalm3.screen.common.buttons.ButtonSlegenie
 import com.example.terminalm3.screen.lazy.bottomNavigation.ModalBottomSheetContent
 import com.example.terminalm3.screen.lazy.bottomNavigation.ModalBottomSheetContentInternal
+import com.example.terminalm3.screen.lazy.ui.TcpConnectionStatusChip
 import com.example.terminalm3.theme.RTTClientM3Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,11 +94,19 @@ fun ScreenLazyInternal(
                 .fillMaxSize()
                 .padding(bottom = it.calculateBottomPadding())
         ) {
-            ConsoleChannelSelector(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 6.dp)
-            )
+                ,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ConsoleChannelSelector(
+                    modifier = Modifier.weight(1f)
+                )
+                TcpConnectionStatusChip()
+            }
             Box(modifier = Modifier.weight(1f)) {
                 console.lazy(Modifier.fillMaxSize())
             }

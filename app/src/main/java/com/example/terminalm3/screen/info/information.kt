@@ -204,7 +204,8 @@ fun ScreenInfo(onBack: () -> Unit) {
                     append("\\x1B[1m + Очистка экрана\n")
                     append("\\x1B[3m + Звуковой сигнал (Не готово)\n")
                     append("\n\\x1B[01;03;38;05;147;48;05;21m Текст \\x1B[0m\n")
-                    append("\nUDP Порт 8888")
+                    append("\nTCP сервер 8888")
+                    append("\nUDP broadcast 8888")
                 }
 
             } }

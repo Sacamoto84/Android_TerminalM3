@@ -46,13 +46,13 @@ fun ScreenWeb(onBack: () -> Unit) {
 
     val reload = remember { mutableStateOf(false) }
 
-    val ip = "http://" + Global.ipESP.substring(Global.ipESP.lastIndexOf('/') + 1)
+    val ip = Global.portalUrl()
     val state = rememberWebViewState(ip)
     println("URL $ip")
 
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val navigator = WebViewNavigator(coroutineScope)
-    val ping = remember { mutableStateOf(ping(ip)) }
+    val ping = remember(ip) { mutableStateOf(ping(ip)) }
 
     val swipeRefreshState = rememberSwipeRefreshState(false)
 
