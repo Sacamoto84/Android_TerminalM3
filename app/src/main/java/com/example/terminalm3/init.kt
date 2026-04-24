@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import com.example.terminalm3.lan.UDP
 import com.example.terminalm3.lan.TcpBridgeClient
+import com.example.terminalm3.lan.UdpHeartbeatClient
 import com.example.terminalm3.lan.ipToBroadCast
 import com.example.terminalm3.lan.readLocalIP
 import com.example.terminalm3.network.channelNetworkIn
@@ -89,6 +90,7 @@ class Initialization(private val context: Context) {
         val udp = UDP()
         GlobalScope.launch(Dispatchers.IO) { udp.receiveScope(8888, channelNetworkIn) }
         TcpBridgeClient.start(channelNetworkIn)
+        UdpHeartbeatClient.start()
 
         decoder.run()
 

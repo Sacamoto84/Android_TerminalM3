@@ -28,7 +28,6 @@ class UDP {
             socket.receiveBufferSize = 1024 * 1024
             while (true) {
                 socket.receive(packet)
-                TcpBridgeClient.noteUdpPacket(packet.address?.hostAddress)
                 val string = String(
                     packet.data.copyOfRange(
                         0,

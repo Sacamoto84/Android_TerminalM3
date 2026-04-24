@@ -101,7 +101,7 @@ fun CardServerConnection() {
                 text = if (effectiveHost == null) {
                     "Текущий адрес сервера: не найден"
                 } else {
-                    "Текущий адрес сервера: $effectiveHost:${Global.tcpServerPort}"
+                    "ESP32: $effectiveHost | read ${Global.tcpServerPort} | cmd ${Global.tcpCommandPort}"
                 },
                 color = Color(0xFFD0D0D0)
             )

@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 object Global {
 
     const val tcpServerPort = 8888
+    const val tcpCommandPort = 8900
+    const val udpHeartbeatPort = 8888
 
     var isInitialized = false
 

@@ -1,5 +1,6 @@
 package com.example.terminalm3.lan
 
+import android.os.SystemClock
 import com.example.terminalm3.Global
 import com.example.terminalm3.TcpConnectionStage
 import com.example.terminalm3.TcpConnectionUiState
@@ -23,7 +24,7 @@ import kotlin.coroutines.coroutineContext
 
 object TcpBridgeClient {
 
-    private const val serverStaleTimeoutMs = 10000L
+    private const val heartbeatTimeoutMs = 3000L
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -37,10 +38,13 @@ object TcpBridgeClient {
     private var connectedHost: String = ""
 
     @Volatile
-    private var lastServerActivityAt: Long = 0L
+    private var heartbeatHost: String = ""
 
     @Volatile
-    private var lastServerActivitySource: String = ""
+    private var lastHeartbeatPongAt: Long = 0L
+
+    @Volatile
+    private var lastHeartbeatRttMs: Long = -1L
 
     private var loopJob: Job? = null
 
@@ -60,14 +64,24 @@ object TcpBridgeClient {
         closeActiveSocket()
     }
 
-    fun noteUdpPacket(senderHost: String?) {
+    fun noteHeartbeatPong(senderHost: String?, rttMs: Long) {
         val host = senderHost?.trim().orEmpty()
         if (host.isBlank()) return
 
         val expectedHost = connectedHost.ifBlank { Global.resolvedServerHost().orEmpty() }
         if (expectedHost.isBlank() || expectedHost != host) return
 
-        touchServerActivity("udp")
+        heartbeatHost = host
+        lastHeartbeatPongAt = SystemClock.elapsedRealtime()
+        lastHeartbeatRttMs = rttMs.coerceAtLeast(0L)
+
+        if (Global.tcpConnectionState.value.stage == TcpConnectionStage.Connected) {
+            updateState(
+                stage = TcpConnectionStage.Connected,
+                host = expectedHost,
+                detail = buildConnectedDetail(expectedHost)
+            )
+        }
     }
 
     private suspend fun runLoop(channel: Channel<String>) {
@@ -76,7 +90,7 @@ object TcpBridgeClient {
         while (coroutineContext.isActive) {
             val host = Global.resolvedServerHost()
             if (host == null) {
-                clearServerActivity()
+                clearHeartbeat()
                 connectedHost = ""
                 updateState(
                     stage = TcpConnectionStage.WaitingAddress,
@@ -94,7 +108,7 @@ object TcpBridgeClient {
             activeSocket = socket
             reconnectRequested = false
             connectedHost = host
-            clearServerActivity()
+            primeHeartbeat(host)
 
             try {
                 updateState(
@@ -108,11 +122,10 @@ object TcpBridgeClient {
                 socket.tcpNoDelay = true
                 socket.soTimeout = 1200
 
-                touchServerActivity("tcp")
                 updateState(
                     stage = TcpConnectionStage.Connected,
                     host = host,
-                    detail = "Connected to $host:${Global.tcpServerPort}"
+                    detail = buildConnectedDetail(host)
                 )
 
                 val buffer = ByteArray(8 * 1024)
@@ -129,11 +142,10 @@ object TcpBridgeClient {
                         if (count < 0) throw EOFException("TCP stream closed")
                         if (count == 0) continue
 
-                        touchServerActivity("tcp")
                         channel.send(String(buffer, 0, count, Charsets.UTF_8))
                     } catch (_: SocketTimeoutException) {
-                        if (isServerStale()) {
-                            throw ServerStaleException(buildStaleMessage())
+                        if (isHeartbeatStale(host)) {
+                            throw ServerStaleException(buildHeartbeatTimeoutMessage(host))
                         }
                     }
                 }
@@ -165,33 +177,46 @@ object TcpBridgeClient {
                 closeActiveSocket()
                 reconnectRequested = false
                 connectedHost = ""
-                clearServerActivity()
+                clearHeartbeat()
             }
         }
     }
 
-    private fun touchServerActivity(source: String) {
-        lastServerActivityAt = System.currentTimeMillis()
-        lastServerActivitySource = source
-    }
+    private fun primeHeartbeat(host: String) {
+        val now = SystemClock.elapsedRealtime()
+        val shouldReset = heartbeatHost != host ||
+            lastHeartbeatPongAt <= 0L ||
+            now - lastHeartbeatPongAt > heartbeatTimeoutMs
 
-    private fun clearServerActivity() {
-        lastServerActivityAt = 0L
-        lastServerActivitySource = ""
-    }
-
-    private fun isServerStale(): Boolean {
-        if (lastServerActivityAt <= 0L) return false
-        return System.currentTimeMillis() - lastServerActivityAt > serverStaleTimeoutMs
-    }
-
-    private fun buildStaleMessage(): String {
-        val sourceLabel = if (lastServerActivitySource.isBlank()) {
-            "server"
-        } else {
-            "server via $lastServerActivitySource"
+        heartbeatHost = host
+        if (shouldReset) {
+            lastHeartbeatPongAt = now
+            lastHeartbeatRttMs = -1L
         }
-        return "No activity from $sourceLabel for ${serverStaleTimeoutMs / 1000}s"
+    }
+
+    private fun clearHeartbeat() {
+        heartbeatHost = ""
+        lastHeartbeatPongAt = 0L
+        lastHeartbeatRttMs = -1L
+    }
+
+    private fun isHeartbeatStale(host: String): Boolean {
+        if (heartbeatHost != host || lastHeartbeatPongAt <= 0L) return false
+        return SystemClock.elapsedRealtime() - lastHeartbeatPongAt > heartbeatTimeoutMs
+    }
+
+    private fun buildConnectedDetail(host: String): String {
+        val heartbeatLabel = if (lastHeartbeatRttMs >= 0L) {
+            "heartbeat ${lastHeartbeatRttMs} ms"
+        } else {
+            "heartbeat wait"
+        }
+        return "Connected to $host:${Global.tcpServerPort}, $heartbeatLabel"
+    }
+
+    private fun buildHeartbeatTimeoutMessage(host: String): String {
+        return "Heartbeat timeout from $host for ${heartbeatTimeoutMs / 1000.0}s"
     }
 
     private fun closeActiveSocket() {
@@ -221,7 +246,7 @@ object TcpBridgeClient {
             is UnknownHostException -> "Server host not found"
             is SocketTimeoutException -> "Connection timeout"
             is EOFException -> "Server closed connection"
-            is ServerStaleException -> error.message ?: "Server activity timeout"
+            is ServerStaleException -> error.message ?: "Heartbeat timeout"
             is SocketException -> error.message ?: "Socket error"
             else -> error.message ?: error::class.java.simpleName
         }

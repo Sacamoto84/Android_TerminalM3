@@ -13,6 +13,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.terminalm3.screen.common.buttons.ButtonPortal
+import com.example.terminalm3.screen.lazy.ui.CardEsp32SendControls
 import com.example.terminalm3.screen.lazy.ui.CardFontSize
 import com.example.terminalm3.screen.lazy.ui.CardIpAddress
 import com.example.terminalm3.screen.lazy.ui.CardServerConnection
@@ -60,6 +61,7 @@ fun ModalBottomSheetContentInternal(
         CheckVisibleCRLF()
         CardIpAddress()
         CardServerConnection()
+        CardEsp32SendControls()
         ButtonPortal(onClick = onNavigateToWeb)
         CardFontSize()
     }
