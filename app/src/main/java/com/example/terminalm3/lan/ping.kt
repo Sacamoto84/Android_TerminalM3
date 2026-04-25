@@ -14,9 +14,10 @@ import java.net.URL
  * @return true если данный ресурс доступен
  */
 fun ping(ip: String = "http://192.168.0.200"): Boolean {
+    var connection: HttpURLConnection? = null
     try {
         val url = URL(ip)
-        val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
+        connection = url.openConnection() as HttpURLConnection
         connection.setRequestProperty("Connection", "close")
         connection.connectTimeout = 1000
         connection.connect()
@@ -30,14 +31,13 @@ fun ping(ip: String = "http://192.168.0.200"): Boolean {
         val s = when (e) {
             is MalformedURLException -> "loadLink: Invalid URL ${e.message}"
             is IOException -> "loadLink: IO Exception reading data: ${e.message}"
-            is SecurityException -> {
-                e.printStackTrace()
-                "loadLink: Security Exception. Needs permission? ${e.message}"
-            }
+            is SecurityException -> "loadLink: Security Exception. Needs permission? ${e.message}"
 
             else -> "Unknown error: ${e.message}"
         }
-        Timber.e(s)
+        Timber.e(e, s)
+    } finally {
+        connection?.disconnect()
     }
     return false
 }

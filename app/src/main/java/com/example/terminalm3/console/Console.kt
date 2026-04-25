@@ -146,6 +146,7 @@ class Console {
         val messages = mutableStateListOf<ConsoleItem>()
         val pendingLocalItems = mutableListOf<PendingLocalItem>()
         val remoteTextItems = mutableMapOf<Long, ConsoleTextItem>()
+        val hiddenRemoteLineIds = mutableSetOf<Long>()
         val slottedItems = sortedMapOf<Int, ConsoleItem>()
         var lastCompletedRemoteLineId = 0L
 
@@ -153,6 +154,7 @@ class Console {
             messages.clear()
             pendingLocalItems.clear()
             remoteTextItems.clear()
+            hiddenRemoteLineIds.clear()
             slottedItems.clear()
             lastCompletedRemoteLineId = 0L
         }
@@ -471,6 +473,47 @@ class Console {
      * Если строка уже существует, меняется ее текст и стили. Если строки еще нет,
      * создается новая запись, которая будет дальше обновляться тем же `remoteLineId`.
      */
+    /**
+     * Возвращает текст входящей сетевой строки, если она уже успела попасть в буфер консоли.
+     */
+    fun getRemoteLineText(
+        remoteLineId: Long,
+        channelId: Int = DEFAULT_CHANNEL
+    ): String? {
+        return channelBuffer(channelId).remoteTextItems[remoteLineId]?.text
+    }
+
+    /**
+     * Скрывает или возвращает входящую сетевую строку, не удаляя ее текст из памяти.
+     *
+     * Это используется для `ui/widget` команд: саму команду можно не показывать в общем потоке,
+     * но виджет все равно сможет раскрыть ее через свое меню.
+     */
+    fun setRemoteLineHidden(
+        remoteLineId: Long,
+        channelId: Int = DEFAULT_CHANNEL,
+        hidden: Boolean
+    ) {
+        val normalizedChannel = normalizeChannel(channelId)
+        val buffer = channelBuffer(normalizedChannel)
+
+        Snapshot.withMutableSnapshot {
+            if (hidden) {
+                buffer.hiddenRemoteLineIds.add(remoteLineId)
+                buffer.remoteTextItems[remoteLineId]?.let { item ->
+                    removeItemReferences(buffer, item)
+                }
+            } else {
+                buffer.hiddenRemoteLineIds.remove(remoteLineId)
+                buffer.remoteTextItems[remoteLineId]
+                    ?.takeUnless { it.isPlaceholder }
+                    ?.let { item ->
+                        addItemReferences(buffer, item, normalizedChannel)
+                    }
+            }
+        }
+    }
+
     fun updateRemoteLine(
         remoteLineId: Long,
         text: String,
@@ -480,12 +523,23 @@ class Console {
         val normalizedChannel = normalizeChannel(channelId)
         val buffer = channelBuffer(normalizedChannel)
         val item = buffer.remoteTextItems[remoteLineId]
+        val isHidden = remoteLineId in buffer.hiddenRemoteLineIds
         Snapshot.withMutableSnapshot {
             if (item != null) {
                 val shouldBecomeVisible = item.isPlaceholder && buffer.messages.none { it.id == item.id }
-                item.text = text
-                item.pairList = pairList
-                item.isPlaceholder = false
+                if (item.text != text) {
+                    item.text = text
+                }
+                if (item.pairList != pairList) {
+                    item.pairList = pairList
+                }
+                if (item.isPlaceholder) {
+                    item.isPlaceholder = false
+                }
+                if (isHidden) {
+                    removeItemReferences(buffer, item)
+                    return@withMutableSnapshot
+                }
                 if (shouldBecomeVisible) {
                     buffer.messages.add(item)
                     allMessages.add(item)
@@ -501,6 +555,9 @@ class Console {
                 channelId = normalizedChannel
             )
             buffer.remoteTextItems[remoteLineId] = newItem
+            if (isHidden) {
+                return@withMutableSnapshot
+            }
             buffer.messages.add(newItem)
             allMessages.add(newItem)
             recordNewItem(normalizedChannel)
@@ -649,15 +706,17 @@ class Console {
         index: Int,
         select: Boolean
     ) {
-        val blinkVisible = if (item.pairList.any { it.flash }) {
+        val pairList = item.pairList
+        val hasFlash = remember(pairList) { pairList.any { it.flash } }
+        val blinkVisible = if (hasFlash) {
             update.collectAsStateWithLifecycle().value
         } else {
-            update.value
+            true
         }
 
         val text = remember(
             item.text,
-            item.pairList,
+            pairList,
             blinkVisible,
             index,
             lineVisible,
@@ -831,6 +890,28 @@ class Console {
             allMessages.add(item)
             recordNewItem(item.channelId)
         }
+    }
+
+    private fun addItemReferences(
+        buffer: ChannelBuffer,
+        item: ConsoleItem,
+        channelId: Int
+    ) {
+        if (buffer.messages.none { it.id == item.id }) {
+            buffer.messages.add(item)
+            recordNewItem(channelId)
+        }
+        if (allMessages.none { it.id == item.id }) {
+            allMessages.add(item)
+        }
+    }
+
+    private fun removeItemReferences(
+        buffer: ChannelBuffer,
+        item: ConsoleItem
+    ) {
+        buffer.messages.removeAll { it.id == item.id }
+        allMessages.removeAll { it.id == item.id }
     }
 
     private fun setItemAt(slotIndex: Int, item: ConsoleItem) {

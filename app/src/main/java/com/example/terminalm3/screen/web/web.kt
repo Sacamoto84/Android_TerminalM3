@@ -21,9 +21,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,31 +41,40 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.WebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SetJavaScriptEnabled")
 @Composable
 fun ScreenWeb(onBack: () -> Unit) {
-
-    val reload = remember { mutableStateOf(false) }
-
     val ip = Global.portalUrl()
     val state = rememberWebViewState(ip)
-    println("URL $ip")
+    Timber.d("URL %s", ip)
 
-    val coroutineScope: CoroutineScope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
     val navigator = WebViewNavigator(coroutineScope)
-    val ping = remember(ip) { mutableStateOf(ping(ip)) }
+    var isPortalReachable by remember(ip) { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
 
-    val swipeRefreshState = rememberSwipeRefreshState(false)
+    LaunchedEffect(ip) {
+        isPortalReachable = withContext(Dispatchers.IO) { ping(ip) }
+    }
+
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
 
     SwipeRefresh(
         modifier = Modifier.fillMaxSize(),
         state = swipeRefreshState,
         onRefresh = {
-            println("onRefresh")
-            ping.value = ping(ip)
-            navigator.reload()
+            coroutineScope.launch {
+                Timber.d("onRefresh")
+                isRefreshing = true
+                isPortalReachable = withContext(Dispatchers.IO) { ping(ip) }
+                navigator.reload()
+                isRefreshing = false
+            }
         }
     ) {
 
@@ -73,7 +85,7 @@ fun ScreenWeb(onBack: () -> Unit) {
         )
         {
 
-            if (ping.value)
+            if (isPortalReachable)
                 WebView(
                     modifier = Modifier
                         .padding(5.dp)

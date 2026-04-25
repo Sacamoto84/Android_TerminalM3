@@ -1,5 +1,6 @@
 package com.example.terminalm3.lan
 
+import timber.log.Timber
 import java.lang.Exception
 import java.net.InetAddress
 
@@ -24,7 +25,7 @@ fun ipToBroadCast(value: String): String {
     }
     ibytes[3] = 255
     val broadcast = "${ibytes[0]}.${ibytes[1]}.${ibytes[2]}.255"
-    println("ipToBroadCast : $broadcast")
+    Timber.d("ipToBroadCast : %s", broadcast)
     return broadcast
 }
 //endregion
@@ -32,7 +33,7 @@ fun ipToBroadCast(value: String): String {
 
 
 fun ping2(ip: String = "192.168.0.200"): Boolean {
-    val address = InetAddress.getByName("192.168.0.200")
+    val address = InetAddress.getByName(ip)
     return address.isReachable(1000)
 }
 
@@ -50,8 +51,7 @@ fun runSystemCommand(command: String?): Boolean {
          */
 
     } catch (e: Exception) {
-        e.printStackTrace()
-        println(e.message)
+        Timber.e(e, e.message)
     }
     return false
 }

@@ -17,6 +17,9 @@ object Global {
     // Показывать в конце строк визуальные метки CR/LF.
     var isCheckUseCRLF by mutableStateOf(false)
 
+    // Показывать строку `ui/widget ...`, которая породила виджет.
+    var showWidgetSourceLine by mutableStateOf(true)
+
     // Сетевые адреса и режимы подключения.
     var ipBroadcast = "0.0.0.0"
     var ipESP by mutableStateOf("0.0.0.0")

@@ -1,9 +1,7 @@
 package com.example.terminalm3
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,8 +15,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.terminalm3.theme.RTTClientM3Theme
 import com.example.terminalm3.utils.KeepScreenOn
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 lateinit var shared: SharedPreferences
 
@@ -28,7 +24,6 @@ class MainActivity : ComponentActivity() {
 
     private val vm: VM by viewModels()
 
-    @OptIn(ExperimentalPermissionsApi::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -36,7 +31,7 @@ class MainActivity : ComponentActivity() {
         hideStatusBar()
         if (!Global.isInitialized) Initialization(applicationContext)
         Global.isInitialized = true
-        vm.launchUIChanelReceive()
+        vm.launchUiChannelReceive()
 
         setContent {
             KeepScreenOn()

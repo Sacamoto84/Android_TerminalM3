@@ -1,7 +1,25 @@
 package com.example.terminalm3.console
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.terminalm3.console.widgets.AlarmCardConsoleWidget
 import com.example.terminalm3.console.widgets.BadgeConsoleWidget
 import com.example.terminalm3.console.widgets.BarGroupConsoleWidget
@@ -1053,12 +1071,56 @@ fun ConsoleWidget(spec: ConsoleWidgetSpec) {
  *
  * Если [channelId] не передан, используется текущий [Console.defaultOutputChannel].
  */
+@Composable
+private fun ConsoleWidgetWithOptionalSource(
+    spec: ConsoleWidgetSpec,
+    hiddenSourceLine: String?
+) {
+    if (hiddenSourceLine.isNullOrBlank()) {
+        ConsoleWidget(spec)
+        return
+    }
+
+    var sourceVisible by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (sourceVisible) {
+            Text(
+                text = hiddenSourceLine,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF121212))
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                color = Color(0xFFBDBDBD),
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Monospace
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .pointerInput(hiddenSourceLine) {
+                    detectTapGestures(
+                        onLongPress = {
+                            sourceVisible = !sourceVisible
+                        }
+                    )
+                }
+        ) {
+            ConsoleWidget(spec)
+        }
+    }
+}
+
 fun Console.printWidget(
     spec: ConsoleWidgetSpec,
-    channelId: Int = defaultOutputChannel
+    channelId: Int = defaultOutputChannel,
+    hiddenSourceLine: String? = null
 ) {
     printComposable(channelId = channelId) {
-        ConsoleWidget(spec)
+        ConsoleWidgetWithOptionalSource(spec, hiddenSourceLine)
     }
 }
 
@@ -1068,10 +1130,11 @@ fun Console.printWidget(
 fun Console.printWidgetAt(
     slotIndex: Int,
     spec: ConsoleWidgetSpec,
-    channelId: Int = defaultOutputChannel
+    channelId: Int = defaultOutputChannel,
+    hiddenSourceLine: String? = null
 ) {
     printComposableAt(slotIndex = slotIndex, channelId = channelId) {
-        ConsoleWidget(spec)
+        ConsoleWidgetWithOptionalSource(spec, hiddenSourceLine)
     }
 }
 
@@ -1085,9 +1148,10 @@ fun Console.printWidgetAt(
 fun Console.printWidgetAfterRemoteLine(
     remoteLineId: Long,
     spec: ConsoleWidgetSpec,
-    channelId: Int = defaultOutputChannel
+    channelId: Int = defaultOutputChannel,
+    hiddenSourceLine: String? = null
 ) {
     printComposableAfterRemoteLine(remoteLineId, channelId = channelId) {
-        ConsoleWidget(spec)
+        ConsoleWidgetWithOptionalSource(spec, hiddenSourceLine)
     }
 }

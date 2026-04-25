@@ -136,36 +136,20 @@ fun CardServerConnection() {
 fun TcpConnectionStatusChip(modifier: Modifier = Modifier) {
     val tcpState by Global.tcpConnectionState.collectAsState()
 
-    OutlinedCard(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.outlinedCardColors(containerColor = Color(0xFF171717))
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(10.dp)
-                    .background(connectionStageColor(tcpState.stage), CircleShape)
-            )
-            Text(
-                text = "TCP ${connectionStageLabelShort(tcpState.stage)}",
-                color = Color.White
-            )
-        }
-    }
+    Box(
+        modifier = modifier
+            .size(14.dp)
+            .background(connectionStageColor(tcpState.stage), CircleShape)
+    )
 }
 
 fun connectionStageColor(stage: TcpConnectionStage): Color {
     return when (stage) {
-        TcpConnectionStage.Idle -> Color.Gray
-        TcpConnectionStage.WaitingAddress -> Color(0xFFFFB300)
-        TcpConnectionStage.Connecting -> Color(0xFF42A5F5)
-        TcpConnectionStage.Connected -> Color(0xFF43A047)
-        TcpConnectionStage.Error -> Color(0xFFE53935)
+        TcpConnectionStage.Idle -> Color(0xFFBDBDBD)
+        TcpConnectionStage.WaitingAddress -> Color(0xFFFFC400)
+        TcpConnectionStage.Connecting -> Color(0xFF40C4FF)
+        TcpConnectionStage.Connected -> Color(0xFF00E676)
+        TcpConnectionStage.Error -> Color(0xFFFF1744)
     }
 }
 
@@ -176,15 +160,5 @@ fun connectionStageLabel(stage: TcpConnectionStage): String {
         TcpConnectionStage.Connecting -> "Подключаюсь"
         TcpConnectionStage.Connected -> "Подключено"
         TcpConnectionStage.Error -> "Ошибка"
-    }
-}
-
-fun connectionStageLabelShort(stage: TcpConnectionStage): String {
-    return when (stage) {
-        TcpConnectionStage.Idle -> "stop"
-        TcpConnectionStage.WaitingAddress -> "wait"
-        TcpConnectionStage.Connecting -> "conn"
-        TcpConnectionStage.Connected -> "ok"
-        TcpConnectionStage.Error -> "err"
     }
 }

@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.edit
 import com.example.terminalm3.lan.UDP
 import com.example.terminalm3.lan.TcpBridgeClient
 import com.example.terminalm3.lan.UdpHeartbeatClient
@@ -27,9 +26,8 @@ import com.example.terminalm3.console.printWidgetAfterRemoteLine
 import com.example.terminalm3.utils.NsdHelper
 import com.example.terminalm3.utils.PhoneBeeper
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -37,6 +35,8 @@ import timber.log.Timber
 class Initialization(private val context: Context) {
 
     private var nsdHelper: NsdHelper? = null
+    private val backgroundScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     init {
 
@@ -60,17 +60,16 @@ class Initialization(private val context: Context) {
     }
 
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun init0() {
 
         Timber.plant(Timber.DebugTree())
         Timber.i("Привет")
 
         shared = context.getSharedPreferences("size", Context.MODE_PRIVATE)
-        console.fontSize = (shared.getString("size", "12")?.toInt() ?: 12).sp
 
         // Показывать в консоли визуальные метки CR/LF.
         Global.isCheckUseCRLF = shared.getBoolean("enter", false)
+        Global.showWidgetSourceLine = shared.getBoolean("showWidgetSourceLine", true)
 
         // Показывать номера строк слева в консоли.
         console.lineVisible = shared.getBoolean("lineVisible", true)
@@ -88,14 +87,14 @@ class Initialization(private val context: Context) {
         Timber.i(ipAddress)
 
         val udp = UDP()
-        GlobalScope.launch(Dispatchers.IO) { udp.receiveScope(8888, channelNetworkIn) }
+        backgroundScope.launch { udp.receiveScope(8888, channelNetworkIn) }
         TcpBridgeClient.start(channelNetworkIn)
         UdpHeartbeatClient.start()
 
         decoder.run()
 
         decoder.addCmd("beep") { _, lineId, channelId ->
-            CoroutineScope(Dispatchers.Main).launch {
+            mainScope.launch {
                 PhoneBeeper.beep()
                 Timber.i("Команда beep")
 
@@ -105,21 +104,15 @@ class Initialization(private val context: Context) {
                         contentDescription = null
                     )
                 }
-
-
-
-
-
             }
-
-
-
         }
 
-        val widgetCommandHandler: (List<String>, Long, Int) -> Unit = { args, lineId, lineChannelId ->
-            CoroutineScope(Dispatchers.Main).launch {
+        fun widgetCommandHandler(commandName: String): (List<String>, Long, Int) -> Unit {
+            return { args, lineId, lineChannelId ->
+                mainScope.launch {
                 val spec = ConsoleWidgetProtocol.parse(args).getOrElse { error ->
                     Timber.w(error, "Не удалось распарсить команду UI")
+
                     console.printLocalAfterRemoteLine(
                         remoteLineId = lineId,
                         text = "UI command error: ${error.message}",
@@ -131,19 +124,38 @@ class Initialization(private val context: Context) {
 
                 val widgetChannelId = ConsoleWidgetProtocol.parseConsoleChannel(args) ?: lineChannelId
                 val widgetSlotIndex = ConsoleWidgetProtocol.parseConsoleSlot(args)
+                val sourceLine = console.getRemoteLineText(lineId, lineChannelId)
+                    ?.takeIf { it.isNotBlank() }
+                    ?: buildWidgetSourceLine(commandName, args)
+                val hiddenSourceLine = if (Global.showWidgetSourceLine) null else sourceLine
+
+                if (!Global.showWidgetSourceLine) {
+                    console.setRemoteLineHidden(lineId, lineChannelId, hidden = true)
+                }
 
                 if (widgetSlotIndex != null) {
-                    console.printWidgetAt(widgetSlotIndex, spec, widgetChannelId)
+                    console.printWidgetAt(
+                        slotIndex = widgetSlotIndex,
+                        spec = spec,
+                        channelId = widgetChannelId,
+                        hiddenSourceLine = hiddenSourceLine
+                    )
                 } else {
-                    console.printWidgetAfterRemoteLine(lineId, spec, widgetChannelId)
+                    console.printWidgetAfterRemoteLine(
+                        remoteLineId = lineId,
+                        spec = spec,
+                        channelId = widgetChannelId,
+                        hiddenSourceLine = hiddenSourceLine
+                    )
+                }
                 }
             }
         }
 
-        decoder.addCmd("ui", widgetCommandHandler)
-        decoder.addCmd("widget", widgetCommandHandler)
+        decoder.addCmd("ui", widgetCommandHandler("ui"))
+        decoder.addCmd("widget", widgetCommandHandler("widget"))
         decoder.addCmd("demo-widgets") { _, lineId, channelId ->
-            CoroutineScope(Dispatchers.Main).launch {
+            mainScope.launch {
                 console.printLocalAfterRemoteLine(
                     remoteLineId = lineId,
                     text = "Запускаю демо всех виджетов...",
@@ -152,7 +164,7 @@ class Initialization(private val context: Context) {
                 )
             }
 
-            CoroutineScope(Dispatchers.Main).launch {
+            mainScope.launch {
                 emitConsoleWidgetNetworkDemo(
                     channel = channelNetworkIn,
                     consoleChannelId = channelId
@@ -161,7 +173,7 @@ class Initialization(private val context: Context) {
         }
 
         val clearTerminalHandler: (List<String>, Long, Int) -> Unit = { args, lineId, lineChannelId ->
-            CoroutineScope(Dispatchers.Main).launch {
+            mainScope.launch {
                 val targetArg = args.firstOrNull()?.trim()
 
                 when {
@@ -243,3 +255,6 @@ class Initialization(private val context: Context) {
 
 }
 
+private fun buildWidgetSourceLine(commandName: String, args: List<String>): String {
+    return (listOf(commandName) + args).joinToString(" ")
+}

@@ -21,6 +21,7 @@ import com.example.terminalm3.screen.lazy.ui.CheckVisibleCRLF
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.terminalm3.theme.RTTClientM3Theme
 import com.example.terminalm3.screen.lazy.ui.CheckVisibleLineNumber
+import com.example.terminalm3.screen.lazy.ui.CheckShowWidgetSourceLine
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,6 +60,7 @@ fun ModalBottomSheetContentInternal(
 
         CheckVisibleLineNumber()
         CheckVisibleCRLF()
+        CheckShowWidgetSourceLine()
         CardIpAddress()
         CardServerConnection()
         CardEsp32SendControls()
