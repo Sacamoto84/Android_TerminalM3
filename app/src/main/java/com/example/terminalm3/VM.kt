@@ -132,8 +132,13 @@ class VM : ViewModel() {
     private fun applyParsedCommand(parsedCommand: ParsedUiCommand) {
         val command = parsedCommand.command
         val parsed = parsedCommand.parsed
+        val hideWidgetSourceLine = shouldHideWidgetSourceLine(command)
 
         parsed.clearChannelId?.let { console.clearChannel(it) }
+
+        if (hideWidgetSourceLine) {
+            console.setRemoteLineHidden(command.lineId, command.channelId, hidden = true)
+        }
 
         console.updateRemoteLine(
             remoteLineId = command.lineId,
@@ -144,6 +149,23 @@ class VM : ViewModel() {
         if (command.newString) {
             console.completeRemoteLine(command.lineId, command.lineId + 1, command.channelId)
         }
+    }
+
+    private fun shouldHideWidgetSourceLine(command: NetCommand): Boolean {
+        return !Global.showWidgetSourceLine &&
+            isWidgetSourceCommand(command.cmd)
+    }
+
+    private fun isWidgetSourceCommand(text: String): Boolean {
+        val normalized = text
+            .replace("\r", "")
+            .replace("\n", "")
+            .trimStart()
+
+        return normalized.equals("ui", ignoreCase = true) ||
+            normalized.startsWith("ui ", ignoreCase = true) ||
+            normalized.equals("widget", ignoreCase = true) ||
+            normalized.startsWith("widget ", ignoreCase = true)
     }
 
     private companion object {
