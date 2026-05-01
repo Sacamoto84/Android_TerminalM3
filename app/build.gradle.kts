@@ -78,13 +78,13 @@ dependencies {
     implementation ("com.holix.android:bottomsheetdialog-compose:1.6.0")
 
     implementation ("com.siddroid:holi:1.0.1")
-    implementation("androidx.compose.ui:ui-tooling-preview-android:1.11.0")
 
     //https://github.com/ajitsing/Sherlock
     debugImplementation("com.github.ajitsing:sherlock:1.0.4@aar")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.11.0") //{
-    //transitive = true
-    //}
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    // Android Studio Preview берет ComposeViewAdapter из выбранного build variant.
+    // Если открыт release variant, debugImplementation не попадает в classpath превью.
+    releaseImplementation("androidx.compose.ui:ui-tooling")
     releaseImplementation("com.github.ajitsing:sherlock-no-op:1.0.4@aar")
 
     ///////////////////
