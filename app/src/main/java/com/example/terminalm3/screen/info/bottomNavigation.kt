@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.terminalm3.R
 
@@ -61,4 +62,10 @@ fun BottomNavigationInfo(onBack: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
     }
 
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1B1B1B)
+@Composable
+private fun BottomNavigationInfoPreview() {
+    BottomNavigationInfo(onBack = {})
 }

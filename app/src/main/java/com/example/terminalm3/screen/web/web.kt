@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.terminalm3.Global
 import com.example.terminalm3.lan.ping
@@ -160,4 +161,16 @@ private fun BottomNavigation(onBack: () -> Unit) {
 
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ScreenWebPreview() {
+    ScreenWeb(onBack = {})
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BottomNavigationPreview() {
+    BottomNavigation(onBack = {})
 }
